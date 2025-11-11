@@ -20,6 +20,33 @@
                     <div class="navbar-nav">
                         <a class="nav-link active" aria-current="page" href="/">Home</a>
                     </div>
+                    <div class="toast-stack" role="alert" aria-live="assertive" aria-atomic="true">
+                        <transition-group name="toast">
+                            <div
+                                v-for="toast in toasts"
+                                :key="toast.id"
+                                class="toast-card shadow-lg"
+                                :class="`toast-${toast.variant}`"
+                            >
+                                <div class="toast-body d-flex align-items-start gap-3">
+                                    <span
+                                        class="fa-solid"
+                                        :class="toast.variant === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'"
+                                        aria-hidden="true"
+                                    ></span>
+                                    <span class="flex-fill">
+                                        {{ toast.message }}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        class="btn-close btn-close-white ms-2"
+                                        aria-label="Close"
+                                        @click="dismissToast(toast.id)"
+                                    ></button>
+                                </div>
+                            </div>
+                        </transition-group>
+                    </div>
                     <form
                         class="ms-auto d-flex flex-column flex-sm-row gap-2 auth-form"
                         autocomplete="off"
@@ -54,14 +81,6 @@
                             <span v-if="formState.loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                             <span>{{ formState.loading ? 'Submitting…' : 'Log In' }}</span>
                         </button>
-                        <div class="auth-feedback text-sm-end">
-                            <small v-if="formState.successMessage" class="text-success fw-medium">
-                                {{ formState.successMessage }}
-                            </small>
-                            <small v-else-if="formState.errorMessage" class="text-danger fw-medium">
-                                {{ formState.errorMessage }}
-                            </small>
-                        </div>
                     </form>
                     <div v-if="formState.loading" class="auth-overlay">
                         <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
@@ -182,17 +201,22 @@ interface FormState {
     username: string;
     password: string;
     loading: boolean;
-    successMessage: string | null;
-    errorMessage: string | null;
+}
+
+interface Toast {
+    id: number;
+    message: string;
+    variant: 'success' | 'error';
+    sticky: boolean;
 }
 
 const formState = reactive<FormState>({
     username: '',
     password: '',
     loading: false,
-    successMessage: null,
-    errorMessage: null,
 });
+
+const toasts = ref<Toast[]>([]);
 
 const isSubmitDisabled = computed<boolean>(() => {
     if (formState.loading) {
@@ -225,8 +249,6 @@ const resetWelcome = (): void => {
 
 const submitCredentials = async (): Promise<void> => {
     formState.loading = true;
-    formState.errorMessage = null;
-    formState.successMessage = null;
 
     try {
         const response = await window.axios.post('/api/v1/wordpress/token', {
@@ -234,20 +256,42 @@ const submitCredentials = async (): Promise<void> => {
             password: formState.password,
         });
 
-        formState.successMessage = response.data?.message ?? 'Token stored successfully.';
+        const message = response.data?.message ?? 'Token stored successfully.';
+        addToast(message, 'success');
         formState.password = '';
     } catch (error: unknown) {
         if (isAxiosError(error) && error.response) {
             const fallback = 'Unable to authenticate with WordPress.';
             const message = (error.response.data as Record<string, unknown>)?.message;
-            formState.errorMessage =
+            const meaningfulMessage =
                 typeof message === 'string' && message.trim() !== '' ? message : fallback;
+
+            addToast(meaningfulMessage, 'error', true);
         } else {
-            formState.errorMessage = 'Unexpected error while contacting the API.';
+            addToast('Unexpected error while contacting the API.', 'error', true);
         }
     } finally {
         formState.loading = false;
     }
+};
+
+const addToast = (message: string, variant: Toast['variant'], sticky = false): void => {
+    const toast: Toast = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        message,
+        variant,
+        sticky,
+    };
+
+    toasts.value.push(toast);
+
+    if (!sticky) {
+        window.setTimeout(() => dismissToast(toast.id), 5000);
+    }
+};
+
+const dismissToast = (id: number): void => {
+    toasts.value = toasts.value.filter((toast) => toast.id !== id);
 };
 </script>
 
@@ -364,14 +408,6 @@ const submitCredentials = async (): Promise<void> => {
     color: rgba(226, 232, 240, 0.55);
 }
 
-.auth-feedback {
-    min-width: 200px;
-}
-
-.auth-feedback small {
-    display: block;
-}
-
 .auth-form {
     position: relative;
 }
@@ -385,5 +421,48 @@ const submitCredentials = async (): Promise<void> => {
     justify-content: center;
     border-radius: 0.75rem;
     backdrop-filter: blur(4px);
+}
+
+.toast-stack {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 1100;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.toast-card {
+    min-width: 280px;
+    max-width: 340px;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    color: #e2e8f0;
+}
+
+.toast-success {
+    border-color: rgba(74, 222, 128, 0.45);
+}
+
+.toast-error {
+    border-color: rgba(248, 113, 113, 0.55);
+}
+
+.toast-card .toast-body {
+    font-size: 0.95rem;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+    transition: all 0.25s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
 }
 </style>
