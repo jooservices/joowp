@@ -8,6 +8,7 @@ This document consolidates the core requirements and working agreements for the 
 - Frontend stack: Vue 3 powered by Vite; all UI work must mount through Vue entry points implemented with **TypeScript-only** code (no plain JavaScript).
 - UI toolkit: Latest Bootstrap and Font Awesome; centralize styling utilities and icons with these libraries.
 - Architecture must be strictly object-oriented and adhere to SOLID principles at all levels (services, controllers, console commands, etc.).
+- Adopt a **dark theme aesthetic** across all user-facing surfaces and shared assets.
 
 ## Modular Structure
 - Use `nwidart/laravel-modules` to encapsulate business domains.

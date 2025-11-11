@@ -1,76 +1,190 @@
 <template>
-    <div class="container py-5">
-        <header class="text-center mb-5">
-            <h1 class="display-5 fw-semibold mb-3">
-                {{ title }}
-            </h1>
-            <p class="lead text-muted mb-0">
-                Build modular Laravel applications with Vue, Bootstrap, and Font Awesome out of the box.
-            </p>
-        </header>
-
-        <section class="row g-4">
-            <article class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center gap-3 mb-3 text-primary">
-                            <span class="fa-solid fa-layer-group fa-2x"></span>
-                            <h2 class="h5 mb-0">Domain Modules</h2>
-                        </div>
-                        <p class="card-text text-secondary">
-                            Encapsulate business areas with <code>nwidart/laravel-modules</code>. Keep cross-cutting abstractions
-                            inside the Core module and inject contracts everywhere else.
-                        </p>
+    <div class="welcome-wrapper">
+        <section v-if="displayWelcome" class="hero container">
+            <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+                <div class="col-12 col-lg-6 text-center text-lg-start">
+                    <span class="badge rounded-pill bg-secondary-subtle text-uppercase tracking-wide mb-3">
+                        {{ strapline }}
+                    </span>
+                    <h1 class="display-4 fw-bold lh-1 text-gradient mb-4">
+                        Welcome to JOOwp
+                    </h1>
+                    <p class="lead text-light-emphasis mb-4">
+                        A modern, modular Laravel platform crafted for WordPress-powered experiences. TypeScript-first frontend,
+                        SOLID backend design, and comprehensive automation—ready for your next project launch.
+                    </p>
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        <button type="button" class="btn btn-primary btn-lg px-4 shadow" @click="dismissWelcome">
+                            Enter Platform
+                        </button>
+                        <a
+                            class="btn btn-outline-light btn-lg px-4"
+                            href="docs/principles.md"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Read Engineering Principles
+                        </a>
                     </div>
                 </div>
-            </article>
-
-            <article class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center gap-3 mb-3 text-success">
-                            <span class="fa-solid fa-check-double fa-2x"></span>
-                            <h2 class="h5 mb-0">Quality Pipeline</h2>
+                <div class="col-12 col-lg-6">
+                    <div class="glass-panel shadow-lg">
+                        <div class="row g-4">
+                            <article class="col-12">
+                                <div class="feature-tile text-start">
+                                    <div class="icon-wrapper text-primary mb-3">
+                                        <span class="fa-solid fa-layer-group fa-2x"></span>
+                                    </div>
+                                    <h2 class="h4 text-white mb-2">Modular by Design</h2>
+                                    <p class="text-secondary mb-0">
+                                        Each business capability lives in its own module. Shared services reside in the `Core`
+                                        module for clean cross-cutting boundaries.
+                                    </p>
+                                </div>
+                            </article>
+                            <article class="col-12">
+                                <div class="feature-tile text-start">
+                                    <div class="icon-wrapper text-info mb-3">
+                                        <span class="fa-solid fa-code-branch fa-2x"></span>
+                                    </div>
+                                    <h2 class="h4 text-white mb-2">WordPress REST SDK</h2>
+                                    <p class="text-secondary mb-0">
+                                        Guzzle-powered SDK wraps the WordPress REST API for reliable posts, media, taxonomy, and
+                                        search integrations.
+                                    </p>
+                                </div>
+                            </article>
+                            <article class="col-12">
+                                <div class="feature-tile text-start">
+                                    <div class="icon-wrapper text-success mb-3">
+                                        <span class="fa-solid fa-shield-halved fa-2x"></span>
+                                    </div>
+                                    <h2 class="h4 text-white mb-2">Quality First</h2>
+                                    <p class="text-secondary mb-0">
+                                        Mandatory unit tests, enforced static analysis, and dark-themed UI standards keep the
+                                        platform polished and predictable.
+                                    </p>
+                                </div>
+                            </article>
                         </div>
-                        <p class="card-text text-secondary">
-                            Run <code>composer lint</code> before every commit to execute Pint, PHPCS, PHPMD, and PHPStan in the
-                            enforced order. Keep suppressions rare and documented.
-                        </p>
                     </div>
                 </div>
-            </article>
-
-            <article class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center gap-3 mb-3 text-warning">
-                            <span class="fa-solid fa-vial-circle-check fa-2x"></span>
-                            <h2 class="h5 mb-0">Integration Tests</h2>
-                        </div>
-                        <p class="card-text text-secondary">
-                            Each module must ship an end-to-end “golden path” test. Favor Laravel testing helpers and stub external
-                            integrations only when absolutely necessary.
-                        </p>
-                    </div>
-                </div>
-            </article>
+            </div>
         </section>
 
-        <footer class="mt-5 text-center">
-            <a
-                class="btn btn-primary btn-lg shadow-sm px-4"
-                href="https://laravel.com/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                <span class="fa-solid fa-compass me-2"></span>
-                Explore Laravel Docs
-            </a>
-        </footer>
+        <section v-else class="container py-5 returning">
+            <div class="card bg-body-secondary border-0 shadow-sm">
+                <div class="card-body d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
+                    <div>
+                        <h2 class="h3 text-white mb-2">Welcome back to JOOwp</h2>
+                        <p class="text-secondary mb-0">
+                            You have already seen the onboarding experience. Dive straight into your workflow or revisit the
+                            guides whenever you need a refresher.
+                        </p>
+                    </div>
+                    <div class="d-flex gap-3">
+                        <a
+                            class="btn btn-primary px-4"
+                            href="docs/guides/core-wordpress-sdk.md"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            WordPress SDK Guide
+                        </a>
+                        <button type="button" class="btn btn-outline-light px-4" @click="resetWelcome">
+                            Replay Welcome
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </template>
 
 <script setup lang="ts">
-const title: string = 'JOOservices Platform Starter';
+import { onMounted, ref } from 'vue';
+
+const STORAGE_KEY = 'joowp.welcome.seen';
+const strapline = 'Modular Laravel • WordPress Ready • Dark Aesthetic';
+const displayWelcome = ref(false);
+
+const setSeen = (): void => window.localStorage.setItem(STORAGE_KEY, 'true');
+
+onMounted(() => {
+    const hasSeen = window.localStorage.getItem(STORAGE_KEY);
+    displayWelcome.value = !hasSeen;
+
+    if (!hasSeen) {
+        setSeen();
+    }
+});
+
+const dismissWelcome = (): void => {
+    displayWelcome.value = false;
+};
+
+const resetWelcome = (): void => {
+    window.localStorage.removeItem(STORAGE_KEY);
+    displayWelcome.value = true;
+    setSeen();
+};
 </script>
 
+<style scoped>
+.welcome-wrapper {
+    min-height: 100vh;
+    background: radial-gradient(circle at top left, #202635, #0d0f16 55%);
+    color: #f9fafb;
+}
+
+.hero {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #60a5fa, #22d3ee 60%, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+            background-clip: text;
+}
+
+.glass-panel {
+    background: rgba(17, 24, 39, 0.65);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 2.5rem;
+    backdrop-filter: blur(18px);
+}
+
+.feature-tile {
+    padding: 1.5rem;
+    border-radius: 1.25rem;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.feature-tile:hover {
+    transform: translateY(-6px);
+    border-color: rgba(96, 165, 250, 0.4);
+}
+
+.icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: rgba(148, 163, 184, 0.1);
+}
+
+.returning .card {
+    background: rgba(15, 23, 42, 0.85);
+}
+
+.tracking-wide {
+    letter-spacing: 0.1rem;
+}
+</style>
