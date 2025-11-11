@@ -36,8 +36,8 @@ This document consolidates the core requirements and working agreements for the 
 - Always write code, comments, commit messages, and documentation in English, regardless of communication language.
 - Every new feature must be accompanied by an updated or new guide under `/docs`; never ship functionality without documentation.
 - Review all documentation under `/docs` before starting any task.
+- Treat the [WordPress REST API glossary](https://developer.wordpress.org/rest-api/glossary/) as mandatory reading and the canonical source of terminology for our API work; new endpoints, resources, and docs must align with its definitions.
 - Follow Laravel’s official standards and conventions rigorously; align new code with the latest framework guidance and best practices.
 - Favor design patterns that reinforce SOLID (e.g., interfaces, dependency inversion, factories, strategy objects).
 - Avoid tight coupling to framework facades inside domain logic; prefer constructor-injected abstractions.
 - Keep modules independent by communicating only through explicit contracts or shared services published by `Core`.
-
