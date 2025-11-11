@@ -647,7 +647,6 @@ const clearRememberedToken = async (): Promise<void> => {
     align-items: center;
     height: 100%;
 }
-}
 
 .remembered-summary {
     background: rgba(15, 23, 42, 0.5);
