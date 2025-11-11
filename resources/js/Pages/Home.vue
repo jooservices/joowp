@@ -49,57 +49,80 @@
                             </div>
                         </transition-group>
                     </div>
-                    <form
-                        class="ms-auto d-flex flex-column flex-sm-row align-items-sm-center gap-2 auth-form"
-                        autocomplete="off"
-                        @submit.prevent="submitCredentials"
-                    >
-                        <label class="visually-hidden" for="nav-username">Username</label>
-                        <input
-                            id="nav-username"
-                            type="text"
-                            class="form-control form-control-sm"
-                            placeholder="Username"
-                            aria-label="Username"
-                            v-model="formState.username"
-                            :disabled="formState.loading"
-                        />
-                        <label class="visually-hidden" for="nav-password">Password</label>
-                        <input
-                            id="nav-password"
-                            type="password"
-                            class="form-control form-control-sm"
-                            placeholder="Password"
-                            aria-label="Password"
-                            v-model="formState.password"
-                            :disabled="formState.loading"
-                        />
-                        <div class="remember-wrapper d-flex align-items-center gap-2">
+                    <template v-if="!isInitialising && !tokenStatus.remembered">
+                        <form
+                            class="ms-auto d-flex flex-column flex-sm-row align-items-sm-center gap-2 auth-form"
+                            autocomplete="off"
+                            @submit.prevent="submitCredentials"
+                        >
+                            <label class="visually-hidden" for="nav-username">Username</label>
                             <input
-                                id="remember-token"
-                                class="form-check-input remember-switch"
-                                type="checkbox"
-                                role="switch"
-                                aria-label="Remember token"
-                                v-model="formState.remember"
+                                id="nav-username"
+                                type="text"
+                                class="form-control form-control-sm"
+                                placeholder="Username"
+                                aria-label="Username"
+                                v-model="formState.username"
                                 :disabled="formState.loading"
                             />
-                            <label class="remember-label text-light-emphasis small mb-0" for="remember-token">
-                                Remember
-                            </label>
+                            <label class="visually-hidden" for="nav-password">Password</label>
+                            <input
+                                id="nav-password"
+                                type="password"
+                                class="form-control form-control-sm"
+                                placeholder="Password"
+                                aria-label="Password"
+                                v-model="formState.password"
+                                :disabled="formState.loading"
+                            />
+                            <div class="remember-wrapper d-flex align-items-center gap-2">
+                                <input
+                                    id="remember-token"
+                                    class="form-check-input remember-switch"
+                                    type="checkbox"
+                                    role="switch"
+                                    aria-label="Remember token"
+                                    v-model="formState.remember"
+                                    :disabled="formState.loading"
+                                />
+                                <label class="remember-label text-light-emphasis small mb-0" for="remember-token">
+                                    Remember
+                                </label>
+                            </div>
+                            <button
+                                type="submit"
+                                class="btn btn-primary btn-sm px-4 shadow-sm d-flex align-items-center gap-2"
+                                :disabled="isSubmitDisabled"
+                            >
+                                <span v-if="!formState.loading" class="fa-solid fa-arrow-right-to-bracket"></span>
+                                <span v-if="formState.loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                <span>{{ formState.loading ? 'Submitting…' : 'Log In' }}</span>
+                            </button>
+                        </form>
+                        <div v-if="formState.loading" class="auth-overlay">
+                            <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
                         </div>
-                        <button
-                            type="submit"
-                            class="btn btn-primary btn-sm px-4 shadow-sm d-flex align-items-center gap-2"
-                            :disabled="isSubmitDisabled"
-                        >
-                            <span v-if="!formState.loading" class="fa-solid fa-arrow-right-to-bracket"></span>
-                            <span v-if="formState.loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span>{{ formState.loading ? 'Submitting…' : 'Log In' }}</span>
-                        </button>
-                    </form>
-                    <div v-if="formState.loading" class="auth-overlay">
+                    </template>
+                    <template v-else-if="!isInitialising">
+                        <div class="ms-auto d-flex flex-column flex-sm-row align-items-sm-center gap-3 remembered-summary">
+                            <div class="token-chip">
+                                <span class="chip-label">Stored Token</span>
+                                <span class="chip-value">{{ tokenStatus.maskedToken ?? '••••••••' }}</span>
+                                <span v-if="tokenStatus.username" class="chip-caption">@{{ tokenStatus.username }}</span>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-outline-light btn-sm px-4 shadow-sm"
+                                @click="clearRememberedToken"
+                                :disabled="isClearingToken"
+                            >
+                                {{ isClearingToken ? 'Clearing…' : 'Forget' }}
+                            </button>
+                        </div>
+                    </template>
+                    <div v-if="isInitialising" class="ms-auto d-flex align-items-center gap-3 auth-initialising">
                         <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+                        <span class="text-light-emphasis small">Loading token status…</span>
                     </div>
                 </div>
             </div>
@@ -240,9 +263,17 @@ interface ApiResponse<TData> {
 interface TokenPayload {
     id: number | null;
     remembered: boolean;
+    masked_token: string | null;
+}
+
+interface TokenStatusPayload {
+    remembered: boolean;
+    masked_token: string | null;
+    username?: string;
 }
 
 type TokenResponse = ApiResponse<TokenPayload>;
+type TokenStatusResponse = ApiResponse<TokenStatusPayload>;
 
 const formState = reactive<FormState>({
     username: '',
@@ -252,6 +283,13 @@ const formState = reactive<FormState>({
 });
 
 const toasts = ref<Toast[]>([]);
+const tokenStatus = reactive<{ remembered: boolean; maskedToken: string | null; username: string | null }>({
+    remembered: false,
+    maskedToken: null,
+    username: null,
+});
+const isInitialising = ref(true);
+const isClearingToken = ref(false);
 
 const isSubmitDisabled = computed<boolean>(() => {
     if (formState.loading) {
@@ -270,6 +308,8 @@ onMounted(() => {
     if (!hasSeen) {
         setSeen();
     }
+
+    void loadRememberedToken();
 });
 
 const dismissWelcome = (): void => {
@@ -309,6 +349,8 @@ const submitCredentials = async (): Promise<void> => {
 
             return;
         }
+
+        updateTokenStatusFromPayload(payload.data);
 
         addToast(payload.message, 'success', false, titleFromCode(payload.code, 'success'));
         formState.password = '';
@@ -362,6 +404,12 @@ const titleFromCode = (code: string, variant: Toast['variant']): string => {
         if (code === 'wordpress.token_created') {
             return 'Token Stored';
         }
+        if (code === 'wordpress.token_cleared') {
+            return 'Token Cleared';
+        }
+        if (code === 'wordpress.token_remembered') {
+            return 'Remembered Token';
+        }
 
         return 'Success';
     }
@@ -377,6 +425,73 @@ const extractSourceStatus = (meta: Record<string, unknown>): number | null => {
     const status = meta.source_status;
 
     return typeof status === 'number' ? status : null;
+};
+
+const loadRememberedToken = async (): Promise<void> => {
+    try {
+        const response = await window.axios.get<TokenStatusResponse>('/api/v1/wordpress/token');
+        const payload = response.data;
+
+        if (!payload.ok) {
+            return;
+        }
+
+        updateTokenStatus(payload.data);
+    } catch (error: unknown) {
+        addToast('Unable to load remembered token.', 'error', true, 'WordPress Request Failed');
+    } finally {
+        isInitialising.value = false;
+    }
+};
+
+const updateTokenStatus = (data: TokenStatusPayload | null): void => {
+    const remembered = data?.remembered ?? false;
+
+    tokenStatus.remembered = remembered;
+    tokenStatus.maskedToken = data?.masked_token ?? null;
+    tokenStatus.username = data?.username ?? null;
+    formState.remember = remembered;
+    formState.username = remembered && data?.username ? data.username : '';
+    formState.password = '';
+};
+
+const updateTokenStatusFromPayload = (data: TokenPayload | null): void => {
+    const remembered = data?.remembered ?? false;
+    tokenStatus.remembered = remembered;
+    tokenStatus.maskedToken = data?.masked_token ?? null;
+
+    if (!remembered) {
+        tokenStatus.username = null;
+        return;
+    }
+
+    tokenStatus.username = formState.username.trim() !== '' ? formState.username.trim() : tokenStatus.username;
+};
+
+const clearRememberedToken = async (): Promise<void> => {
+    if (isClearingToken.value) {
+        return;
+    }
+
+    isClearingToken.value = true;
+
+    try {
+        const response = await window.axios.delete<TokenStatusResponse>('/api/v1/wordpress/token');
+
+        if (response.data.ok) {
+            updateTokenStatus(response.data.data);
+            addToast(response.data.message, 'success', false, titleFromCode(response.data.code, 'success'));
+            formState.username = '';
+            formState.password = '';
+            formState.remember = false;
+        } else {
+            addToast(response.data.message, 'error', true, titleFromCode(response.data.code, 'error'));
+        }
+    } catch (error: unknown) {
+        addToast('Unable to clear remembered token.', 'error', true, 'Unexpected Error');
+    } finally {
+        isClearingToken.value = false;
+    }
 };
 </script>
 
@@ -524,6 +639,44 @@ const extractSourceStatus = (meta: Record<string, unknown>): number | null => {
     border-radius: 9999px;
     background: rgba(15, 23, 42, 0.55);
     border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.remembered-summary {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 9999px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    padding: 0.4rem 0.75rem;
+}
+
+.token-chip {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.chip-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(226, 232, 240, 0.6);
+}
+
+.chip-value {
+    font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.95rem;
+    color: rgba(248, 250, 252, 0.95);
+}
+
+.chip-caption {
+    font-size: 0.75rem;
+    color: rgba(148, 163, 184, 0.8);
+}
+
+.auth-initialising {
+    padding: 0.3rem 0.75rem;
+    border-radius: 0.75rem;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .toast-stack {

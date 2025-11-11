@@ -44,6 +44,7 @@ final class WordPressTokenTest extends TestCase
             'message' => 'Token stored successfully.',
             'data' => [
                 'remembered' => true,
+                'username' => 'demo',
             ],
         ]);
 
@@ -55,6 +56,7 @@ final class WordPressTokenTest extends TestCase
         $this->assertSame('demo', $token->username);
         $this->assertSame('demo-token', $token->token);
         $this->assertSame('demo@example.com', $token->payload['user_email']);
+        $this->assertSame('demo***ken', $response->json('data.masked_token'));
     }
 
     public function test_it_returns_failure_envelope_when_sdk_fails(): void
@@ -119,6 +121,68 @@ final class WordPressTokenTest extends TestCase
             'message' => 'Token retrieved successfully.',
             'data' => [
                 'remembered' => false,
+                'masked_token' => null,
+            ],
+        ]);
+
+        $this->assertDatabaseCount('wp_tokens', 0);
+    }
+
+    public function test_it_returns_absent_state_when_no_token_remembered(): void
+    {
+        $response = $this->getJson('/api/v1/wordpress/token');
+
+        $response->assertOk();
+        $response->assertJson([
+            'ok' => true,
+            'code' => 'wordpress.token_absent',
+            'data' => [
+                'remembered' => false,
+                'masked_token' => null,
+            ],
+        ]);
+    }
+
+    public function test_it_returns_masked_token_when_token_exists(): void
+    {
+        WpToken::query()->create([
+            'username' => 'demo',
+            'token' => 'demo-token',
+            'payload' => ['token' => 'demo-token'],
+        ]);
+
+        $response = $this->getJson('/api/v1/wordpress/token');
+
+        $response->assertOk();
+        $response->assertJson([
+            'ok' => true,
+            'code' => 'wordpress.token_remembered',
+            'data' => [
+                'remembered' => true,
+                'masked_token' => 'demo***ken',
+                'username' => 'demo',
+            ],
+        ]);
+    }
+
+    public function test_it_clears_remembered_token(): void
+    {
+        WpToken::query()->create([
+            'username' => 'demo',
+            'token' => 'demo-token',
+            'payload' => ['token' => 'demo-token'],
+        ]);
+
+        $response = $this->deleteJson('/api/v1/wordpress/token');
+
+        $response->assertOk();
+        $response->assertJson([
+            'ok' => true,
+            'code' => 'wordpress.token_cleared',
+            'data' => [
+                'remembered' => false,
+                'masked_token' => null,
+                'username' => null,
             ],
         ]);
 

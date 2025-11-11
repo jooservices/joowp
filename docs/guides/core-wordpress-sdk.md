@@ -59,6 +59,7 @@ All responses are returned as decoded associative arrays. Transport failures and
 
 - Frontend credentials are posted to the platform’s own API (`POST /api/v1/wordpress/token`)—never directly to WordPress. The controller validates payloads, calls `SdkContract::token()`, persists the raw response inside the `wp_tokens` table, and returns a high-level status message to the browser.
 - The navbar login form exposes a **Remember token** switch. When enabled, the resulting JWT is upserted (never duplicated) into the `wp_tokens` table; otherwise the token is used transiently and not persisted.
+- `GET /api/v1/wordpress/token` returns the current token status (`remembered`, `masked_token`, and `username`) so SPA clients can hide credential input once a token is stored. `DELETE /api/v1/wordpress/token` forgets the remembered token and re-enables manual sign-in.
 - The `wp_tokens` schema stores the original username, the issued JWT, and the entire response body (JSON) for auditing or later refresh workflows. Subsequent WordPress SDK calls automatically attach the most recently remembered token as a `Bearer` header.
 - Every outbound call to WordPress (including the JWT exchange) is logged via the dedicated `external` log channel. Request logs capture HTTP method, URI, and sanitized payloads (passwords masked); response logs mask sensitive tokens but retain enough structure for traceability.
 
