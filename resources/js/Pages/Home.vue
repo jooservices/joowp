@@ -121,11 +121,13 @@
                             </div>
                             <button
                                 type="button"
-                                class="btn btn-outline-light btn-sm px-4 shadow-sm"
+                                class="btn btn-danger btn-sm d-flex align-items-center gap-2 forget-btn shadow-sm"
                                 @click="clearRememberedToken"
                                 :disabled="isClearingToken"
                             >
-                                {{ isClearingToken ? 'Clearing…' : 'Forget' }}
+                                <i v-if="!isClearingToken" class="fa-solid fa-trash-can"></i>
+                                <span>{{ isClearingToken ? 'Clearing…' : 'Forget' }}</span>
+                                <span v-if="isClearingToken" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                             </button>
                         </div>
                     </template>
@@ -691,6 +693,11 @@ const clearRememberedToken = async (): Promise<void> => {
     font-size: 0.75rem;
     letter-spacing: 0.05em;
     text-transform: lowercase;
+}
+
+.forget-btn {
+    border: none;
+    padding-inline: 1.1rem;
 }
 
 .auth-initialising {
