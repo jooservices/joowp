@@ -1,0 +1,19 @@
+parameters:
+    level: max
+    paths:
+        - app
+        - bootstrap
+        - config
+        - database
+        - routes
+        - tests
+    tmpDir: storage/framework/phpstan
+    checkMissingIterableValueType: true
+    checkGenericClassInNonGenericObjectType: true
+    checkImplicitMixed: true
+    reportUnmatchedIgnoredErrors: true
+    scanFiles:
+        - bootstrap/app.php
+    ignoreErrors:
+        - '#\\bassert\\b#'
+

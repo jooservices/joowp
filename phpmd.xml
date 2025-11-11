@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<ruleset name="Project PHPMD Ruleset"
+    xmlns="https://pmd.github.io/pmd-6.30.0/ruleset">
+    <description>
+        SOLID-oriented PHPMD rules aligned with the project's code-quality workflow.
+    </description>
+
+    <file>app</file>
+    <file>bootstrap</file>
+    <file>config</file>
+    <file>database</file>
+    <file>routes</file>
+    <file>tests</file>
+
+    <exclude-pattern>*/database/factories/*</exclude-pattern>
+    <exclude-pattern>*/database/seeders/*</exclude-pattern>
+
+    <rule ref="rulesets/cleancode.xml"/>
+    <rule ref="rulesets/codesize.xml"/>
+    <rule ref="rulesets/design.xml"/>
+</ruleset>
+
