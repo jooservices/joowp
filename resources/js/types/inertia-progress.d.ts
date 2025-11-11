@@ -7,12 +7,6 @@ declare module '@inertiajs/progress' {
         minimum?: number;
     }
 
-    interface ProgressInstance {
-        init(options?: ProgressOptions): void;
-    }
-
-    const progress: ProgressInstance;
-
-    export default progress;
+    export function start(options?: ProgressOptions): void;
 }
 
