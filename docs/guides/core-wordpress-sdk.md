@@ -8,13 +8,12 @@ The SDK reads its configuration from `config('core.wordpress')`. Provide the fol
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| `WP_URL` | Canonical base URL of the WordPress site used across modules for links, previews, and integrations. Must match the production domain (e.g. `https://soulevil.com`). | _required_ |
-| `WORDPRESS_API_BASE_URI` | Absolute base URI to the target WordPress site (`.../wp-json/`). | `https://wordpress.org/wp-json/` |
+| `WP_URL` | Canonical base URL of the WordPress site (no trailing slash). Every API request derives from this host by appending `/wp-json/…`. In shared environments this must be `https://soulevil.com`. | `https://soulevil.com` |
 | `WORDPRESS_API_TIMEOUT` | Request timeout (seconds). | `10` |
 | `WORDPRESS_API_USER_AGENT` | Custom user agent header for audit/compliance. | `CoreWordPressSdk/1.0` |
 | `WORDPRESS_API_NAMESPACE` | API namespace segment. | `wp/v2` |
 
-`WP_URL` should always resolve to the same host as `WORDPRESS_API_BASE_URI` (minus the `/wp-json/` segment) so UI links, previews, and background jobs point at the correct WordPress instance.
+The SDK automatically transforms `WP_URL` into the REST base (`{WP_URL}/wp-json/`), ensuring UI links, previews, background jobs, and server-side integrations all target the same domain.
 
 ### Service binding
 
