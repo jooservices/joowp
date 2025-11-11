@@ -40,6 +40,7 @@ This document consolidates the core requirements and working agreements for the 
 - Review all documentation under `/docs` before starting any task.
 - Treat the [WordPress REST API glossary](https://developer.wordpress.org/rest-api/glossary/) as mandatory reading and the canonical source of terminology for our API work; new endpoints, resources, and docs must align with its definitions.
 - Do not commit or merge changes until they have been explicitly reviewed and approved by the project owner (ask for approval before finalising any commit).
+- Always use descriptive, meaningful commit messages; commits should clearly communicate the change set without needing to read the diff.
 - Follow Laravel’s official standards and conventions rigorously; align new code with the latest framework guidance and best practices.
 - Favor design patterns that reinforce SOLID (e.g., interfaces, dependency inversion, factories, strategy objects).
 - Avoid tight coupling to framework facades inside domain logic; prefer constructor-injected abstractions.
