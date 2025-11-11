@@ -86,5 +86,12 @@ interface SdkContract
      * @return array<int|string, mixed>
      */
     public function get(string $resource, array $query = []): array;
+
+    /**
+     * Exchange WordPress credentials for a JWT token.
+     *
+     * @return array<string, mixed>
+     */
+    public function token(string $username, string $password): array;
 }
 

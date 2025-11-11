@@ -52,8 +52,15 @@ The contract exposes convenience helpers for the most common content resources:
 | `users(array $query = [])` | `/wp/v2/users` |
 | `search(array $query = [])` | `/wp/v2/search` |
 | `get(string $resource, array $query = [])` | Generic getter for any resource under the configured namespace. |
+| `token(string $username, string $password)` | `/jwt-auth/v1/token` |
 
 All responses are returned as decoded associative arrays. Transport failures and malformed JSON are normalised to `Modules\Core\Services\WordPress\Exceptions\WordPressRequestException` for consistent error handling.
+
+### Authentication flow
+
+- Frontend credentials are posted to the platform’s own API (`POST /api/v1/wordpress/token`)—never directly to WordPress. The controller validates payloads, calls `SdkContract::token()`, persists the raw response inside the `wp_tokens` table, and returns a high-level status message to the browser.
+- The `wp_tokens` schema stores the original username, the issued JWT, and the entire response body (JSON) for auditing or later refresh workflows.
+- Every outbound call to WordPress (including the JWT exchange) is logged via the dedicated `external` log channel. Request logs capture HTTP method, URI, and sanitized payloads (passwords masked); response logs mask sensitive tokens but retain enough structure for traceability.
 
 ### Testing strategy
 

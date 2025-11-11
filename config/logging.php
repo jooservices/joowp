@@ -125,6 +125,13 @@ return [
             'days' => env('LOG_ACTION_DAYS', 30),
             'replace_placeholders' => true,
         ],
+        'external' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/external.log'),
+            'level' => env('LOG_EXTERNAL_LEVEL', 'info'),
+            'days' => env('LOG_EXTERNAL_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
 
         'null' => [
             'driver' => 'monolog',

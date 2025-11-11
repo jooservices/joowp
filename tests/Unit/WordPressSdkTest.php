@@ -8,6 +8,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Facades\Log;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
 use Modules\Core\Services\WordPress\Sdk;
@@ -32,6 +33,8 @@ class WordPressSdkTest extends TestCase
 
         $client = $this->mockClient('GET', 'wp/v2/posts', ['query' => ['per_page' => 5]], $response);
 
+        $this->expectExternalLogs(2);
+
         $sdk = $this->makeSdk($client);
 
         $posts = $sdk->posts(['per_page' => 5]);
@@ -55,11 +58,71 @@ class WordPressSdkTest extends TestCase
             ->with('GET', 'wp/v2/posts', ['query' => []])
             ->andThrow($exception);
 
+        $this->expectExternalLogs(2);
+
         $sdk = $this->makeSdk($client);
 
         $this->expectException(WordPressRequestException::class);
 
         $sdk->posts();
+    }
+
+    #[Test]
+    public function it_exchanges_credentials_for_a_token(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode([
+                'token' => 'abcdef123456',
+                'user_email' => 'demo@example.com',
+            ], JSON_THROW_ON_ERROR)
+        );
+
+        $client = $this->mockClient(
+            'POST',
+            'jwt-auth/v1/token',
+            [
+                'json' => [
+                    'username' => 'demo',
+                    'password' => 'secret',
+                ],
+            ],
+            $response
+        );
+
+        Log::shouldReceive('channel')
+            ->twice()
+            ->with('external')
+            ->andReturnSelf();
+
+        Log::shouldReceive('info')
+            ->once()
+            ->withArgs(function (string $message, array $context): bool {
+                $this->assertSame('Dispatching WordPress API request', $message);
+                $this->assertSame('POST', $context['method']);
+                $this->assertSame('jwt-auth/v1/token', $context['uri']);
+                $this->assertSame('se****', $context['options']['json']['password']);
+
+                return true;
+            });
+
+        Log::shouldReceive('info')
+            ->once()
+            ->withArgs(function (string $message, array $context): bool {
+                $this->assertSame('Received WordPress API response', $message);
+                $this->assertSame('POST', $context['method']);
+                $this->assertSame('jwt-auth/v1/token', $context['uri']);
+                $this->assertSame('abcd*****456', $context['response']['token']);
+
+                return true;
+            });
+
+        $sdk = $this->makeSdk($client);
+
+        $result = $sdk->token('demo', 'secret');
+
+        $this->assertSame('abcdef123456', $result['token']);
     }
 
     private function mockClient(string $method, string $uri, array $options, ResponseInterface $response): ClientInterface&MockInterface
@@ -78,6 +141,17 @@ class WordPressSdkTest extends TestCase
     private function makeSdk(ClientInterface $client): SdkContract
     {
         return new Sdk($client);
+    }
+
+    private function expectExternalLogs(int $times): void
+    {
+        Log::shouldReceive('channel')
+            ->times($times)
+            ->with('external')
+            ->andReturnSelf();
+
+        Log::shouldReceive('info')
+            ->times($times);
     }
 }
 

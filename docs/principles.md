@@ -9,6 +9,7 @@ This document consolidates the core requirements and working agreements for the 
 - UI toolkit: Latest Bootstrap and Font Awesome; centralize styling utilities and icons with these libraries.
 - Architecture must be strictly object-oriented and adhere to SOLID principles at all levels (services, controllers, console commands, etc.).
 - Adopt a **dark theme aesthetic** across all user-facing surfaces and shared assets.
+- Client applications never call third-party services directly; every request must hit our Laravel API, which then orchestrates any downstream integrations.
 
 ## Modular Structure
 - Use `nwidart/laravel-modules` to encapsulate business domains.
@@ -41,6 +42,7 @@ This document consolidates the core requirements and working agreements for the 
 - Treat the [WordPress REST API glossary](https://developer.wordpress.org/rest-api/glossary/) as mandatory reading and the canonical source of terminology for our API work; new endpoints, resources, and docs must align with its definitions.
 - Do not commit or merge changes until they have been explicitly reviewed and approved by the project owner (ask for approval before finalising any commit).
 - Always use descriptive, meaningful commit messages; commits should clearly communicate the change set without needing to read the diff.
+- Always capture and persist structured logs (request metadata, sanitized payload, response summary) for every third-party API integration triggered by the platform.
 - Follow Laravel’s official standards and conventions rigorously; align new code with the latest framework guidance and best practices.
 - Favor design patterns that reinforce SOLID (e.g., interfaces, dependency inversion, factories, strategy objects).
 - Avoid tight coupling to framework facades inside domain logic; prefer constructor-injected abstractions.

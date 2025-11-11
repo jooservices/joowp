@@ -20,7 +20,11 @@
                     <div class="navbar-nav">
                         <a class="nav-link active" aria-current="page" href="/">Home</a>
                     </div>
-                    <form class="ms-auto d-flex flex-column flex-sm-row gap-2 auth-form" autocomplete="off">
+                    <form
+                        class="ms-auto d-flex flex-column flex-sm-row gap-2 auth-form"
+                        autocomplete="off"
+                        @submit.prevent="submitCredentials"
+                    >
                         <label class="visually-hidden" for="nav-username">Username</label>
                         <input
                             id="nav-username"
@@ -28,6 +32,8 @@
                             class="form-control form-control-sm"
                             placeholder="Username"
                             aria-label="Username"
+                            v-model="formState.username"
+                            :disabled="formState.loading"
                         />
                         <label class="visually-hidden" for="nav-password">Password</label>
                         <input
@@ -36,11 +42,26 @@
                             class="form-control form-control-sm"
                             placeholder="Password"
                             aria-label="Password"
+                            v-model="formState.password"
+                            :disabled="formState.loading"
                         />
-                        <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm d-flex align-items-center gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary btn-sm px-4 shadow-sm d-flex align-items-center gap-2"
+                            :disabled="isSubmitDisabled"
+                        >
                             <span class="fa-solid fa-arrow-right-to-bracket"></span>
-                            <span>Log In</span>
+                            <span v-if="!formState.loading">Log In</span>
+                            <span v-else>Submitting...</span>
                         </button>
+                        <div class="auth-feedback text-sm-end">
+                            <small v-if="formState.successMessage" class="text-success fw-medium">
+                                {{ formState.successMessage }}
+                            </small>
+                            <small v-else-if="formState.errorMessage" class="text-danger fw-medium">
+                                {{ formState.errorMessage }}
+                            </small>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -147,11 +168,36 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { isAxiosError } from 'axios';
 
 const STORAGE_KEY = 'joowp.welcome.seen';
 const strapline = 'Modular Laravel • WordPress Ready • Dark Aesthetic';
 const displayWelcome = ref(false);
+
+interface FormState {
+    username: string;
+    password: string;
+    loading: boolean;
+    successMessage: string | null;
+    errorMessage: string | null;
+}
+
+const formState = reactive<FormState>({
+    username: '',
+    password: '',
+    loading: false,
+    successMessage: null,
+    errorMessage: null,
+});
+
+const isSubmitDisabled = computed<boolean>(() => {
+    if (formState.loading) {
+        return true;
+    }
+
+    return formState.username.trim() === '' || formState.password.trim() === '';
+});
 
 const setSeen = (): void => window.localStorage.setItem(STORAGE_KEY, 'true');
 
@@ -172,6 +218,33 @@ const resetWelcome = (): void => {
     window.localStorage.removeItem(STORAGE_KEY);
     displayWelcome.value = true;
     setSeen();
+};
+
+const submitCredentials = async (): Promise<void> => {
+    formState.loading = true;
+    formState.errorMessage = null;
+    formState.successMessage = null;
+
+    try {
+        const response = await window.axios.post('/api/v1/wordpress/token', {
+            username: formState.username,
+            password: formState.password,
+        });
+
+        formState.successMessage = response.data?.message ?? 'Token stored successfully.';
+        formState.password = '';
+    } catch (error: unknown) {
+        if (isAxiosError(error) && error.response) {
+            const fallback = 'Unable to authenticate with WordPress.';
+            const message = (error.response.data as Record<string, unknown>)?.message;
+            formState.errorMessage =
+                typeof message === 'string' && message.trim() !== '' ? message : fallback;
+        } else {
+            formState.errorMessage = 'Unexpected error while contacting the API.';
+        }
+    } finally {
+        formState.loading = false;
+    }
 };
 </script>
 
@@ -286,5 +359,13 @@ const resetWelcome = (): void => {
 
 .auth-form .form-control::placeholder {
     color: rgba(226, 232, 240, 0.55);
+}
+
+.auth-feedback {
+    min-width: 200px;
+}
+
+.auth-feedback small {
+    display: block;
 }
 </style>
