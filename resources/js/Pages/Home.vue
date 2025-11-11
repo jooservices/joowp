@@ -269,15 +269,21 @@ const resetWelcome = (): void => {
     min-width: 180px;
     background: rgba(15, 23, 42, 0.8);
     border-color: rgba(148, 163, 184, 0.4);
-    color: #f8fafc;
+    color: #e2e8f0;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .auth-form .form-control:focus {
     border-color: #60a5fa;
     box-shadow: 0 0 0 0.15rem rgba(96, 165, 250, 0.25);
+    background: rgba(15, 23, 42, 0.95);
 }
 
 .auth-form .btn {
     white-space: nowrap;
+}
+
+.auth-form .form-control::placeholder {
+    color: rgba(226, 232, 240, 0.55);
 }
 </style>
