@@ -49,3 +49,4 @@ This document consolidates the core requirements and working agreements for the 
 - Keep modules independent by communicating only through explicit contracts or shared services published by `Core`.
 - Any asynchronous UI interaction (AJAX/SPA request) must indicate loading by disabling relevant controls, showing a spinner, and dimming the context to prevent duplicate submissions.
 - Fatal errors surfaced to users must render as sticky toast notifications (fixed position, dismissible by the user). Non-fatal notices may auto-dismiss after a short delay but must still use the toast pattern for consistency.
+- Binary user interactions (on/off choices) must use switch-style controls for clarity; avoid plain checkboxes for SPA toggles.
