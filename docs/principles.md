@@ -31,6 +31,8 @@ This document consolidates the core requirements and working agreements for the 
 - **Unit coverage is mandatory**: every class, feature, and function must have accompanying unit tests—no exceptions or deferrals.
 - Prefer Laravel’s testing helpers and real collaborators. Mocks and fakes are allowed only for narrowly scoped scenarios (e.g., unavoidable external integrations) and must be justified on a case-by-case basis.
 - Every mutation (CRUD or equivalent state change) must emit a structured audit log capturing actor identity, timestamp, fields changed, and the before & after payload. This requirement is non-negotiable and must be enforced in implementation and code review.
+- **Always** run the full automated test suite (type checks, unit, feature, and integration tests) before declaring a task finished or creating a commit; “tests green” is a non-negotiable gate for every change.
+- **Always run the full automated test suite (type checks + PHP tests) before marking a task complete or creating a commit.** No exceptions—“tests pass” is a gate for every change.
 
 ## Working Agreements
 - Always write code, comments, commit messages, and documentation in English, regardless of communication language.
