@@ -74,19 +74,15 @@
                             v-model="formState.password"
                             :disabled="formState.loading"
                         />
-                        <div class="form-check form-switch remember-switch text-start text-sm-center">
-                            <input
-                                id="remember-token"
-                                class="form-check-input"
-                                type="checkbox"
-                                role="switch"
-                                v-model="formState.remember"
-                                :disabled="formState.loading"
-                            />
-                            <label class="form-check-label small text-light-emphasis" for="remember-token">
-                                Remember
-                            </label>
-                        </div>
+                        <input
+                            id="remember-token"
+                            class="form-check-input remember-switch"
+                            type="checkbox"
+                            role="switch"
+                            aria-label="Remember token"
+                            v-model="formState.remember"
+                            :disabled="formState.loading"
+                        />
                         <button
                             type="submit"
                             class="btn btn-primary btn-sm px-4 shadow-sm d-flex align-items-center gap-2"
@@ -508,14 +504,9 @@ const extractSourceStatus = (meta: Record<string, unknown>): number | null => {
 }
 
 .remember-switch {
-    padding: 0.25rem 0.75rem;
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 0.75rem;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-}
-
-.remember-switch .form-check-input {
     cursor: pointer;
+    width: 2.8rem;
+    height: 1.4rem;
 }
 
 .toast-stack {
