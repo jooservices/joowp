@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Models\WpToken;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Sdk;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -177,7 +178,15 @@ class CoreServiceProvider extends ServiceProvider
                 ],
             ]);
 
-            return new Sdk($client, $config['namespace'] ?? 'wp/v2');
+            $tokenResolver = static fn (): ?string => WpToken::query()
+                ->latest('updated_at')
+                ->value('token');
+
+            return new Sdk(
+                client: $client,
+                tokenResolver: $tokenResolver,
+                namespace: $config['namespace'] ?? 'wp/v2'
+            );
         });
     }
 }

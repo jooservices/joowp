@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Core\Services\WordPress;
 
+use Closure;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
@@ -16,11 +17,14 @@ use Psr\Http\Message\ResponseInterface;
 final class Sdk implements SdkContract
 {
     private readonly string $namespace;
+    private readonly ?Closure $tokenResolver;
 
     public function __construct(
         private readonly ClientInterface $client,
+        ?Closure $tokenResolver = null,
         string $namespace = 'wp/v2'
     ) {
+        $this->tokenResolver = $tokenResolver;
         $this->namespace = trim($namespace, '/');
     }
 
@@ -106,6 +110,8 @@ final class Sdk implements SdkContract
     private function request(string $method, string $uri, array $options = [], bool $withinNamespace = true): array
     {
         $endpoint = $withinNamespace ? $this->qualifyResource($uri) : ltrim($uri, '/');
+
+        $options = $this->mergeAuthorization($options);
 
         $this->logExternalDispatch($method, $endpoint, $options);
 
@@ -197,6 +203,10 @@ final class Sdk implements SdkContract
      */
     private function sanitizeOptions(array $options): array
     {
+        if (isset($options['headers']['Authorization']) && is_string($options['headers']['Authorization'])) {
+            $options['headers']['Authorization'] = $this->maskToken($options['headers']['Authorization']);
+        }
+
         if (isset($options['json']['password']) && is_string($options['json']['password'])) {
             $options['json']['password'] = Str::mask($options['json']['password'], '*', 2);
         }
@@ -235,6 +245,44 @@ final class Sdk implements SdkContract
         return Str::substr($token, 0, $visiblePrefix)
             .str_repeat('*', $maskLength)
             .Str::substr($token, -$visibleSuffix);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return array<string, mixed>
+     */
+    private function mergeAuthorization(array $options): array
+    {
+        $headers = $options['headers'] ?? [];
+        $authorization = $this->authorizationHeaders();
+
+        if ($authorization !== []) {
+            $headers = array_merge($headers, $authorization);
+            $options['headers'] = $headers;
+        }
+
+        return $options;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function authorizationHeaders(): array
+    {
+        if ($this->tokenResolver === null) {
+            return [];
+        }
+
+        $token = ($this->tokenResolver)();
+
+        if (! is_string($token) || $token === '') {
+            return [];
+        }
+
+        return [
+            'Authorization' => 'Bearer '.$token,
+        ];
     }
 }
 

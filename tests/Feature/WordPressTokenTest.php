@@ -32,6 +32,7 @@ final class WordPressTokenTest extends TestCase
         $response = $this->postJson('/api/v1/wordpress/token', [
             'username' => 'demo',
             'password' => 'secret',
+            'remember' => true,
         ]);
 
         $response->assertOk();
@@ -41,6 +42,9 @@ final class WordPressTokenTest extends TestCase
             'code' => 'wordpress.token_created',
             'status' => 201,
             'message' => 'Token stored successfully.',
+            'data' => [
+                'remembered' => true,
+            ],
         ]);
 
         $this->assertDatabaseCount('wp_tokens', 1);
@@ -69,6 +73,7 @@ final class WordPressTokenTest extends TestCase
         $response = $this->postJson('/api/v1/wordpress/token', [
             'username' => 'demo',
             'password' => 'invalid',
+            'remember' => true,
         ]);
 
         $response->assertOk();
@@ -78,9 +83,45 @@ final class WordPressTokenTest extends TestCase
             'code' => 'wordpress.token_failed',
             'status' => 502,
             'message' => 'Upstream failure',
+            'meta' => [
+                'remembered' => false,
+            ],
         ]);
 
         $this->assertSame(502, $response->json('meta.source_status'));
+        $this->assertDatabaseCount('wp_tokens', 0);
+    }
+
+    public function test_it_does_not_store_token_when_not_remembered(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $sdk
+            ->shouldReceive('token')
+            ->once()
+            ->with('demo', 'secret')
+            ->andReturn([
+                'token' => 'demo-token',
+            ]);
+
+        $this->app->instance(SdkContract::class, $sdk);
+
+        $response = $this->postJson('/api/v1/wordpress/token', [
+            'username' => 'demo',
+            'password' => 'secret',
+            'remember' => false,
+        ]);
+
+        $response->assertOk();
+        $response->assertJson([
+            'ok' => true,
+            'code' => 'wordpress.token_created',
+            'status' => 201,
+            'message' => 'Token retrieved successfully.',
+            'data' => [
+                'remembered' => false,
+            ],
+        ]);
+
         $this->assertDatabaseCount('wp_tokens', 0);
     }
 }

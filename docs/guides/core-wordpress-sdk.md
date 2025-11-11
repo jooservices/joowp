@@ -58,7 +58,8 @@ All responses are returned as decoded associative arrays. Transport failures and
 ### Authentication flow
 
 - Frontend credentials are posted to the platform’s own API (`POST /api/v1/wordpress/token`)—never directly to WordPress. The controller validates payloads, calls `SdkContract::token()`, persists the raw response inside the `wp_tokens` table, and returns a high-level status message to the browser.
-- The `wp_tokens` schema stores the original username, the issued JWT, and the entire response body (JSON) for auditing or later refresh workflows.
+- The navbar login form exposes a **Remember token** switch. When enabled, the resulting JWT is upserted (never duplicated) into the `wp_tokens` table; otherwise the token is used transiently and not persisted.
+- The `wp_tokens` schema stores the original username, the issued JWT, and the entire response body (JSON) for auditing or later refresh workflows. Subsequent WordPress SDK calls automatically attach the most recently remembered token as a `Bearer` header.
 - Every outbound call to WordPress (including the JWT exchange) is logged via the dedicated `external` log channel. Request logs capture HTTP method, URI, and sanitized payloads (passwords masked); response logs mask sensitive tokens but retain enough structure for traceability.
 
 ### API response envelope
@@ -73,7 +74,8 @@ All HTTP responses from the Core module are wrapped in a consistent JSON envelop
   "message": "WordPress API returned 502 (Bad Gateway)",
   "data": null,
   "meta": {
-    "source_status": 502
+    "source_status": 502,
+    "remembered": false
   }
 }
 ```
@@ -83,7 +85,7 @@ All HTTP responses from the Core module are wrapped in a consistent JSON envelop
 - `status`: logical status code (success responses may still report `201`, even though the HTTP transport status remains 200).
 - `message`: human-readable summary for UI toasts/logs.
 - `data`: payload for successful outcomes, or `null` on failure.
-- `meta`: optional diagnostics (upstream status codes, request identifiers, etc.).
+- `meta`: optional diagnostics (upstream status codes, request identifiers, whether the token was remembered, etc.).
 
 Laravel helpers in `App\Http\Responses\ApiResponse` generate this shape (see `ApiResponse::success()` / `ApiResponse::error()`).
 

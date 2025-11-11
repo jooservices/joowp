@@ -21,6 +21,7 @@ final class TokenController extends Controller
     public function __invoke(StoreWpTokenRequest $request): JsonResponse
     {
         $credentials = $request->validated();
+        $remember = (bool) ($credentials['remember'] ?? false);
 
         try {
             $response = $this->sdk->token(
@@ -35,23 +36,32 @@ final class TokenController extends Controller
                 message: $exception->getMessage(),
                 meta: array_filter([
                     'source_status' => $sourceStatus,
+                    'remembered' => false,
                 ], static fn ($value) => $value !== null),
                 data: null,
                 status: $sourceStatus ?? 502
             );
         }
 
-        $token = WpToken::create([
-            'username' => $credentials['username'],
-            'token' => $response['token'] ?? '',
-            'payload' => $response,
-        ]);
+        $token = null;
+        if ($remember) {
+            $token = WpToken::updateOrCreate(
+                ['username' => $credentials['username']],
+                [
+                    'token' => $response['token'] ?? '',
+                    'payload' => $response,
+                ]
+            );
+        }
+
+        $message = $remember ? 'Token stored successfully.' : 'Token retrieved successfully.';
 
         return ApiResponse::success(
             code: 'wordpress.token_created',
-            message: 'Token stored successfully.',
+            message: $message,
             data: [
-                'id' => $token->id,
+                'id' => $token?->id,
+                'remembered' => $remember,
             ],
             status: 201
         );

@@ -50,7 +50,7 @@
                         </transition-group>
                     </div>
                     <form
-                        class="ms-auto d-flex flex-column flex-sm-row gap-2 auth-form"
+                        class="ms-auto d-flex flex-column flex-sm-row align-items-sm-center gap-2 auth-form"
                         autocomplete="off"
                         @submit.prevent="submitCredentials"
                     >
@@ -74,6 +74,19 @@
                             v-model="formState.password"
                             :disabled="formState.loading"
                         />
+                        <div class="form-check form-switch remember-switch text-start text-sm-center">
+                            <input
+                                id="remember-token"
+                                class="form-check-input"
+                                type="checkbox"
+                                role="switch"
+                                v-model="formState.remember"
+                                :disabled="formState.loading"
+                            />
+                            <label class="form-check-label small text-light-emphasis" for="remember-token">
+                                Remember token
+                            </label>
+                        </div>
                         <button
                             type="submit"
                             class="btn btn-primary btn-sm px-4 shadow-sm d-flex align-items-center gap-2"
@@ -203,6 +216,7 @@ interface FormState {
     username: string;
     password: string;
     loading: boolean;
+    remember: boolean;
 }
 
 interface Toast {
@@ -222,12 +236,18 @@ interface ApiResponse<TData> {
     meta: Record<string, unknown>;
 }
 
-type TokenResponse = ApiResponse<{ id: number }>;
+interface TokenPayload {
+    id: number | null;
+    remembered: boolean;
+}
+
+type TokenResponse = ApiResponse<TokenPayload>;
 
 const formState = reactive<FormState>({
     username: '',
     password: '',
     loading: false,
+    remember: false,
 });
 
 const toasts = ref<Toast[]>([]);
@@ -268,6 +288,7 @@ const submitCredentials = async (): Promise<void> => {
         const response = await window.axios.post<TokenResponse>('/api/v1/wordpress/token', {
             username: formState.username,
             password: formState.password,
+            remember: formState.remember,
         });
 
         const payload = response.data;
@@ -288,13 +309,9 @@ const submitCredentials = async (): Promise<void> => {
             return;
         }
 
-        addToast(
-            payload.message,
-            'success',
-            false,
-            titleFromCode(payload.code, 'success')
-        );
+        addToast(payload.message, 'success', false, titleFromCode(payload.code, 'success'));
         formState.password = '';
+        formState.remember = payload.data?.remembered ?? formState.remember;
     } catch (error: unknown) {
         if (isAxiosError(error) && error.response) {
             const fallback = 'Unable to authenticate with WordPress.';
@@ -488,6 +505,17 @@ const extractSourceStatus = (meta: Record<string, unknown>): number | null => {
     justify-content: center;
     border-radius: 0.75rem;
     backdrop-filter: blur(4px);
+}
+
+.remember-switch {
+    padding: 0.25rem 0.75rem;
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 0.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.remember-switch .form-check-input {
+    cursor: pointer;
 }
 
 .toast-stack {
