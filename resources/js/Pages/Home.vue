@@ -623,22 +623,30 @@ const clearRememberedToken = async (): Promise<void> => {
     backdrop-filter: blur(4px);
 }
 
-.remember-switch {
-    cursor: pointer;
-    width: 2.8rem;
-    height: 1.4rem;
-}
-
-.remember-label {
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-}
-
 .remember-wrapper {
     padding: 0.2rem 0.6rem;
     border-radius: 9999px;
     background: rgba(15, 23, 42, 0.55);
     border: 1px solid rgba(148, 163, 184, 0.18);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.remember-switch {
+    cursor: pointer;
+    width: 2.8rem;
+    height: 1.4rem;
+    margin: 0;
+}
+
+.remember-label {
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
 }
 
 .remembered-summary {
