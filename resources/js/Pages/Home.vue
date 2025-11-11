@@ -37,8 +37,9 @@
                             placeholder="Password"
                             aria-label="Password"
                         />
-                        <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm">
-                            Log In
+                        <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm d-flex align-items-center gap-2">
+                            <span class="fa-solid fa-arrow-right-to-bracket"></span>
+                            <span>Log In</span>
                         </button>
                     </form>
                 </div>
