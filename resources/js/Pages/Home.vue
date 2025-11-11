@@ -29,14 +29,16 @@
                                 :class="`toast-${toast.variant}`"
                             >
                                 <div class="toast-body d-flex align-items-start gap-3">
-                                    <span
-                                        class="fa-solid"
-                                        :class="toast.variant === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'"
-                                        aria-hidden="true"
-                                    ></span>
-                                    <span class="flex-fill">
-                                        {{ toast.message }}
-                                    </span>
+                                    <div class="toast-icon-wrapper" aria-hidden="true">
+                                        <span
+                                            class="fa-solid"
+                                            :class="toast.variant === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-check'"
+                                        ></span>
+                                    </div>
+                                    <div class="toast-content flex-fill">
+                                        <p class="toast-title mb-1">{{ toast.title }}</p>
+                                        <p class="toast-message mb-0">{{ toast.message }}</p>
+                                    </div>
                                     <button
                                         type="button"
                                         class="btn-close btn-close-white ms-2"
@@ -206,6 +208,7 @@ interface FormState {
 interface Toast {
     id: number;
     message: string;
+    title: string;
     variant: 'success' | 'error';
     sticky: boolean;
 }
@@ -257,7 +260,7 @@ const submitCredentials = async (): Promise<void> => {
         });
 
         const message = response.data?.message ?? 'Token stored successfully.';
-        addToast(message, 'success');
+        addToast(message, 'success', false, 'Token Stored');
         formState.password = '';
     } catch (error: unknown) {
         if (isAxiosError(error) && error.response) {
@@ -266,19 +269,25 @@ const submitCredentials = async (): Promise<void> => {
             const meaningfulMessage =
                 typeof message === 'string' && message.trim() !== '' ? message : fallback;
 
-            addToast(meaningfulMessage, 'error', true);
+            addToast(meaningfulMessage, 'error', true, 'WordPress Request Failed');
         } else {
-            addToast('Unexpected error while contacting the API.', 'error', true);
+            addToast('Unexpected error while contacting the API.', 'error', true, 'Unexpected Error');
         }
     } finally {
         formState.loading = false;
     }
 };
 
-const addToast = (message: string, variant: Toast['variant'], sticky = false): void => {
+const addToast = (
+    message: string,
+    variant: Toast['variant'],
+    sticky = false,
+    title?: string
+): void => {
     const toast: Toast = {
         id: Date.now() + Math.floor(Math.random() * 1000),
         message,
+        title: title ?? defaultToastTitle(variant),
         variant,
         sticky,
     };
@@ -293,6 +302,9 @@ const addToast = (message: string, variant: Toast['variant'], sticky = false): v
 const dismissToast = (id: number): void => {
     toasts.value = toasts.value.filter((toast) => toast.id !== id);
 };
+
+const defaultToastTitle = (variant: Toast['variant']): string =>
+    variant === 'success' ? 'Success' : 'Action Required';
 </script>
 
 <style scoped>
@@ -436,23 +448,64 @@ const dismissToast = (id: number): void => {
 .toast-card {
     min-width: 280px;
     max-width: 340px;
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    background: rgba(15, 23, 42, 0.9);
-    border: 1px solid rgba(148, 163, 184, 0.25);
-    color: #e2e8f0;
+    border-radius: 1rem;
+    padding: 0.9rem 1.1rem;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.82));
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    color: #f8fafc;
+    box-shadow: 0 20px 45px rgba(8, 11, 19, 0.35);
+    backdrop-filter: blur(18px);
 }
 
 .toast-success {
-    border-color: rgba(74, 222, 128, 0.45);
+    border-color: rgba(45, 212, 191, 0.55);
+    box-shadow: 0 18px 35px rgba(34, 197, 94, 0.25);
 }
 
 .toast-error {
-    border-color: rgba(248, 113, 113, 0.55);
+    border-color: rgba(252, 165, 165, 0.6);
+    box-shadow: 0 18px 35px rgba(248, 113, 113, 0.28);
 }
 
 .toast-card .toast-body {
     font-size: 0.95rem;
+}
+
+.toast-icon-wrapper {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: inherit;
+}
+
+.toast-success .toast-icon-wrapper {
+    background: rgba(16, 185, 129, 0.22);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #5ef1c5;
+}
+
+.toast-error .toast-icon-wrapper {
+    background: rgba(248, 113, 113, 0.18);
+    border-color: rgba(248, 113, 113, 0.45);
+    color: #fda4af;
+}
+
+.toast-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(248, 250, 252, 0.82);
+}
+
+.toast-message {
+    font-size: 0.95rem;
+    color: rgba(226, 232, 240, 0.9);
 }
 
 .toast-enter-active,
