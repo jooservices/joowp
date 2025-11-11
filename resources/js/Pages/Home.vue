@@ -84,7 +84,7 @@
                                 :disabled="formState.loading"
                             />
                             <label class="form-check-label small text-light-emphasis" for="remember-token">
-                                Remember token
+                                Remember
                             </label>
                         </div>
                         <button
