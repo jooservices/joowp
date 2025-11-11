@@ -659,6 +659,8 @@ const clearRememberedToken = async (): Promise<void> => {
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
+    max-width: 10rem;
+    overflow: hidden;
 }
 
 .chip-label {
@@ -672,6 +674,9 @@ const clearRememberedToken = async (): Promise<void> => {
     font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-size: 0.95rem;
     color: rgba(248, 250, 252, 0.95);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .chip-caption {
