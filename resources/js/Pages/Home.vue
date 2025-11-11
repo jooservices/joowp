@@ -50,9 +50,9 @@
                             class="btn btn-primary btn-sm px-4 shadow-sm d-flex align-items-center gap-2"
                             :disabled="isSubmitDisabled"
                         >
-                            <span class="fa-solid fa-arrow-right-to-bracket"></span>
-                            <span v-if="!formState.loading">Log In</span>
-                            <span v-else>Submitting...</span>
+                            <span v-if="!formState.loading" class="fa-solid fa-arrow-right-to-bracket"></span>
+                            <span v-if="formState.loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span>{{ formState.loading ? 'Submitting…' : 'Log In' }}</span>
                         </button>
                         <div class="auth-feedback text-sm-end">
                             <small v-if="formState.successMessage" class="text-success fw-medium">
@@ -63,6 +63,9 @@
                             </small>
                         </div>
                     </form>
+                    <div v-if="formState.loading" class="auth-overlay">
+                        <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -367,5 +370,20 @@ const submitCredentials = async (): Promise<void> => {
 
 .auth-feedback small {
     display: block;
+}
+
+.auth-form {
+    position: relative;
+}
+
+.auth-overlay {
+    position: absolute;
+    inset: -0.5rem;
+    background: rgba(2, 6, 23, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    backdrop-filter: blur(4px);
 }
 </style>

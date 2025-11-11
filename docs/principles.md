@@ -47,3 +47,4 @@ This document consolidates the core requirements and working agreements for the 
 - Favor design patterns that reinforce SOLID (e.g., interfaces, dependency inversion, factories, strategy objects).
 - Avoid tight coupling to framework facades inside domain logic; prefer constructor-injected abstractions.
 - Keep modules independent by communicating only through explicit contracts or shared services published by `Core`.
+- Any asynchronous UI interaction (AJAX/SPA request) must indicate loading by disabling relevant controls, showing a spinner, and dimming the context to prevent duplicate submissions.
