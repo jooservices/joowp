@@ -61,6 +61,32 @@ All responses are returned as decoded associative arrays. Transport failures and
 - The `wp_tokens` schema stores the original username, the issued JWT, and the entire response body (JSON) for auditing or later refresh workflows.
 - Every outbound call to WordPress (including the JWT exchange) is logged via the dedicated `external` log channel. Request logs capture HTTP method, URI, and sanitized payloads (passwords masked); response logs mask sensitive tokens but retain enough structure for traceability.
 
+### API response envelope
+
+All HTTP responses from the Core module are wrapped in a consistent JSON envelope so SPA clients never need to rely on transport status codes:
+
+```json
+{
+  "ok": false,
+  "code": "wordpress.token_failed",
+  "status": 502,
+  "message": "WordPress API returned 502 (Bad Gateway)",
+  "data": null,
+  "meta": {
+    "source_status": 502
+  }
+}
+```
+
+- `ok`: boolean success flag (`true` on success, `false` otherwise).
+- `code`: machine-readable identifier scoped by domain/action.
+- `status`: logical status code (success responses may still report `201`, even though the HTTP transport status remains 200).
+- `message`: human-readable summary for UI toasts/logs.
+- `data`: payload for successful outcomes, or `null` on failure.
+- `meta`: optional diagnostics (upstream status codes, request identifiers, etc.).
+
+Laravel helpers in `App\Http\Responses\ApiResponse` generate this shape (see `ApiResponse::success()` / `ApiResponse::error()`).
+
 ### Testing strategy
 
 `tests/Unit/WordPressSdkTest.php` demonstrates the recommended approach: mock the `ClientInterface` for narrow “transport” scenarios and validate higher-level workflows with real HTTP calls in dedicated integration tests if required. This keeps the SDK simple, SOLID-compliant, and fully covered by automated tests.

@@ -138,7 +138,7 @@ final class Sdk implements SdkContract
                 JSON_THROW_ON_ERROR
             );
         } catch (JsonException $exception) {
-            throw WordPressRequestException::invalidJson($method, $uri, $exception);
+            throw WordPressRequestException::invalidJson($method, $uri, $exception, $response->getStatusCode());
         }
 
         return $decoded;

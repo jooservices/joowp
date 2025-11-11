@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Core\Http\Controllers\WordPress;
 
+use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Modules\Core\Http\Requests\StoreWpTokenRequest;
@@ -27,9 +28,17 @@ final class TokenController extends Controller
                 $credentials['password']
             );
         } catch (WordPressRequestException $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 502);
+            $sourceStatus = $exception->sourceStatus();
+
+            return ApiResponse::error(
+                code: 'wordpress.token_failed',
+                message: $exception->getMessage(),
+                meta: array_filter([
+                    'source_status' => $sourceStatus,
+                ], static fn ($value) => $value !== null),
+                data: null,
+                status: $sourceStatus ?? 502
+            );
         }
 
         $token = WpToken::create([
@@ -38,12 +47,14 @@ final class TokenController extends Controller
             'payload' => $response,
         ]);
 
-        return response()->json([
-            'message' => 'Token stored successfully.',
-            'data' => [
+        return ApiResponse::success(
+            code: 'wordpress.token_created',
+            message: 'Token stored successfully.',
+            data: [
                 'id' => $token->id,
             ],
-        ], 201);
+            status: 201
+        );
     }
 }
 

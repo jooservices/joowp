@@ -213,6 +213,17 @@ interface Toast {
     sticky: boolean;
 }
 
+interface ApiResponse<TData> {
+    ok: boolean;
+    code: string;
+    status: number;
+    message: string;
+    data: TData | null;
+    meta: Record<string, unknown>;
+}
+
+type TokenResponse = ApiResponse<{ id: number }>;
+
 const formState = reactive<FormState>({
     username: '',
     password: '',
@@ -254,13 +265,35 @@ const submitCredentials = async (): Promise<void> => {
     formState.loading = true;
 
     try {
-        const response = await window.axios.post('/api/v1/wordpress/token', {
+        const response = await window.axios.post<TokenResponse>('/api/v1/wordpress/token', {
             username: formState.username,
             password: formState.password,
         });
 
-        const message = response.data?.message ?? 'Token stored successfully.';
-        addToast(message, 'success', false, 'Token Stored');
+        const payload = response.data;
+
+        if (!payload.ok) {
+            const metaStatus = extractSourceStatus(payload.meta);
+            const message = metaStatus
+                ? `${payload.message} (Upstream status: ${metaStatus})`
+                : payload.message;
+
+            addToast(
+                message,
+                'error',
+                true,
+                titleFromCode(payload.code, 'error')
+            );
+
+            return;
+        }
+
+        addToast(
+            payload.message,
+            'success',
+            false,
+            titleFromCode(payload.code, 'success')
+        );
         formState.password = '';
     } catch (error: unknown) {
         if (isAxiosError(error) && error.response) {
@@ -305,6 +338,28 @@ const dismissToast = (id: number): void => {
 
 const defaultToastTitle = (variant: Toast['variant']): string =>
     variant === 'success' ? 'Success' : 'Action Required';
+
+const titleFromCode = (code: string, variant: Toast['variant']): string => {
+    if (variant === 'success') {
+        if (code === 'wordpress.token_created') {
+            return 'Token Stored';
+        }
+
+        return 'Success';
+    }
+
+    if (code === 'wordpress.token_failed') {
+        return 'WordPress Request Failed';
+    }
+
+    return 'Action Required';
+};
+
+const extractSourceStatus = (meta: Record<string, unknown>): number | null => {
+    const status = meta.source_status;
+
+    return typeof status === 'number' ? status : null;
+};
 </script>
 
 <style scoped>
