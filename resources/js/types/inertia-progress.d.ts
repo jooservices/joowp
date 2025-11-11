@@ -7,6 +7,6 @@ declare module '@inertiajs/progress' {
         minimum?: number;
     }
 
-    export function start(options?: ProgressOptions): void;
+    export function setupProgress(options?: ProgressOptions): void;
 }
 

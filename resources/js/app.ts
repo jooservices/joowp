@@ -5,11 +5,11 @@ import { createApp, h, type DefineComponent } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createPinia } from 'pinia';
-import { start as startProgressIndicator } from '@inertiajs/progress';
+import { setupProgress } from '@inertiajs/progress';
 
 const appName = (import.meta.env.VITE_APP_NAME as string | undefined) ?? 'Laravel';
 
-startProgressIndicator({
+setupProgress({
     color: '#2563eb',
     includeCSS: true,
     showSpinner: true,
