@@ -8,10 +8,13 @@ The SDK reads its configuration from `config('core.wordpress')`. Provide the fol
 
 | Variable | Description | Default |
 | --- | --- | --- |
+| `WP_URL` | Canonical base URL of the WordPress site used across modules for links, previews, and integrations. Must match the production domain (e.g. `https://soulevil.com`). | _required_ |
 | `WORDPRESS_API_BASE_URI` | Absolute base URI to the target WordPress site (`.../wp-json/`). | `https://wordpress.org/wp-json/` |
 | `WORDPRESS_API_TIMEOUT` | Request timeout (seconds). | `10` |
 | `WORDPRESS_API_USER_AGENT` | Custom user agent header for audit/compliance. | `CoreWordPressSdk/1.0` |
 | `WORDPRESS_API_NAMESPACE` | API namespace segment. | `wp/v2` |
+
+`WP_URL` should always resolve to the same host as `WORDPRESS_API_BASE_URI` (minus the `/wp-json/` segment) so UI links, previews, and background jobs point at the correct WordPress instance.
 
 ### Service binding
 
@@ -55,4 +58,3 @@ All responses are returned as decoded associative arrays. Transport failures and
 ### Testing strategy
 
 `tests/Unit/WordPressSdkTest.php` demonstrates the recommended approach: mock the `ClientInterface` for narrow “transport” scenarios and validate higher-level workflows with real HTTP calls in dedicated integration tests if required. This keeps the SDK simple, SOLID-compliant, and fully covered by automated tests.
-
