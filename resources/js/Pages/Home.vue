@@ -105,10 +105,19 @@
                     </template>
                     <template v-else-if="!isInitialising">
                         <div class="ms-auto d-flex flex-column flex-sm-row align-items-sm-center gap-3 remembered-summary">
-                            <div class="token-chip">
-                                <span class="chip-label">Stored Token</span>
-                                <span class="chip-value">{{ tokenStatus.maskedToken ?? '••••••••' }}</span>
-                                <span v-if="tokenStatus.username" class="chip-caption">@{{ tokenStatus.username }}</span>
+                            <div class="input-group input-group-sm token-input-group">
+                                <span class="input-group-text">
+                                    <i class="fa-solid fa-key"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    :value="tokenStatus.maskedToken ?? '••••••••'"
+                                    readonly
+                                />
+                                <span v-if="tokenStatus.username" class="input-group-text token-username">
+                                    @{{ tokenStatus.username }}
+                                </span>
                             </div>
                             <button
                                 type="button"
@@ -652,36 +661,36 @@ const clearRememberedToken = async (): Promise<void> => {
     background: rgba(15, 23, 42, 0.5);
     border-radius: 9999px;
     border: 1px solid rgba(148, 163, 184, 0.18);
-    padding: 0.4rem 0.75rem;
+    padding: 0.35rem 0.75rem;
 }
 
-.token-chip {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    max-width: 10rem;
-    overflow: hidden;
+.token-input-group {
+    min-width: 16rem;
+    max-width: 20rem;
 }
 
-.chip-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: rgba(226, 232, 240, 0.6);
+.token-input-group .input-group-text {
+    background: rgba(15, 23, 42, 0.8);
+    border: none;
+    color: rgba(248, 250, 252, 0.85);
 }
 
-.chip-value {
+.token-input-group .form-control {
     font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-    font-size: 0.95rem;
-    color: rgba(248, 250, 252, 0.95);
-    white-space: nowrap;
-    overflow: hidden;
+    background: rgba(15, 23, 42, 0.7);
+    border: none;
+    color: rgba(248, 250, 252, 0.9);
     text-overflow: ellipsis;
 }
 
-.chip-caption {
+.token-input-group .form-control:focus {
+    box-shadow: none;
+}
+
+.token-username {
     font-size: 0.75rem;
-    color: rgba(148, 163, 184, 0.8);
+    letter-spacing: 0.05em;
+    text-transform: lowercase;
 }
 
 .auth-initialising {
