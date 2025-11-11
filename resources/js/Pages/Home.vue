@@ -1,5 +1,49 @@
 <template>
     <div class="welcome-wrapper">
+        <nav class="navbar navbar-expand-lg navbar-dark top-nav shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand fw-semibold text-uppercase tracking-wide" href="/">
+                    JOOwp
+                </a>
+                <button
+                    class="navbar-toggler border-0"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#welcomeNav"
+                    aria-controls="welcomeNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div id="welcomeNav" class="collapse navbar-collapse">
+                    <div class="navbar-nav">
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    </div>
+                    <form class="ms-auto d-flex flex-column flex-sm-row gap-2 auth-form" autocomplete="off">
+                        <label class="visually-hidden" for="nav-username">Username</label>
+                        <input
+                            id="nav-username"
+                            type="text"
+                            class="form-control form-control-sm"
+                            placeholder="Username"
+                            aria-label="Username"
+                        />
+                        <label class="visually-hidden" for="nav-password">Password</label>
+                        <input
+                            id="nav-password"
+                            type="password"
+                            class="form-control form-control-sm"
+                            placeholder="Password"
+                            aria-label="Password"
+                        />
+                        <button type="button" class="btn btn-primary btn-sm px-4 shadow-sm">
+                            Log In
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
         <section v-if="displayWelcome" class="hero container">
             <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
                 <div class="col-12 col-lg-6 text-center text-lg-start">
@@ -194,5 +238,46 @@ const resetWelcome = (): void => {
 
 .returning-card .card-body .text-muted {
     color: rgba(226, 232, 240, 0.7) !important;
+}
+
+.top-nav {
+    background: rgba(10, 15, 27, 0.92);
+    backdrop-filter: blur(15px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+.top-nav .navbar-brand {
+    color: #f8fafc;
+    letter-spacing: 0.08rem;
+}
+
+.top-nav .nav-link {
+    font-weight: 500;
+    color: rgba(248, 250, 252, 0.85);
+}
+
+.top-nav .nav-link.active,
+.top-nav .nav-link:focus,
+.top-nav .nav-link:hover {
+    color: #60a5fa;
+}
+
+.auth-form .form-control {
+    min-width: 180px;
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(148, 163, 184, 0.4);
+    color: #f8fafc;
+}
+
+.auth-form .form-control:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 0.15rem rgba(96, 165, 250, 0.25);
+}
+
+.auth-form .btn {
+    white-space: nowrap;
 }
 </style>
