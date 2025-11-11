@@ -1,0 +1,58 @@
+## Core WordPress SDK
+
+The Core module ships with a reusable SDK for talking to the [WordPress REST API](https://developer.wordpress.org/rest-api/reference/). The SDK wraps common endpoints with a type-safe, testable service based on Guzzle so application code stays focused on business logic.
+
+### Configuration
+
+The SDK reads its configuration from `config('core.wordpress')`. Provide the following environment variables to customise connectivity:
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `WORDPRESS_API_BASE_URI` | Absolute base URI to the target WordPress site (`.../wp-json/`). | `https://wordpress.org/wp-json/` |
+| `WORDPRESS_API_TIMEOUT` | Request timeout (seconds). | `10` |
+| `WORDPRESS_API_USER_AGENT` | Custom user agent header for audit/compliance. | `CoreWordPressSdk/1.0` |
+| `WORDPRESS_API_NAMESPACE` | API namespace segment. | `wp/v2` |
+
+### Service binding
+
+`Modules\Core\Providers\CoreServiceProvider` registers the SDK in the container as `Modules\Core\Services\WordPress\Contracts\SdkContract`. The binding uses a dedicated `GuzzleHttp\Client` instance configured with the options above.
+
+```php
+use Modules\Core\Services\WordPress\Contracts\SdkContract;
+
+final readonly class FetchLatestPosts
+{
+    public function __construct(private SdkContract $sdk)
+    {
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function __invoke(): array
+    {
+        return $this->sdk->posts(['per_page' => 5]);
+    }
+}
+```
+
+The contract exposes convenience helpers for the most common content resources:
+
+| Method | Target endpoint |
+| --- | --- |
+| `posts(array $query = [])` | `/wp/v2/posts` |
+| `post(int $id, array $query = [])` | `/wp/v2/posts/{id}` |
+| `pages(array $query = [])` | `/wp/v2/pages` |
+| `media(array $query = [])` | `/wp/v2/media` |
+| `categories(array $query = [])` | `/wp/v2/categories` |
+| `tags(array $query = [])` | `/wp/v2/tags` |
+| `users(array $query = [])` | `/wp/v2/users` |
+| `search(array $query = [])` | `/wp/v2/search` |
+| `get(string $resource, array $query = [])` | Generic getter for any resource under the configured namespace. |
+
+All responses are returned as decoded associative arrays. Transport failures and malformed JSON are normalised to `Modules\Core\Services\WordPress\Exceptions\WordPressRequestException` for consistent error handling.
+
+### Testing strategy
+
+`tests/Unit/WordPressSdkTest.php` demonstrates the recommended approach: mock the `ClientInterface` for narrow “transport” scenarios and validate higher-level workflows with real HTTP calls in dedicated integration tests if required. This keeps the SDK simple, SOLID-compliant, and fully covered by automated tests.
+

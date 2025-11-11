@@ -33,6 +33,7 @@ This document consolidates the core requirements and working agreements for the 
 
 ## Working Agreements
 - Always write code, comments, commit messages, and documentation in English, regardless of communication language.
+- Every new feature must be accompanied by an updated or new guide under `/docs`; never ship functionality without documentation.
 - Review all documentation under `/docs` before starting any task.
 - Follow Laravel’s official standards and conventions rigorously; align new code with the latest framework guidance and best practices.
 - Favor design patterns that reinforce SOLID (e.g., interfaces, dependency inversion, factories, strategy objects).
