@@ -73,11 +73,11 @@
         </section>
 
         <section v-else class="container py-5 returning">
-            <div class="card bg-body-secondary border-0 shadow-sm">
+                    <div class="card returning-card border-0 shadow-sm">
                 <div class="card-body d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
                     <div>
-                        <h2 class="h3 text-white mb-2">Welcome back to JOOwp</h2>
-                        <p class="text-secondary mb-0">
+                                <h2 class="h3 text-light mb-2">Welcome back to JOOwp</h2>
+                                <p class="text-muted mb-0">
                             You have already seen the onboarding experience. Dive straight into your workflow or revisit the
                             guides whenever you need a refresher.
                         </p>
@@ -186,5 +186,13 @@ const resetWelcome = (): void => {
 
 .tracking-wide {
     letter-spacing: 0.1rem;
+}
+
+.returning-card .card-body {
+    color: #e2e8f0;
+}
+
+.returning-card .card-body .text-muted {
+    color: rgba(226, 232, 240, 0.7) !important;
 }
 </style>

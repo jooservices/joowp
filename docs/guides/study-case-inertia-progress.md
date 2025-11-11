@@ -17,6 +17,7 @@
 1. **Never trust local stubs blindly**—confirm against the actual package.
 2. **UI changes require browser verification** in addition to type + PHP tests.
 3. **Document every regression** so future work checks these failure modes.
+4. **Dark UI ≠ unreadable UI**—always verify contrast ratios in the browser before shipping any styling.
 
 Always revisit this note before touching SPA bootstrap code or third-party helpers.
 
