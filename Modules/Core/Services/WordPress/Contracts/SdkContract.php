@@ -9,8 +9,7 @@ interface SdkContract
     /**
      * Retrieve a collection of posts.
      *
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<int|string, mixed>
      */
     public function posts(array $query = []): array;
@@ -18,8 +17,7 @@ interface SdkContract
     /**
      * Retrieve a single post by its identifier.
      *
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<string, mixed>
      */
     public function post(int $id, array $query = []): array;
@@ -27,8 +25,7 @@ interface SdkContract
     /**
      * Retrieve a collection of pages.
      *
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<int|string, mixed>
      */
     public function pages(array $query = []): array;
@@ -36,8 +33,7 @@ interface SdkContract
     /**
      * Retrieve media assets.
      *
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<int|string, mixed>
      */
     public function media(array $query = []): array;
@@ -45,17 +41,47 @@ interface SdkContract
     /**
      * Retrieve taxonomy categories.
      *
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<int|string, mixed>
      */
     public function categories(array $query = []): array;
 
     /**
+     * Retrieve a single category.
+     *
+     * @param  array<string, mixed>  $query
+     * @return array<string, mixed>
+     */
+    public function category(int $id, array $query = []): array;
+
+    /**
+     * Create a category.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    public function createCategory(array $payload): array;
+
+    /**
+     * Update a category.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    public function updateCategory(int $id, array $payload): array;
+
+    /**
+     * Delete a category.
+     *
+     * @param  array<string, mixed>  $query
+     * @return array<string, mixed>
+     */
+    public function deleteCategory(int $id, array $query = []): array;
+
+    /**
      * Retrieve taxonomy tags.
      *
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<int|string, mixed>
      */
     public function tags(array $query = []): array;
@@ -63,8 +89,7 @@ interface SdkContract
     /**
      * Retrieve users.
      *
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<int|string, mixed>
      */
     public function users(array $query = []): array;
@@ -72,8 +97,7 @@ interface SdkContract
     /**
      * Perform a full-text search.
      *
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<int|string, mixed>
      */
     public function search(array $query = []): array;
@@ -81,8 +105,7 @@ interface SdkContract
     /**
      * Execute a raw GET request against the API.
      *
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<int|string, mixed>
      */
     public function get(string $resource, array $query = []): array;
@@ -94,4 +117,3 @@ interface SdkContract
      */
     public function token(string $username, string $password): array;
 }
-

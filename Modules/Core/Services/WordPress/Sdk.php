@@ -17,6 +17,7 @@ use Psr\Http\Message\ResponseInterface;
 final class Sdk implements SdkContract
 {
     private readonly string $namespace;
+
     private readonly ?Closure $tokenResolver;
 
     public function __construct(
@@ -51,6 +52,38 @@ final class Sdk implements SdkContract
     public function categories(array $query = []): array
     {
         return $this->get('categories', $query);
+    }
+
+    public function category(int $id, array $query = []): array
+    {
+        return $this->get(sprintf('categories/%d', $id), $query);
+    }
+
+    public function createCategory(array $payload): array
+    {
+        return $this->request(
+            method: 'POST',
+            uri: 'categories',
+            options: ['json' => $payload]
+        );
+    }
+
+    public function updateCategory(int $id, array $payload): array
+    {
+        return $this->request(
+            method: 'POST',
+            uri: sprintf('categories/%d', $id),
+            options: ['json' => $payload]
+        );
+    }
+
+    public function deleteCategory(int $id, array $query = []): array
+    {
+        return $this->request(
+            method: 'DELETE',
+            uri: sprintf('categories/%d', $id),
+            options: ['query' => $query]
+        );
     }
 
     public function tags(array $query = []): array
@@ -89,8 +122,7 @@ final class Sdk implements SdkContract
     }
 
     /**
-     * @param array<string, mixed> $query
-     *
+     * @param  array<string, mixed>  $query
      * @return array<int|string, mixed>
      */
     private function getFromNamespace(string $resource, array $query = []): array
@@ -103,8 +135,7 @@ final class Sdk implements SdkContract
     }
 
     /**
-     * @param array<string, mixed> $options
-     *
+     * @param  array<string, mixed>  $options
      * @return array<int|string, mixed>
      */
     private function request(string $method, string $uri, array $options = [], bool $withinNamespace = true): array
@@ -158,7 +189,7 @@ final class Sdk implements SdkContract
     }
 
     /**
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      */
     private function logExternalDispatch(string $method, string $uri, array $options): void
     {
@@ -170,7 +201,7 @@ final class Sdk implements SdkContract
     }
 
     /**
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      */
     private function logExternalFailure(string $method, string $uri, array $options, string $message): void
     {
@@ -183,8 +214,8 @@ final class Sdk implements SdkContract
     }
 
     /**
-     * @param array<string, mixed> $options
-     * @param array<int|string, mixed> $response
+     * @param  array<string, mixed>  $options
+     * @param  array<int|string, mixed>  $response
      */
     private function logExternalResponse(string $method, string $uri, array $options, array $response): void
     {
@@ -197,8 +228,7 @@ final class Sdk implements SdkContract
     }
 
     /**
-     * @param array<string, mixed> $options
-     *
+     * @param  array<string, mixed>  $options
      * @return array<string, mixed>
      */
     private function sanitizeOptions(array $options): array
@@ -219,8 +249,7 @@ final class Sdk implements SdkContract
     }
 
     /**
-     * @param array<int|string, mixed> $response
-     *
+     * @param  array<int|string, mixed>  $response
      * @return array<int|string, mixed>
      */
     private function sanitizeResponse(array $response): array
@@ -248,8 +277,7 @@ final class Sdk implements SdkContract
     }
 
     /**
-     * @param array<string, mixed> $options
-     *
+     * @param  array<string, mixed>  $options
      * @return array<string, mixed>
      */
     private function mergeAuthorization(array $options): array
@@ -285,4 +313,3 @@ final class Sdk implements SdkContract
         ];
     }
 }
-

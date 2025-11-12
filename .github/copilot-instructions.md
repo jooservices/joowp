@@ -6,9 +6,16 @@ Modular Laravel 12 + Vue 3 platform targeting PHP 8.4 with strict type safety an
 
 **Every commit must:**
 1. Pass quality pipeline: `composer lint` (pint → phpcs → phpmd → phpstan)
-2. Pass all tests: `composer test && npm run typecheck`
-3. Include unit tests for new code
-4. Use `final` classes with `declare(strict_types=1)` at top of every PHP file
+2. Pass all tests with 80%+ coverage: `composer test:coverage-check`
+3. Include unit tests for new code (no exceptions)
+4. Use `final` classes with `declare(strict_types=1)` at top of **EVERY** PHP file
+5. Pass TypeScript validation: `npm run typecheck`
+
+**Non-negotiable requirements:**
+- `declare(strict_types=1)` in ALL PHP files (classes, routes, tests, migrations, seeders)
+- Coverage: 80% overall, 95% Core services, 90% controllers, 100% FormRequests
+- New classes without tests = PR rejected
+- Coverage decrease = build failure
 
 **Key architecture:**
 - Modular design via `nwidart/laravel-modules` - each domain in its own module
@@ -127,8 +134,9 @@ composer analyze:phpstan # Static analysis (level: max)
 Common fixes:
 - Missing types → Add parameter/return types to all methods
 - Missing PHPDoc → Add `@return array<string, mixed>` for array returns
-- Missing `declare(strict_types=1)` → Add at top of file after `<?php`
+- Missing `declare(strict_types=1)` → Add at top of file after `<?php` (MANDATORY - no exceptions)
 - Non-final class → Change `class` to `final class`
+- Low coverage → Write unit tests before committing (80% minimum enforced)
 
 ## Development Commands
 ## Development Commands
@@ -156,13 +164,28 @@ npm run build          # Production build
 ## Code Standards (Non-Negotiable)
 
 ### Type Safety Requirements
+- **MANDATORY: `declare(strict_types=1)` in ALL PHP files** - classes, routes, tests, migrations, seeders, config files
+  - No exceptions - pre-commit hook enforces this
+  - Place immediately after `<?php` opening tag
 - **Every method MUST have concrete parameter and return types** - `mixed` forbidden except documented edge cases
 - **Array shapes must be documented with PHPDoc** - e.g., `@return array<string, mixed>`
-- **`declare(strict_types=1)`** - Required at top of every PHP file after opening tag
 - **`final` classes** - Default to `final class` unless inheritance is explicitly needed
 - **Constructor property promotion with `readonly`** - Use for immutable dependencies
 - Frontend: **TypeScript-only** - no plain JavaScript allowed, strict mode enabled (`tsconfig.json`)
 - PHPStan level maximum enforced - suppressions require inline justification
+
+### Test Coverage Requirements (Enforced by CI/CD)
+- **Overall project: 80% minimum** (build fails if below)
+- **Core module services: 95%** (critical shared functionality)
+- **API controllers: 90%** (all endpoints tested)
+- **FormRequests: 100%** (simple validation rules)
+- **Models (business logic): 85%**
+- **Repositories: 80%**
+- **Middleware: 90%**
+- **SDK classes: 95%** (third-party integrations)
+- **New classes without tests = PR rejected**
+- **Coverage decrease = build failure**
+- Run `composer test:coverage-check` before every commit
 
 ### Quality Pipeline Order
 1. **Laravel Pint** (canonical style) - run first always, uses `pint.json` config
@@ -179,8 +202,19 @@ Run individually: `composer lint:pint`, `composer lint:phpcs`, `composer analyze
 ### Testing Requirements
 - **Unit coverage mandatory** for every class/function - no exceptions
 - **Integration tests** for each module's primary workflow
+- **Coverage enforcement:** `composer test:coverage-check` must pass (80% minimum)
+- **Coverage targets by layer:**
+  - Overall: 80% (CI gate)
+  - Core services: 95%
+  - Controllers: 90%
+  - FormRequests: 100%
+  - Models: 85%
+  - Repositories: 80%
+  - Middleware: 90%
+  - SDK classes: 95%
 - **Audit logging** required for all mutations using `App\Logging\ActionLogger`
-- Run full test suite before every commit: `composer test && npm run typecheck`
+- Run full test suite before every commit: `composer test:coverage-check && npm run typecheck`
+- **Pull requests that decrease coverage are automatically rejected**
 
 ## Project-Specific Patterns
 
