@@ -1,5 +1,5 @@
 <template>
-    <div class="taxonomy-page container py-5 text-white">
+    <div class="taxonomy-page container-fluid py-5 text-white">
         <div class="row gy-4">
             <div class="col-12">
                 <nav aria-label="breadcrumb" class="mb-3">
@@ -58,6 +58,9 @@
 </template>
 
 <script setup lang="ts">
+import AppLayout from '@/Layouts/AppLayout.vue';
+
+defineOptions({ layout: AppLayout });
 </script>
 
 <style scoped>

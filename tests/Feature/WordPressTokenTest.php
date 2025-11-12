@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 use Modules\Core\Models\WpToken;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
-use Mockery;
 use Tests\TestCase;
 
 final class WordPressTokenTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_it_persists_token_via_internal_api(): void
+    public function testItPersistsTokenViaInternalApi(): void
     {
         $sdk = Mockery::mock(SdkContract::class);
         $sdk
@@ -59,7 +59,7 @@ final class WordPressTokenTest extends TestCase
         $this->assertSame('demo***ken', $response->json('data.masked_token'));
     }
 
-    public function test_it_returns_failure_envelope_when_sdk_fails(): void
+    public function testItReturnsFailureEnvelopeWhenSdkFails(): void
     {
         $exception = new WordPressRequestException('Upstream failure', 502);
 
@@ -94,7 +94,7 @@ final class WordPressTokenTest extends TestCase
         $this->assertDatabaseCount('wp_tokens', 0);
     }
 
-    public function test_it_does_not_store_token_when_not_remembered(): void
+    public function testItDoesNotStoreTokenWhenNotRemembered(): void
     {
         $sdk = Mockery::mock(SdkContract::class);
         $sdk
@@ -128,7 +128,7 @@ final class WordPressTokenTest extends TestCase
         $this->assertDatabaseCount('wp_tokens', 0);
     }
 
-    public function test_it_returns_absent_state_when_no_token_remembered(): void
+    public function testItReturnsAbsentStateWhenNoTokenRemembered(): void
     {
         $response = $this->getJson('/api/v1/wordpress/token');
 
@@ -143,7 +143,7 @@ final class WordPressTokenTest extends TestCase
         ]);
     }
 
-    public function test_it_returns_masked_token_when_token_exists(): void
+    public function testItReturnsMaskedTokenWhenTokenExists(): void
     {
         WpToken::query()->create([
             'username' => 'demo',
@@ -165,7 +165,7 @@ final class WordPressTokenTest extends TestCase
         ]);
     }
 
-    public function test_it_clears_remembered_token(): void
+    public function testItClearsRememberedToken(): void
     {
         WpToken::query()->create([
             'username' => 'demo',
@@ -189,4 +189,3 @@ final class WordPressTokenTest extends TestCase
         $this->assertDatabaseCount('wp_tokens', 0);
     }
 }
-

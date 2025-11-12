@@ -60,13 +60,13 @@
                                 </select>
                                 <button
                                     type="button"
-                                    class="btn btn-outline-light btn-sm"
+                                    class="btn btn-tertiary btn-sm"
                                     :disabled="isLoading"
                                     @click="fetchCategories"
                                 >
-                                    <span v-if="!isLoading" class="fa-solid fa-arrows-rotate me-2"></span>
+                                    <span v-if="!isLoading" class="fa-solid fa-arrows-rotate"></span>
                                     <span v-else class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                    Refresh
+                                    <span class="ms-1">Refresh</span>
                                 </button>
                             </div>
                         </div>
@@ -76,6 +76,7 @@
                                 <thead>
                                     <tr class="text-secondary">
                                         <th scope="col">Name</th>
+                                        <th scope="col">ID</th>
                                         <th scope="col">Slug</th>
                                         <th scope="col">Parent</th>
                                         <th scope="col">Entries</th>
@@ -95,20 +96,25 @@
                                         </td>
                                     </tr>
                                     <tr
-                                        v-for="category in categories"
+                                        v-for="category in displayCategories"
                                         :key="category.id"
                                         class="table-row"
                                         @click="selectForEdit(category)"
                                     >
                                         <td>
-                                            <div class="fw-semibold">{{ category.name }}</div>
-                                            <div class="text-secondary small">{{ truncate(category.description) }}</div>
+                                            <div class="fw-semibold hierarchy-label">
+                                                {{ hierarchyLabel(category) }}
+                                            </div>
+                                            <div class="text-secondary small" v-html="sanitizedDescription(category.description)"></div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary-subtle text-uppercase text-dark fw-semibold">#{{ category.id }}</span>
                                         </td>
                                         <td>{{ category.slug }}</td>
                                         <td>
                                             <span v-if="category.parent === 0" class="badge text-bg-secondary rounded-pill">Root</span>
                                             <span v-else class="badge text-bg-dark border border-secondary rounded-pill">
-                                                #{{ category.parent }}
+                                                {{ resolveParentName(category.parent) }}
                                             </span>
                                         </td>
                                         <td>
@@ -209,20 +215,25 @@
                                 ></textarea>
                             </div>
                             <div>
-                                <label for="category-parent" class="form-label text-secondary small">Parent ID</label>
-                                <input
+                                <label for="category-parent" class="form-label text-secondary small">Parent</label>
+                                <select
                                     id="category-parent"
                                     v-model.number="form.parent"
-                                    type="number"
-                                    min="0"
-                                    class="form-control bg-transparent border-secondary-subtle text-white"
-                                    placeholder="0 (root)"
-                                />
+                                    class="form-select bg-transparent border-secondary-subtle text-white"
+                                >
+                                    <option v-for="option in parentOptions" :key="option.value" :value="option.value"
+                                        :disabled="editingCategory?.id === option.value"
+                                        :style="{ paddingLeft: `${option.depth * 0.85}rem` }"
+                                    >
+                                        {{ option.label }}
+                                    </option>
+                                </select>
                             </div>
                             <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary flex-fill" :disabled="isSubmitting">
-                                    <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                    {{ editingCategory ? 'Update category' : 'Create category' }}
+                                <button type="submit" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center gap-2" :disabled="isSubmitting">
+                                    <span v-if="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span v-else class="fa-solid" :class="editingCategory ? 'fa-floppy-disk' : 'fa-plus-circle'"></span>
+                                    <span>{{ editingCategory ? 'Update category' : 'Create category' }}</span>
                                 </button>
                                 <button
                                     v-if="editingCategory"
@@ -254,7 +265,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+
+defineOptions({ layout: AppLayout });
 
 interface Category {
     id: number;
@@ -263,6 +277,21 @@ interface Category {
     description: string;
     parent: number;
     count: number;
+}
+
+interface ParentNode {
+    name: string;
+    parent: number;
+}
+
+interface ParentOption {
+    value: number;
+    label: string;
+    depth: number;
+}
+
+interface CategoryRow extends Category {
+    depth: number;
 }
 
 interface TokenStatus {
@@ -277,6 +306,119 @@ const editingCategory = ref<Category | null>(null);
 const tokenStatus = ref<TokenStatus>({ remembered: false, username: null });
 const alerts = ref<Array<{ id: string; variant: 'success' | 'danger'; message: string }>>([]);
 const perPageOptions = [10, 20, 40, 80];
+const parentRegistry = reactive(new Map<number, ParentNode>());
+const parentNameMap = computed(() => {
+    const map = new Map<number, string>([[0, 'Root']]);
+
+    parentRegistry.forEach((node, id) => {
+        map.set(id, node.name);
+    });
+
+    categories.value.forEach((category) => {
+        map.set(category.id, category.name);
+    });
+
+    return map;
+});
+const displayCategories = computed<CategoryRow[]>(() => {
+    const items = categories.value;
+    if (items.length === 0) {
+        return [];
+    }
+
+    const knownIds = new Set(items.map((item) => item.id));
+    const children = new Map<number, Category[]>();
+
+    items.forEach((item) => {
+        const parentId = knownIds.has(item.parent) ? item.parent : 0;
+        const bucket = children.get(parentId) ?? [];
+        bucket.push(item);
+        children.set(parentId, bucket);
+    });
+
+    const sortByName = (list: Category[]): Category[] =>
+        list.sort((first, second) => first.name.localeCompare(second.name));
+
+    const traversed = new Set<number>();
+    const rows: CategoryRow[] = [];
+
+    const traverse = (parentId: number, depth: number): void => {
+        const siblings = children.get(parentId);
+        if (! siblings?.length) {
+            return;
+        }
+
+        sortByName(siblings);
+
+        siblings.forEach((child) => {
+            traversed.add(child.id);
+            rows.push({ ...child, depth });
+            traverse(child.id, depth + 1);
+        });
+    };
+
+    traverse(0, 0);
+
+    items.forEach((item) => {
+        if (! traversed.has(item.id)) {
+            rows.push({ ...item, depth: 0 });
+        }
+    });
+
+    return rows;
+});
+const parentOptions = computed<ParentOption[]>(() => {
+    const options: ParentOption[] = [{ value: 0, label: 'None', depth: 0 }];
+    const children = new Map<number, number[]>();
+
+    parentRegistry.forEach((node, id) => {
+        const parentId = node.parent > 0 ? node.parent : 0;
+        const bucket = children.get(parentId) ?? [];
+        bucket.push(id);
+        children.set(parentId, bucket);
+    });
+
+    const sortByName = (ids: number[]): number[] =>
+        ids.sort((first, second) => {
+            const firstNode = parentRegistry.get(first);
+            const secondNode = parentRegistry.get(second);
+
+            const firstName = firstNode?.name ?? `Category #${first}`;
+            const secondName = secondNode?.name ?? `Category #${second}`;
+
+            return firstName.localeCompare(secondName);
+        });
+
+    const traverse = (parentId: number, depth: number): void => {
+        const childIds = children.get(parentId);
+        if (! childIds?.length) {
+            return;
+        }
+
+        sortByName(childIds);
+
+        childIds.forEach((id) => {
+            const node = parentRegistry.get(id);
+            if (! node) {
+                return;
+            }
+
+            const prefix = depth > 0 ? `${'— '.repeat(depth)}` : '';
+
+            options.push({
+                value: id,
+                label: `${prefix}${node.name}`,
+                depth,
+            });
+
+            traverse(id, depth + 1);
+        });
+    };
+
+    traverse(0, 1);
+
+    return options;
+});
 
 const filters = reactive({
     search: '',
@@ -305,6 +447,7 @@ const fetchCategories = async (): Promise<void> => {
         });
 
         categories.value = response.data?.data?.items ?? [];
+        syncParentRegistry(categories.value);
     } catch (error: unknown) {
         pushAlert('danger', extractErrorMessage(error));
     } finally {
@@ -369,6 +512,8 @@ const selectForEdit = (category: Category): void => {
     form.slug = category.slug;
     form.description = category.description;
     form.parent = category.parent;
+    ensureParentRegistered(category.id, category.parent, category.name);
+    ensureParentRegistered(category.parent);
 };
 
 const resetForm = (): void => {
@@ -401,6 +546,52 @@ const truncate = (text: string, length = 80): string => {
         return 'No description';
     }
     return text.length > length ? `${text.substring(0, length)}…` : text;
+};
+
+const hierarchyLabel = (category: CategoryRow): string => {
+    const prefix = category.depth > 0 ? `${'— '.repeat(category.depth)} ` : '';
+
+    return `${prefix}${category.name}`;
+};
+
+const resolveParentName = (parentId: number): string => {
+    return parentNameMap.value.get(parentId) ?? `Category #${parentId}`;
+};
+
+const sanitizedDescription = (rawDescription: string): string => {
+    if (! rawDescription) {
+        return '<span class="text-secondary">No description</span>';
+    }
+
+    const textParser = document.createElement('div');
+    textParser.innerHTML = rawDescription;
+
+    const allowedTags = new Set(['STRONG', 'EM', 'B', 'I', 'U', 'A', 'BR', 'P', 'UL', 'OL', 'LI', 'SPAN', 'SMALL']);
+
+    const sanitizeNode = (node: Node): string => {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return (node.textContent ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as HTMLElement;
+            if (! allowedTags.has(element.tagName)) {
+                return sanitizeNode(document.createTextNode(element.textContent ?? ''));
+            }
+
+            const sanitizedChildren = Array.from(element.childNodes).map((child) => sanitizeNode(child)).join('');
+
+            const attributeString = element.tagName === 'A' && element.getAttribute('href')
+                ? ` href="${element.getAttribute('href')}" rel="noopener noreferrer" target="_blank"`
+                : '';
+
+            return `<${element.tagName.toLowerCase()}${attributeString}>${sanitizedChildren}</${element.tagName.toLowerCase()}>`;
+        }
+
+        return '';
+    };
+
+    return Array.from(textParser.childNodes).map((child) => sanitizeNode(child)).join('');
 };
 
 const pushAlert = (variant: 'success' | 'danger', message: string): void => {
@@ -436,6 +627,37 @@ const extractErrorMessage = (error: unknown): string => {
     return 'Unexpected error communicating with WordPress.';
 };
 
+const syncParentRegistry = (items: Category[]): void => {
+    items.forEach((item) => {
+        ensureParentRegistered(item.id, item.parent, item.name);
+        ensureParentRegistered(item.parent);
+    });
+};
+
+const ensureParentRegistered = (id: number, parentId = 0, name?: string): void => {
+    if (id <= 0) {
+        return;
+    }
+
+    const normalizedParent = parentId > 0 ? parentId : 0;
+    const existing = parentRegistry.get(id);
+
+    if (existing) {
+        const updatedNode: ParentNode = {
+            name: name ?? existing.name,
+            parent: normalizedParent !== 0 ? normalizedParent : existing.parent,
+        };
+
+        parentRegistry.set(id, updatedNode);
+        return;
+    }
+
+    parentRegistry.set(id, {
+        name: name ?? `Category #${id}`,
+        parent: normalizedParent,
+    });
+};
+
 watch(
     () => filters.perPage,
     () => {
@@ -452,18 +674,61 @@ onMounted(async () => {
 <style scoped>
 .categories-page {
     min-height: calc(100vh - 6rem);
+    background: linear-gradient(180deg, #1a2234 0%, #101726 55%, #0d1421 100%);
+}
+
+.categories-page .card {
+    background: #1f2a3c !important;
+    border: 1px solid rgba(58, 72, 99, 0.6) !important;
+    box-shadow: 0 18px 35px rgba(10, 13, 22, 0.45);
+}
+
+.categories-page header p,
+.categories-page header h1,
+.categories-page header strong {
+    color: rgba(241, 244, 251, 0.96);
 }
 
 .toolbar .form-control:focus,
 .toolbar .form-select:focus,
 .toolbar .form-control,
 .toolbar .form-select {
-    color: #f8fafc;
+    color: rgba(240, 245, 252, 0.96);
+    background: rgba(39, 53, 76, 0.8);
+    border-color: rgba(78, 99, 135, 0.5);
+}
+
+.btn-tertiary {
+    background: rgba(41, 55, 78, 0.85);
+    border: 1px solid rgba(78, 99, 135, 0.55);
+    color: rgba(221, 229, 248, 0.95);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-inline: 0.9rem;
+    box-shadow: 0 8px 18px rgba(10, 13, 22, 0.25);
+}
+
+.btn-tertiary:hover,
+.btn-tertiary:focus {
+    background: rgba(68, 85, 120, 0.92);
+    border-color: rgba(121, 144, 184, 0.65);
+    color: rgba(246, 248, 255, 0.98);
+}
+
+.categories-page .form-control::placeholder,
+.categories-page .form-select option {
+    color: rgba(159, 174, 203, 0.8);
 }
 
 .table-row:hover {
     cursor: pointer;
-    background: rgba(96, 165, 250, 0.08);
+    background: rgba(59, 130, 246, 0.18);
+}
+
+.hierarchy-label {
+    white-space: pre-wrap;
+    letter-spacing: 0.01em;
 }
 
 .status-chip {
@@ -476,13 +741,13 @@ onMounted(async () => {
 }
 
 .chip-live {
-    background: rgba(34, 197, 94, 0.15);
-    color: #86efac;
+    background: rgba(56, 180, 110, 0.2);
+    color: #63f0af;
 }
 
 .chip-empty {
-    background: rgba(148, 163, 184, 0.15);
-    color: rgba(226, 232, 240, 0.8);
+    background: rgba(82, 103, 138, 0.2);
+    color: rgba(200, 211, 233, 0.85);
 }
 
 .sticky-form {
@@ -510,5 +775,101 @@ onMounted(async () => {
 .alert-leave-to {
     opacity: 0;
     transform: translateY(-10px);
+}
+
+.categories-page .btn-outline-info {
+    color: #36b9cc;
+    border-color: rgba(54, 185, 204, 0.45);
+}
+
+.categories-page .btn-outline-info:hover,
+.categories-page .btn-outline-info:focus {
+    color: #0f172a;
+    background: linear-gradient(135deg, #36b9cc, #5bc2d6);
+    border-color: #36b9cc;
+}
+
+.categories-page .btn-outline-danger {
+    color: #f66d6d;
+    border-color: rgba(246, 109, 109, 0.45);
+}
+
+.categories-page .btn-outline-danger:hover,
+.categories-page .btn-outline-danger:focus {
+    color: #0f172a;
+    background: linear-gradient(135deg, #f87171, #f97384);
+    border-color: #f87171;
+}
+
+.categories-page .btn-outline-light {
+    color: #8faadc;
+    border-color: rgba(143, 170, 220, 0.45);
+}
+
+.categories-page .btn-outline-light:hover,
+.categories-page .btn-outline-light:focus {
+    color: #0f172a;
+    background: linear-gradient(135deg, #8faadc, #a5b8e6);
+    border-color: #8faadc;
+}
+
+.categories-page .btn-primary {
+    background: linear-gradient(135deg, #4e73df, #2e59d9);
+    border: none;
+    box-shadow: 0 10px 25px rgba(46, 89, 217, 0.35);
+}
+
+.categories-page .btn-primary:disabled,
+.categories-page .btn-primary:focus,
+.categories-page .btn-primary:hover {
+    background: linear-gradient(135deg, #5a82ef, #3b6bea);
+    border: none;
+}
+
+.categories-page .badge.text-bg-dark {
+    background: rgba(55, 65, 81, 0.85) !important;
+    border-color: rgba(148, 163, 184, 0.28) !important;
+    color: rgba(209, 213, 219, 0.95) !important;
+}
+
+.categories-page .table-dark {
+    --bs-table-bg: rgba(16, 23, 35, 0.92);
+    --bs-table-striped-bg: rgba(28, 39, 61, 0.92);
+    --bs-table-hover-bg: rgba(46, 89, 217, 0.18);
+    --bs-table-color: rgba(238, 242, 255, 0.95);
+}
+
+.categories-page .table-dark thead tr {
+    background: linear-gradient(135deg, rgba(46, 89, 217, 0.28), rgba(59, 130, 246, 0.18));
+}
+
+.categories-page .table-dark tbody tr {
+    border-color: rgba(54, 65, 86, 0.55);
+}
+
+.categories-page .table-dark tbody tr td:first-child .fw-semibold {
+    color: rgba(247, 249, 255, 0.98);
+}
+
+.categories-page .table-dark tbody tr td:first-child .text-secondary {
+    color: rgba(177, 192, 219, 0.92) !important;
+}
+
+.categories-page .alert-warning {
+    background: rgba(255, 193, 7, 0.12);
+    border-color: rgba(255, 193, 7, 0.45) !important;
+    color: rgba(255, 214, 102, 0.95);
+}
+
+.categories-page .alert button {
+    color: rgba(16, 24, 39, 0.9);
+    background: rgba(255, 214, 102, 0.9);
+    border: none;
+}
+
+.categories-page .input-group-text {
+    background: rgba(34, 48, 71, 0.9);
+    border-color: rgba(68, 85, 120, 0.55);
+    color: rgba(188, 202, 230, 0.92);
 }
 </style>

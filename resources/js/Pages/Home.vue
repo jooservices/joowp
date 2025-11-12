@@ -1,165 +1,5 @@
 <template>
     <div class="welcome-wrapper">
-        <nav class="navbar navbar-expand-lg navbar-dark top-nav shadow-sm">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-semibold text-uppercase tracking-wide" href="/">
-                    JOOwp
-                </a>
-                <button
-                    class="navbar-toggler border-0"
-                    type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#welcomeNav"
-                    aria-controls="welcomeNav"
-                    aria-expanded="false"
-                    aria-label="Toggle navigation"
-                >
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div id="welcomeNav" class="collapse navbar-collapse">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="/">Home</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a
-                                ref="taxonomyDropdownRef"
-                                class="nav-link dropdown-toggle"
-                                href="#"
-                                role="button"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                            >
-                                Taxonomy
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-dark">
-                                <li>
-                                    <a class="dropdown-item" href="/taxonomy/categories">Categories</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="/taxonomy/tags">Tags</a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <div class="toast-stack" role="alert" aria-live="assertive" aria-atomic="true">
-                        <transition-group name="toast">
-                            <div
-                                v-for="toast in toasts"
-                                :key="toast.id"
-                                class="toast-card shadow-lg"
-                                :class="`toast-${toast.variant}`"
-                            >
-                                <div class="toast-body d-flex align-items-start gap-3">
-                                    <div class="toast-icon-wrapper" aria-hidden="true">
-                                        <span
-                                            class="fa-solid"
-                                            :class="toast.variant === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-check'"
-                                        ></span>
-                                    </div>
-                                    <div class="toast-content flex-fill">
-                                        <p class="toast-title mb-1">{{ toast.title }}</p>
-                                        <p class="toast-message mb-0">{{ toast.message }}</p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        class="btn-close btn-close-white ms-2"
-                                        aria-label="Close"
-                                        @click="dismissToast(toast.id)"
-                                    ></button>
-                                </div>
-                            </div>
-                        </transition-group>
-                    </div>
-                    <template v-if="!isInitialising && !tokenStatus.remembered">
-                        <form
-                            class="ms-auto d-flex flex-column flex-sm-row align-items-sm-center gap-2 auth-form"
-                            autocomplete="off"
-                            @submit.prevent="submitCredentials"
-                        >
-                            <label class="visually-hidden" for="nav-username">Username</label>
-                            <input
-                                id="nav-username"
-                                type="text"
-                                class="form-control form-control-sm"
-                                placeholder="Username"
-                                aria-label="Username"
-                                v-model="formState.username"
-                                :disabled="formState.loading"
-                            />
-                            <label class="visually-hidden" for="nav-password">Password</label>
-                            <input
-                                id="nav-password"
-                                type="password"
-                                class="form-control form-control-sm"
-                                placeholder="Password"
-                                aria-label="Password"
-                                v-model="formState.password"
-                                :disabled="formState.loading"
-                            />
-                            <div class="remember-wrapper d-flex align-items-center gap-2">
-                                <input
-                                    id="remember-token"
-                                    class="form-check-input remember-switch"
-                                    type="checkbox"
-                                    role="switch"
-                                    aria-label="Remember token"
-                                    v-model="formState.remember"
-                                    :disabled="formState.loading"
-                                />
-                                <label class="remember-label text-light-emphasis small mb-0" for="remember-token">
-                                    Remember
-                                </label>
-                            </div>
-                            <button
-                                type="submit"
-                                class="btn btn-primary btn-sm px-4 shadow-sm d-flex align-items-center gap-2"
-                                :disabled="isSubmitDisabled"
-                            >
-                                <span v-if="!formState.loading" class="fa-solid fa-arrow-right-to-bracket"></span>
-                                <span v-if="formState.loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                <span>{{ formState.loading ? 'Submitting…' : 'Log In' }}</span>
-                            </button>
-                        </form>
-                        <div v-if="formState.loading" class="auth-overlay">
-                            <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-                        </div>
-                    </template>
-                    <template v-else-if="!isInitialising">
-                        <div class="ms-auto d-flex flex-column flex-sm-row align-items-sm-center gap-3 remembered-summary">
-                            <div class="input-group input-group-sm token-input-group">
-                                <span class="input-group-text">
-                                    <i class="fa-solid fa-key"></i>
-                                </span>
-                                <input
-                                    type="text"
-                                    class="form-control"
-                                    :value="tokenStatus.maskedToken ?? '••••••••'"
-                                    readonly
-                                />
-                                <span v-if="tokenStatus.username" class="input-group-text token-username">
-                                    @{{ tokenStatus.username }}
-                                </span>
-                            </div>
-                            <button
-                                type="button"
-                                class="btn btn-danger btn-sm d-flex align-items-center gap-2 forget-btn shadow-sm"
-                                @click="clearRememberedToken"
-                                :disabled="isClearingToken"
-                            >
-                                <i v-if="!isClearingToken" class="fa-solid fa-trash-can"></i>
-                                <span>{{ isClearingToken ? 'Clearing…' : 'Forget' }}</span>
-                                <span v-if="isClearingToken" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            </button>
-                        </div>
-                    </template>
-                    <div v-if="isInitialising" class="ms-auto d-flex align-items-center gap-3 auth-initialising">
-                        <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-                        <span class="text-light-emphasis small">Loading token status…</span>
-                    </div>
-                </div>
-            </div>
-        </nav>
         <section v-if="displayWelcome" class="hero container content-section">
             <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
                 <div class="col-12 col-lg-6 text-center text-lg-start">
@@ -233,11 +73,11 @@
         </section>
 
         <section v-else class="container py-5 returning content-section">
-                    <div class="card returning-card border-0 shadow-sm">
+            <div class="card returning-card border-0 shadow-sm">
                 <div class="card-body d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
                     <div>
-                                <h2 class="h3 text-light mb-2">Welcome back to JOOwp</h2>
-                                <p class="text-muted mb-0">
+                        <h2 class="h3 text-light mb-2">Welcome back to JOOwp</h2>
+                        <p class="text-muted mb-0">
                             You have already seen the onboarding experience. Dive straight into your workflow or revisit the
                             guides whenever you need a refresher.
                         </p>
@@ -258,6 +98,7 @@
                 </div>
             </div>
         </section>
+
         <section class="container-fluid px-0 content-section taxonomy-highlight">
             <div class="row g-0">
                 <div id="categories-section" class="col-12 col-lg-6">
@@ -347,6 +188,7 @@
                 </div>
             </div>
         </section>
+
         <footer class="site-footer mt-auto">
             <div class="container py-5">
                 <div class="row gy-4">
@@ -358,48 +200,52 @@
                         </p>
                         <a
                             class="btn btn-outline-light btn-sm px-4"
-                            :href="wordpressTargetUrl"
+                            href="docs/code-quality.md"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            Visit WordPress Site
+                            Review Quality Workflow
                         </a>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-4">
-                        <h4 class="h6 text-uppercase text-secondary mb-3">Platform links</h4>
-                        <ul class="list-unstyled footer-links">
-                            <li>
-                                <a href="docs/principles.md" target="_blank" rel="noopener noreferrer">
-                                    Engineering Principles
-                                </a>
-                            </li>
+                    <div class="col-12 col-lg-4">
+                        <h4 class="h6 text-white text-uppercase mb-3">Platform Links</h4>
+                        <ul class="list-unstyled footer-links mb-0">
                             <li>
                                 <a href="docs/guides/core-wordpress-sdk.md" target="_blank" rel="noopener noreferrer">
-                                    WordPress SDK Guide
+                                    Core WordPress SDK Guide
                                 </a>
                             </li>
                             <li>
-                                <a
-                                    href="docs/guides/study-case-inertia-progress.md"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Inertia Study Case
+                                <a href="docs/plans/2025-11-11-categories-management.md" target="_blank" rel="noopener noreferrer">
+                                    Categories Management Plan
+                                </a>
+                            </li>
+                            <li>
+                                <a href="docs/plans/2025-11-11-tags-management.md" target="_blank" rel="noopener noreferrer">
+                                    Tags Management Plan
+                                </a>
+                            </li>
+                            <li>
+                                <a href="docs/plans/2025-11-11-posts-management.md" target="_blank" rel="noopener noreferrer">
+                                    Posts Management Plan
                                 </a>
                             </li>
                         </ul>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-4">
-                        <h4 class="h6 text-uppercase text-secondary mb-3">Support</h4>
-                        <ul class="list-unstyled footer-links">
+                    <div class="col-12 col-lg-4">
+                        <h4 class="h6 text-white text-uppercase mb-3">Support</h4>
+                        <ul class="list-unstyled text-secondary small mb-0">
                             <li>
-                                <a href="mailto:support@joowp.local">support@joowp.local</a>
+                                <span class="fw-semibold text-white">Target WordPress:</span>
+                                <span class="ms-2">{{ wordpressTargetUrl }}</span>
                             </li>
                             <li>
-                                <a href="tel:+10000000000">+1 (000) 000-0000</a>
+                                <span class="fw-semibold text-white">AI Workflow:</span>
+                                <span class="ms-2">docs/ai-dev-workflow-2025-en.md</span>
                             </li>
                             <li>
-                                <span>Availability: 24/7 monitoring</span>
+                                <span class="fw-semibold text-white">Support window:</span>
+                                <span class="ms-2">Mon–Fri 09:00–18:00 GMT+7</span>
                             </li>
                         </ul>
                     </div>
@@ -414,9 +260,10 @@
 </template>
 
 <script setup lang="ts">
-import Dropdown from 'bootstrap/js/dist/dropdown';
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
-import { isAxiosError } from 'axios';
+import { onMounted, ref } from 'vue';
+import AppLayout from '@/Layouts/AppLayout.vue';
+
+defineOptions({ layout: AppLayout });
 
 const STORAGE_KEY = 'joowp.welcome.seen';
 const strapline = 'Modular Laravel • WordPress Ready • Dark Aesthetic';
@@ -425,67 +272,12 @@ const appName = ((import.meta.env.VITE_APP_NAME as string | undefined) ?? 'JOOwp
 const wordpressTargetUrl = 'https://soulevil.com';
 const currentYear = new Date().getFullYear();
 
-interface FormState {
-    username: string;
-    password: string;
-    loading: boolean;
-    remember: boolean;
-}
-
-interface Toast {
-    id: number;
-    message: string;
-    title: string;
-    variant: 'success' | 'error';
-    sticky: boolean;
-}
-
-interface ApiResponse<TData> {
-    ok: boolean;
-    code: string;
-    status: number;
-    message: string;
-    data: TData | null;
-    meta: Record<string, unknown>;
-}
-
-interface TokenPayload {
-    id: number | null;
-    remembered: boolean;
-    masked_token: string | null;
-}
-
-interface TokenStatusPayload {
-    remembered: boolean;
-    masked_token: string | null;
-    username?: string;
-}
-
-type TokenResponse = ApiResponse<TokenPayload>;
-type TokenStatusResponse = ApiResponse<TokenStatusPayload>;
-interface TaxonomyItem {
+interface TaxonomyHighlight {
     name: string;
     description: string;
 }
 
-const formState = reactive<FormState>({
-    username: '',
-    password: '',
-    loading: false,
-    remember: false,
-});
-
-const toasts = ref<Toast[]>([]);
-const tokenStatus = reactive<{ remembered: boolean; maskedToken: string | null; username: string | null }>({
-    remembered: false,
-    maskedToken: null,
-    username: null,
-});
-const isInitialising = ref(true);
-const isClearingToken = ref(false);
-const taxonomyDropdownRef = ref<HTMLElement | null>(null);
-let taxonomyDropdown: Dropdown | null = null;
-const categoryHighlights = ref<TaxonomyItem[]>([
+const categoryHighlights: TaxonomyHighlight[] = [
     {
         name: 'Product Releases',
         description:
@@ -500,8 +292,9 @@ const categoryHighlights = ref<TaxonomyItem[]>([
         name: 'Engineering Notes',
         description: 'Deep dives into architectural decisions, SDK enhancements, and operating procedures.',
     },
-]);
-const tagHighlights = ref<TaxonomyItem[]>([
+];
+
+const tagHighlights: TaxonomyHighlight[] = [
     {
         name: '#dark-ui',
         description: 'Visual polish updates, theming experiments, and contrast audits across the portfolio.',
@@ -514,30 +307,14 @@ const tagHighlights = ref<TaxonomyItem[]>([
         name: '#wordpress-integration',
         description: 'API contracts, SDK revisions, and lessons from upstream WordPress deployments.',
     },
-]);
-
-const isSubmitDisabled = computed<boolean>(() => {
-    if (formState.loading) {
-        return true;
-    }
-
-    return formState.username.trim() === '' || formState.password.trim() === '';
-});
-
-const setSeen = (): void => window.localStorage.setItem(STORAGE_KEY, 'true');
+];
 
 onMounted(() => {
     const hasSeen = window.localStorage.getItem(STORAGE_KEY);
     displayWelcome.value = !hasSeen;
 
     if (!hasSeen) {
-        setSeen();
-    }
-
-    void loadRememberedToken();
-
-    if (taxonomyDropdownRef.value) {
-        taxonomyDropdown = new Dropdown(taxonomyDropdownRef.value);
+        window.localStorage.setItem(STORAGE_KEY, 'true');
     }
 });
 
@@ -548,185 +325,8 @@ const dismissWelcome = (): void => {
 const resetWelcome = (): void => {
     window.localStorage.removeItem(STORAGE_KEY);
     displayWelcome.value = true;
-    setSeen();
+    window.localStorage.setItem(STORAGE_KEY, 'true');
 };
-
-const submitCredentials = async (): Promise<void> => {
-    formState.loading = true;
-
-    try {
-        const response = await window.axios.post<TokenResponse>('/api/v1/wordpress/token', {
-            username: formState.username,
-            password: formState.password,
-            remember: formState.remember,
-        });
-
-        const payload = response.data;
-
-        if (!payload.ok) {
-            const metaStatus = extractSourceStatus(payload.meta);
-            const message = metaStatus
-                ? `${payload.message} (Upstream status: ${metaStatus})`
-                : payload.message;
-
-            addToast(
-                message,
-                'error',
-                true,
-                titleFromCode(payload.code, 'error')
-            );
-
-            return;
-        }
-
-        updateTokenStatusFromPayload(payload.data);
-
-        addToast(payload.message, 'success', false, titleFromCode(payload.code, 'success'));
-        formState.password = '';
-        formState.remember = payload.data?.remembered ?? formState.remember;
-    } catch (error: unknown) {
-        if (isAxiosError(error) && error.response) {
-            const fallback = 'Unable to authenticate with WordPress.';
-            const message = (error.response.data as Record<string, unknown>)?.message;
-            const meaningfulMessage =
-                typeof message === 'string' && message.trim() !== '' ? message : fallback;
-
-            addToast(meaningfulMessage, 'error', true, 'WordPress Request Failed');
-        } else {
-            addToast('Unexpected error while contacting the API.', 'error', true, 'Unexpected Error');
-        }
-    } finally {
-        formState.loading = false;
-    }
-};
-
-const addToast = (
-    message: string,
-    variant: Toast['variant'],
-    sticky = false,
-    title?: string
-): void => {
-    const toast: Toast = {
-        id: Date.now() + Math.floor(Math.random() * 1000),
-        message,
-        title: title ?? defaultToastTitle(variant),
-        variant,
-        sticky,
-    };
-
-    toasts.value.push(toast);
-
-    if (!sticky) {
-        window.setTimeout(() => dismissToast(toast.id), 5000);
-    }
-};
-
-const dismissToast = (id: number): void => {
-    toasts.value = toasts.value.filter((toast) => toast.id !== id);
-};
-
-const defaultToastTitle = (variant: Toast['variant']): string =>
-    variant === 'success' ? 'Success' : 'Action Required';
-
-const titleFromCode = (code: string, variant: Toast['variant']): string => {
-    if (variant === 'success') {
-        if (code === 'wordpress.token_created') {
-            return 'Token Stored';
-        }
-        if (code === 'wordpress.token_cleared') {
-            return 'Token Cleared';
-        }
-        if (code === 'wordpress.token_remembered') {
-            return 'Remembered Token';
-        }
-
-        return 'Success';
-    }
-
-    if (code === 'wordpress.token_failed') {
-        return 'WordPress Request Failed';
-    }
-
-    return 'Action Required';
-};
-
-const extractSourceStatus = (meta: Record<string, unknown>): number | null => {
-    const status = meta.source_status;
-
-    return typeof status === 'number' ? status : null;
-};
-
-const loadRememberedToken = async (): Promise<void> => {
-    try {
-        const response = await window.axios.get<TokenStatusResponse>('/api/v1/wordpress/token');
-        const payload = response.data;
-
-        if (!payload.ok) {
-            return;
-        }
-
-        updateTokenStatus(payload.data);
-    } catch (error: unknown) {
-        addToast('Unable to load remembered token.', 'error', true, 'WordPress Request Failed');
-    } finally {
-        isInitialising.value = false;
-    }
-};
-
-const updateTokenStatus = (data: TokenStatusPayload | null): void => {
-    const remembered = data?.remembered ?? false;
-
-    tokenStatus.remembered = remembered;
-    tokenStatus.maskedToken = data?.masked_token ?? null;
-    tokenStatus.username = data?.username ?? null;
-    formState.remember = remembered;
-    formState.username = remembered && data?.username ? data.username : '';
-    formState.password = '';
-};
-
-const updateTokenStatusFromPayload = (data: TokenPayload | null): void => {
-    const remembered = data?.remembered ?? false;
-    tokenStatus.remembered = remembered;
-    tokenStatus.maskedToken = data?.masked_token ?? null;
-
-    if (!remembered) {
-        tokenStatus.username = null;
-        return;
-    }
-
-    tokenStatus.username = formState.username.trim() !== '' ? formState.username.trim() : tokenStatus.username;
-};
-
-const clearRememberedToken = async (): Promise<void> => {
-    if (isClearingToken.value) {
-        return;
-    }
-
-    isClearingToken.value = true;
-
-    try {
-        const response = await window.axios.delete<TokenStatusResponse>('/api/v1/wordpress/token');
-
-        if (response.data.ok) {
-            updateTokenStatus(response.data.data);
-            addToast(response.data.message, 'success', false, titleFromCode(response.data.code, 'success'));
-            formState.username = '';
-            formState.password = '';
-            formState.remember = false;
-        } else {
-            addToast(response.data.message, 'error', true, titleFromCode(response.data.code, 'error'));
-        }
-    } catch (error: unknown) {
-        addToast('Unable to clear remembered token.', 'error', true, 'Unexpected Error');
-    } finally {
-        isClearingToken.value = false;
-    }
-};
-
-onBeforeUnmount(() => {
-    taxonomyDropdown?.dispose();
-    taxonomyDropdown = null;
-});
 </script>
 
 <style scoped>
@@ -787,87 +387,43 @@ onBeforeUnmount(() => {
     background: rgba(148, 163, 184, 0.1);
 }
 
-.returning .card {
+.returning-card {
     background: rgba(15, 23, 42, 0.85);
+    border-radius: 1.25rem;
+    padding: 2rem;
 }
 
-.tracking-wide {
-    letter-spacing: 0.1rem;
-}
-
-.returning-card .card-body {
-    color: #e2e8f0;
-}
-
-.returning-card .card-body .text-muted {
-    color: rgba(226, 232, 240, 0.7) !important;
-}
-
-.taxonomy-highlight {
-    background: linear-gradient(135deg, rgba(11, 15, 25, 0.98), rgba(17, 24, 39, 0.92));
-    border-top: 1px solid rgba(148, 163, 184, 0.15);
-}
-
-.info-card {
-    background: rgba(17, 24, 39, 0.8);
+.taxonomy-highlight .info-card {
+    background: rgba(15, 23, 42, 0.8);
+    padding: 3rem 2.5rem;
 }
 
 .info-card-alt {
-    background: rgba(15, 23, 42, 0.85);
-}
-
-.info-card-body {
-    padding: 3rem;
-    border-left: 1px solid rgba(148, 163, 184, 0.1);
-    border-right: 1px solid rgba(148, 163, 184, 0.1);
-    min-height: 100%;
-}
-
-.taxonomy-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin: 0;
-}
-
-.taxonomy-list li {
-    padding-left: 0.5rem;
-    border-left: 2px solid rgba(96, 165, 250, 0.45);
+    background: rgba(15, 23, 42, 0.7);
 }
 
 .feature-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
+    display: grid;
+    gap: 0.75rem;
 }
 
 .feature-list-item {
     color: rgba(226, 232, 240, 0.85);
-    font-size: 0.95rem;
-    display: flex;
-    align-items: flex-start;
 }
-@media (max-width: 991.98px) {
-    .info-card-body {
-        padding: 2rem 1.5rem;
-        border: none;
-    }
+
+.taxonomy-list {
+    display: grid;
+    gap: 1.25rem;
 }
 
 .site-footer {
-    background: linear-gradient(180deg, rgba(7, 11, 20, 0.95), rgba(7, 11, 20, 0.85));
-    border-top: 1px solid rgba(148, 163, 184, 0.2);
-    width: 100%;
-}
-
-.site-footer .text-secondary {
-    color: rgba(203, 213, 225, 0.8) !important;
+    background: rgba(15, 23, 42, 0.92);
+    border-top: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 .footer-links {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
+    display: grid;
+    gap: 0.65rem;
 }
 
 .footer-links a {
@@ -881,222 +437,10 @@ onBeforeUnmount(() => {
     color: #60a5fa;
 }
 
-.top-nav {
-    background: rgba(10, 15, 27, 0.92);
-    backdrop-filter: blur(15px);
-    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-}
-
-.top-nav .navbar-brand {
-    color: #f8fafc;
-    letter-spacing: 0.08rem;
-}
-
-.top-nav .nav-link {
-    font-weight: 500;
-    color: rgba(248, 250, 252, 0.85);
-}
-
-.top-nav .nav-link.active,
-.top-nav .nav-link:focus,
-.top-nav .nav-link:hover {
-    color: #60a5fa;
-}
-
-.auth-form .form-control {
-    min-width: 180px;
-    background: rgba(15, 23, 42, 0.8);
-    border-color: rgba(148, 163, 184, 0.4);
-    color: #e2e8f0;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.auth-form .form-control:focus {
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 0.15rem rgba(96, 165, 250, 0.25);
-    background: rgba(15, 23, 42, 0.95);
-}
-
-.auth-form .btn {
-    white-space: nowrap;
-}
-
-.auth-form .form-control::placeholder {
-    color: rgba(226, 232, 240, 0.55);
-}
-
-.auth-form {
-    position: relative;
-}
-
-.auth-overlay {
-    position: absolute;
-    inset: -0.5rem;
-    background: rgba(2, 6, 23, 0.65);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.75rem;
-    backdrop-filter: blur(4px);
-}
-
-.remember-wrapper {
-    padding: 0.2rem 0.6rem;
-    border-radius: 9999px;
-    background: rgba(15, 23, 42, 0.55);
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.remember-switch {
-    cursor: pointer;
-    width: 2.8rem;
-    height: 1.4rem;
-    margin: 0;
-}
-
-.remember-label {
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    height: 100%;
-}
-
-.remembered-summary {
-    background: rgba(15, 23, 42, 0.5);
-    border-radius: 9999px;
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    padding: 0.35rem 0.75rem;
-}
-
-.token-input-group {
-    min-width: 16rem;
-    max-width: 20rem;
-}
-
-.token-input-group .input-group-text {
-    background: rgba(15, 23, 42, 0.8);
-    border: none;
-    color: rgba(248, 250, 252, 0.85);
-}
-
-.token-input-group .form-control {
-    font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-    background: rgba(15, 23, 42, 0.7);
-    border: none;
-    color: rgba(248, 250, 252, 0.9);
-    text-overflow: ellipsis;
-}
-
-.token-input-group .form-control:focus {
-    box-shadow: none;
-}
-
-.token-username {
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    text-transform: lowercase;
-}
-
-.forget-btn {
-    border: none;
-    padding-inline: 1.1rem;
-}
-
-.auth-initialising {
-    padding: 0.3rem 0.75rem;
-    border-radius: 0.75rem;
-    background: rgba(15, 23, 42, 0.5);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-}
-
-.toast-stack {
-    position: fixed;
-    top: 1.5rem;
-    right: 1.5rem;
-    z-index: 1100;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.toast-card {
-    min-width: 280px;
-    max-width: 340px;
-    border-radius: 1rem;
-    padding: 0.9rem 1.1rem;
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.82));
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    color: #f8fafc;
-    box-shadow: 0 20px 45px rgba(8, 11, 19, 0.35);
-    backdrop-filter: blur(18px);
-}
-
-.toast-success {
-    border-color: rgba(45, 212, 191, 0.55);
-    box-shadow: 0 18px 35px rgba(34, 197, 94, 0.25);
-}
-
-.toast-error {
-    border-color: rgba(252, 165, 165, 0.6);
-    box-shadow: 0 18px 35px rgba(248, 113, 113, 0.28);
-}
-
-.toast-card .toast-body {
-    font-size: 0.95rem;
-}
-
-.toast-icon-wrapper {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 0.85rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    color: inherit;
-}
-
-.toast-success .toast-icon-wrapper {
-    background: rgba(16, 185, 129, 0.22);
-    border-color: rgba(16, 185, 129, 0.4);
-    color: #5ef1c5;
-}
-
-.toast-error .toast-icon-wrapper {
-    background: rgba(248, 113, 113, 0.18);
-    border-color: rgba(248, 113, 113, 0.45);
-    color: #fda4af;
-}
-
-.toast-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: rgba(248, 250, 252, 0.82);
-}
-
-.toast-message {
-    font-size: 0.95rem;
-    color: rgba(226, 232, 240, 0.9);
-}
-
-.toast-enter-active,
-.toast-leave-active {
-    transition: all 0.25s ease;
-}
-
-.toast-enter-from,
-.toast-leave-to {
-    opacity: 0;
-    transform: translateY(-8px);
+@media (max-width: 991.98px) {
+    .taxonomy-highlight .info-card,
+    .taxonomy-highlight .info-card-alt {
+        border-radius: 0;
+    }
 }
 </style>

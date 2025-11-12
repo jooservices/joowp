@@ -16,7 +16,7 @@ final class WordPressCategoryApiTest extends TestCase
     use MockeryPHPUnitIntegration;
     use RefreshDatabase;
 
-    public function test_it_lists_categories(): void
+    public function testItListsCategories(): void
     {
         $sdk = Mockery::mock(SdkContract::class);
         $sdk->shouldReceive('categories')
@@ -34,7 +34,7 @@ final class WordPressCategoryApiTest extends TestCase
             ->assertJsonPath('data.items.0.name', 'News');
     }
 
-    public function test_it_creates_category(): void
+    public function testItCreatesCategory(): void
     {
         $sdk = Mockery::mock(SdkContract::class);
         $sdk->shouldReceive('createCategory')
