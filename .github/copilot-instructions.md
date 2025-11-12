@@ -18,10 +18,20 @@ Modular Laravel 12 + Vue 3 platform targeting PHP 8.4 with strict type safety an
 - Coverage decrease = build failure
 
 **Key architecture:**
-- Modular design via `nwidart/laravel-modules` - each domain in its own module
-- Core module provides shared services (WordPress SDK, utilities) - never duplicate
+- **Modular design** via `nwidart/laravel-modules` - 1 domain = 1 module (singular name)
+- **Core module = Technical infrastructure ONLY** (logging, base classes, HTTP responses - no business logic)
+- **Domain modules = Business-specific logic** (WordPress, Twitter, AI, Product - each owns its complete business domain)
 - API responses use `App\Http\Responses\ApiResponse` envelope pattern
 - Frontend is TypeScript-only Vue 3 + Inertia with dark theme
+
+**Module organization rule:**
+- **Shared across modules?** → Core (e.g., WordPress SDK used by Posts/Media/Categories)
+- **Domain-specific?** → Domain module (e.g., PostController only in WordPress module)
+
+**CRITICAL principle:** Organize by **business domain**, NOT technical features
+- ✅ WordPress module owns WordPress SDK (WordPress business logic)
+- ✅ Twitter module owns Twitter SDK (Twitter business logic)
+- ✅ Core module owns ActionLogger (technical infrastructure, no business rules)
 
 ## Common Task Workflows
 
@@ -74,19 +84,34 @@ composer dev  # Starts server + queue + logs + vite in one command
 
 ### Creating a New Module
 ```bash
-php artisan module:make Products
+# Use singular name for domain
+php artisan module:make WordPress  # For WordPress-specific management
+php artisan module:make AI         # For AI-specific features
+php artisan module:make Product    # For product management
 ```
 Then:
-1. Enable in `modules_statuses.json`: `"Products": true`
-2. Create config at `Modules/Products/config/config.php`
-3. Register services in `Modules/Products/Providers/ProductsServiceProvider`
+1. Enable in `modules_statuses.json`: `"WordPress": true`
+2. Create config at `Modules/WordPress/config/config.php`
+3. Register services in `Modules/WordPress/Providers/WordPressServiceProvider`
 4. Add routes in `routes/api.php` (auto-prefixed with `/api/v1`)
 5. Create `vite.config.js` if module has assets
 6. Run migrations: `php artisan migrate`
 
+**Module Organization Rule:**
+Ask: **"Does this contain business-specific logic?"**
+- **YES** → Domain module (WordPress SDK contains WordPress business logic → WordPress module)
+- **NO** → Core module (ActionLogger has no business rules → Core module)
+
+**Examples:**
+- ✅ WordPress module: WordPress SDK, PostService, CategoryController (WordPress business)
+- ✅ Twitter module: Twitter SDK, TweetService (Twitter business)
+- ✅ AI module: ContentGeneratorService (AI business)
+- ✅ Core module: ActionLogger, ApiResponse, BaseService (generic technical infrastructure)
+
 ### Adding WordPress Integration
 ```php
-// Inject the SDK contract
+// WordPress SDK lives in WordPress module (WordPress business logic)
+// Inject the SDK contract from WordPress module
 public function __construct(private readonly SdkContract $sdk) {}
 
 // Fetch WordPress data
@@ -174,6 +199,47 @@ npm run build          # Production build
 - Frontend: **TypeScript-only** - no plain JavaScript allowed, strict mode enabled (`tsconfig.json`)
 - PHPStan level maximum enforced - suppressions require inline justification
 
+**Example - Proper PHP class structure:**
+```php
+<?php
+
+declare(strict_types=1);  // MANDATORY - first line after <?php
+
+namespace App\Example;
+
+final class Example  // final by default
+{
+    public function __construct(
+        private readonly ServiceContract $service,  // readonly for immutability
+    ) {}
+    
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    public function process(array $data): array  // Concrete types required
+    {
+        return $this->service->handle($data);
+    }
+}
+```
+
+**Example - TypeScript strict mode:**
+```typescript
+// All .ts and .vue files must use TypeScript with explicit types
+import { ref } from 'vue';
+
+const title = ref<string>('Title');
+const count = ref<number>(0);
+
+interface User {
+    id: number;
+    name: string;
+}
+
+const user = ref<User | null>(null);
+```
+
 ### Test Coverage Requirements (Enforced by CI/CD)
 - **Overall project: 80% minimum** (build fails if below)
 - **Core module services: 95%** (critical shared functionality)
@@ -214,6 +280,40 @@ Run individually: `composer lint:pint`, `composer lint:phpcs`, `composer analyze
   - SDK classes: 95%
 - **Audit logging** required for all mutations using `App\Logging\ActionLogger`
 - Run full test suite before every commit: `composer test:coverage-check && npm run typecheck`
+
+**Example - Unit test structure:**
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Services;
+
+use Tests\TestCase;
+
+final class ExampleServiceTest extends TestCase
+{
+    public function test_performs_operation_correctly(): void
+    {
+        // Arrange
+        $service = new ExampleService();
+        
+        // Act
+        $result = $service->doSomething('input');
+        
+        // Assert
+        $this->assertEquals('expected', $result);
+    }
+    
+    public function test_handles_invalid_input(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        
+        $service = new ExampleService();
+        $service->doSomething('');
+    }
+}
+```
 - **Pull requests that decrease coverage are automatically rejected**
 
 ## Project-Specific Patterns
@@ -278,6 +378,11 @@ $logger->log(
 ### Frontend Patterns  
 - **Pages**: Vue SFCs in `resources/js/Pages/` using TypeScript
 - **Theme**: Dark theme aesthetic across all UI surfaces
+- **Layout**: All pages MUST include Navbar with active state indication
+  - Navbar structure: Parent items with nested children (WordPress → Posts, Media, Categories)
+  - Active parent: Highlighted when any child page is active
+  - Active child: Highlighted when exact route matches
+  - Use route matching logic for automatic active states
 - **Loading states**: Disable controls + show spinner + dim context during async operations
 - **Error handling**: 
   - Fatal errors → sticky toast notifications (user dismissible)
@@ -289,6 +394,58 @@ $logger->log(
 - **Form validation**: Use Laravel FormRequest classes with typed `rules()` method
 - **Axios integration**: Available globally via `window.axios`, handle errors with type guards
 - **Component structure**: `<template>`, `<script setup lang="ts">`, `<style scoped>` order
+
+### Creating a Vue Page with Navbar
+1. Create SFC in `resources/js/Pages/YourPage.vue`:
+   ```vue
+   <template>
+       <div>
+           <!-- REQUIRED: Include Navbar on every page -->
+           <Navbar />
+           
+           <div class="container-fluid py-5">
+               <div class="row">
+                   <div class="col-12">
+                       <h1>{{ title }}</h1>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </template>
+   
+   <script setup lang="ts">
+   import { ref } from 'vue';
+   import Navbar from '@/Components/Navbar.vue';
+   
+   const title = ref<string>('Page Title');
+   
+   // Route matching for active nav states
+   // Navbar component handles this automatically via route.current()
+   </script>
+   
+   <style scoped>
+   /* Dark theme styles */
+   </style>
+   ```
+
+2. Add Inertia route in `routes/web.php`:
+   ```php
+   Route::get('/page', fn() => inertia('YourPage'));
+   ```
+
+3. **Navbar active state logic** (handled in Navbar component):
+   ```typescript
+   // Example: Check if current route matches parent or child
+   const isActive = computed(() => {
+       const currentRoute = route().current();
+       // Parent active if any child is active
+       return currentRoute?.startsWith('wordpress.') || false;
+   });
+   
+   const isChildActive = (routeName: string) => {
+       return route().current() === routeName;
+   };
+   ```
 
 ### Module Service Registration
 Follow the `Modules\Core\Providers\CoreServiceProvider` pattern:

@@ -187,18 +187,102 @@ final class UserServiceTest extends TestCase
 ### 4. Modular Architecture
 
 **Module-first design:**
-- Each business domain is a separate module via `nwidart/laravel-modules`
+- **Each business domain is a separate module** via `nwidart/laravel-modules`
+- **Modules organized by business logic, NOT technical features**
+- **Core module = Technical infrastructure without business logic** (logging, base classes, HTTP responses, utilities)
+- **Domain modules = Business-specific logic** (WordPress integration, Twitter integration, AI operations, Product management)
 - Modules are independent, communicate via contracts
-- Core module provides shared services - never duplicate functionality
+- Never duplicate functionality across modules
+
+**Module Naming Convention:**
+- **1 business domain = 1 module** with singular PascalCase name
+- Examples: `Core`, `WordPress`, `Twitter`, `AI`, `Product`
+- Module name matches business domain, NOT technical layer
+
+**CRITICAL: What Goes Where**
+
+✅ **Core module - Technical infrastructure (NO business logic):**
+```
+Modules/Core/
+├── Logging/
+│   └── ActionLogger.php             ✅ Generic audit logging (no business rules)
+├── Http/
+│   └── Responses/ApiResponse.php    ✅ Generic API response pattern
+├── Services/
+│   └── BaseService.php              ✅ Generic base class
+└── Contracts/
+    └── ServiceContract.php          ✅ Generic interface
+```
+
+✅ **WordPress module - WordPress business domain (ALL WordPress logic):**
+```
+Modules/WordPress/
+├── Services/
+│   ├── Sdk.php                      ✅ WordPress REST API integration
+│   ├── PostService.php              ✅ WordPress post logic
+│   ├── MediaService.php             ✅ WordPress media logic
+│   └── CategoryService.php          ✅ WordPress taxonomy logic
+├── Http/Controllers/
+│   ├── PostController.php           ✅ WordPress post management
+│   ├── MediaController.php          ✅ WordPress media management
+│   ├── CategoryController.php       ✅ WordPress taxonomy management
+│   └── TokenController.php          ✅ WordPress JWT authentication
+├── Models/
+│   └── WpToken.php                  ✅ WordPress JWT token model
+└── Contracts/
+    └── SdkContract.php              ✅ WordPress SDK interface
+```
+
+✅ **Twitter module - Twitter business domain (future example):**
+```
+Modules/Twitter/
+├── Services/
+│   ├── TwitterSdk.php               ✅ Twitter API integration
+│   └── TweetService.php             ✅ Twitter tweet logic
+├── Http/Controllers/
+│   └── TweetController.php          ✅ Twitter tweet management
+└── Models/
+    └── TwitterToken.php             ✅ Twitter OAuth token model
+```
+
+✅ **AI module - AI business domain:**
+```
+Modules/AI/
+├── Services/
+│   ├── ContentGeneratorService.php  ✅ AI content generation
+│   └── ImageAnalysisService.php     ✅ AI image analysis
+└── Http/Controllers/
+    └── ContentController.php        ✅ AI content operations
+```
+
+**Decision rule: "Does this contain business-specific logic?"**
+- **YES** → Put in business domain module (WordPress SDK is WordPress business logic)
+- **NO** → Put in Core (ActionLogger has no business rules, works for any domain)
+
+**Examples:**
+- ✅ WordPress module: WordPress SDK, PostService, CategoryController (WordPress business)
+- ✅ Twitter module: Twitter SDK, TweetService (Twitter business)
+- ✅ AI module: ContentGeneratorService (AI business)
+- ✅ Core module: ActionLogger, ApiResponse, BaseService (generic technical tools)
 
 **Creating modules:**
 ```bash
-php artisan module:make Products
+# For WordPress business domain
+php artisan module:make WordPress
+
+# For Twitter business domain (future)
+php artisan module:make Twitter
+
+# For AI business domain
+php artisan module:make AI
+
+# For product management business domain
+php artisan module:make Product
 ```
 
 **Module structure:**
 ```
-Modules/Products/
+Modules/{BusinessDomain}/
 ├── Config/config.php          # Module configuration
 ├── Database/
 │   ├── Migrations/            # Module-specific migrations
@@ -206,9 +290,11 @@ Modules/Products/
 ├── Http/
 │   ├── Controllers/           # API controllers (final classes)
 │   └── Requests/              # FormRequest validation (final classes)
+├── Models/                    # Domain models (final classes)
 ├── Providers/
-│   └── ProductsServiceProvider.php  # Service registration
+│   └── {BusinessDomain}ServiceProvider.php  # Service registration
 ├── Services/                  # Business logic (final classes)
+├── Contracts/                 # Module-specific interfaces
 ├── routes/
 │   └── api.php               # Auto-prefixed with /api/v1
 ├── vite.config.js            # If module has frontend assets
@@ -219,8 +305,10 @@ Modules/Products/
 ```json
 {
     "Core": true,
-    "Products": true,
-    "Analytics": false
+    "WordPress": true,
+    "Twitter": false,
+    "AI": true,
+    "Product": false
 }
 ```
 
@@ -406,13 +494,23 @@ try {
 }
 ```
 
-**UI guidelines:**
-- Dark theme across all surfaces
-- Bootstrap + FontAwesome for components/icons
-- Binary toggles use switches, not checkboxes
-- Loading states: disable controls + spinner + dim context
-- Toast notifications: top-right, auto-dismiss (5s) for non-fatal
-- Primary views use `container-fluid` wrappers and Bootstrap `row`/`col-*` grids by default; document any layout exceptions inline and in plan notes.
+**UI requirements:**
+- **Dark theme REQUIRED** - All UI surfaces must use dark theme aesthetic
+- **Bootstrap + FontAwesome REQUIRED** - Use exclusively for components and icons
+- **Binary toggles MUST use switches** - Never use checkboxes for on/off states
+- **Loading states REQUIRED** - Disable controls + show spinner + dim context during async operations
+- **Toast notifications REQUIRED** - Top-right position, auto-dismiss (5s) for non-fatal errors
+- **Container layout REQUIRED** - Primary views use `container-fluid` wrappers and Bootstrap `row`/`col-*` grids by default
+
+**Layout requirements (MANDATORY):**
+- **All pages MUST include Navbar** - No exceptions, ensures consistent navigation
+- **Active state indication REQUIRED** - Must highlight current page's parent and child nav items
+- **Navbar structure:** Parent items with nested children (e.g., WordPress → Posts, Media, Categories)
+- **Active parent item:** Must be highlighted when any child page is active
+- **Active child item:** Must be highlighted when exact route matches
+- **Route matching logic REQUIRED** - Automatic determination of active states based on current route
+
+**WHY:** Consistent UI/UX across all pages, users always know where they are in navigation hierarchy, professional appearance with dark theme.
 
 ### 9. Service Layer Pattern
 
