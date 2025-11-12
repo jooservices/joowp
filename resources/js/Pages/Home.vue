@@ -17,9 +17,31 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div id="welcomeNav" class="collapse navbar-collapse">
-                    <div class="navbar-nav">
-                        <a class="nav-link active" aria-current="page" href="/">Home</a>
-                    </div>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/">Home</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a
+                                ref="taxonomyDropdownRef"
+                                class="nav-link dropdown-toggle"
+                                href="#"
+                                role="button"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                Taxonomy
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark">
+                                <li>
+                                    <a class="dropdown-item" href="/taxonomy/categories">Categories</a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="/taxonomy/tags">Tags</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
                     <div class="toast-stack" role="alert" aria-live="assertive" aria-atomic="true">
                         <transition-group name="toast">
                             <div
@@ -238,13 +260,13 @@
         </section>
         <section class="container-fluid px-0 content-section taxonomy-highlight">
             <div class="row g-0">
-                <div class="col-12 col-lg-6">
+                <div id="categories-section" class="col-12 col-lg-6">
                     <div class="info-card h-100 border-0 rounded-0 rounded-end-lg">
                         <div class="info-card-body">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h3 class="h4 text-white mb-0">
                                     <span class="fa-solid fa-folder-open me-2 text-primary"></span>
-                                    Categories
+                                    Categories Management
                                 </h3>
                                 <span class="badge text-bg-dark border border-primary-subtle fw-normal">
                                     Core content pillars
@@ -252,39 +274,74 @@
                             </div>
                             <p class="text-secondary mb-4">
                                 Curate foundational content groups inside WordPress to drive navigation, SEO, and editorial
-                                governance for the Laravel-facing experiences.
+                                governance for JOOwp experiences. Create, audit, and retire categories with the same guardrails
+                                enforced in Laravel modules.
                             </p>
+                            <div class="feature-list mb-4">
+                                <div class="feature-list-item">
+                                    <span class="fa-solid fa-check text-primary me-2"></span>
+                                    Instant sync between WordPress taxonomies and Laravel navigation.
+                                </div>
+                                <div class="feature-list-item">
+                                    <span class="fa-solid fa-check text-primary me-2"></span>
+                                    Audit-friendly naming conventions enforced by the Core SDK.
+                                </div>
+                                <div class="feature-list-item">
+                                    <span class="fa-solid fa-check text-primary me-2"></span>
+                                    Structured metadata for hero assets and SEO copy blocks.
+                                </div>
+                            </div>
                             <ul class="list-unstyled taxonomy-list">
                                 <li v-for="category in categoryHighlights" :key="category.name">
                                     <h4 class="h6 text-white mb-1">{{ category.name }}</h4>
                                     <p class="text-secondary mb-0">{{ category.description }}</p>
                                 </li>
                             </ul>
+                            <a class="btn btn-outline-light btn-sm mt-4" href="/taxonomy/categories">
+                                Explore Categories
+                            </a>
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-lg-6">
+                <div id="tags-section" class="col-12 col-lg-6">
                     <div class="info-card info-card-alt h-100 border-0 rounded-0 rounded-start-lg">
                         <div class="info-card-body">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h3 class="h4 text-white mb-0">
                                     <span class="fa-solid fa-tags me-2 text-info"></span>
-                                    Tags
+                                    Tags Management
                                 </h3>
                                 <span class="badge text-bg-dark border border-info-subtle fw-normal">
                                     Micro-topics
                                 </span>
                             </div>
                             <p class="text-secondary mb-4">
-                                Capture granular signals for personalization and search. Use tags to map experiments, feature
-                                flags, or campaign overlays back to WordPress entries.
+                                Capture granular signals for personalization and search. Tag workflows connect WordPress editors
+                                with Laravel feature toggles, campaign tracking, and experimentation flags.
                             </p>
+                            <div class="feature-list mb-4">
+                                <div class="feature-list-item">
+                                    <span class="fa-solid fa-check text-info me-2"></span>
+                                    Semantic tagging rules keep naming consistent across modules.
+                                </div>
+                                <div class="feature-list-item">
+                                    <span class="fa-solid fa-check text-info me-2"></span>
+                                    Auto-generated tag bundles for launch campaigns and retrospectives.
+                                </div>
+                                <div class="feature-list-item">
+                                    <span class="fa-solid fa-check text-info me-2"></span>
+                                    Inertia components read tags to toggle UI experiments in real time.
+                                </div>
+                            </div>
                             <ul class="list-unstyled taxonomy-list">
                                 <li v-for="tag in tagHighlights" :key="tag.name">
                                     <h4 class="h6 text-white mb-1">{{ tag.name }}</h4>
                                     <p class="text-secondary mb-0">{{ tag.description }}</p>
                                 </li>
                             </ul>
+                            <a class="btn btn-outline-light btn-sm mt-4" href="/taxonomy/tags">
+                                Explore Tags
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -357,7 +414,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import Dropdown from 'bootstrap/js/dist/dropdown';
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { isAxiosError } from 'axios';
 
 const STORAGE_KEY = 'joowp.welcome.seen';
@@ -425,7 +483,9 @@ const tokenStatus = reactive<{ remembered: boolean; maskedToken: string | null; 
 });
 const isInitialising = ref(true);
 const isClearingToken = ref(false);
-const categoryHighlights: TaxonomyItem[] = [
+const taxonomyDropdownRef = ref<HTMLElement | null>(null);
+let taxonomyDropdown: Dropdown | null = null;
+const categoryHighlights = ref<TaxonomyItem[]>([
     {
         name: 'Product Releases',
         description:
@@ -440,8 +500,8 @@ const categoryHighlights: TaxonomyItem[] = [
         name: 'Engineering Notes',
         description: 'Deep dives into architectural decisions, SDK enhancements, and operating procedures.',
     },
-];
-const tagHighlights: TaxonomyItem[] = [
+]);
+const tagHighlights = ref<TaxonomyItem[]>([
     {
         name: '#dark-ui',
         description: 'Visual polish updates, theming experiments, and contrast audits across the portfolio.',
@@ -454,7 +514,7 @@ const tagHighlights: TaxonomyItem[] = [
         name: '#wordpress-integration',
         description: 'API contracts, SDK revisions, and lessons from upstream WordPress deployments.',
     },
-];
+]);
 
 const isSubmitDisabled = computed<boolean>(() => {
     if (formState.loading) {
@@ -475,6 +535,10 @@ onMounted(() => {
     }
 
     void loadRememberedToken();
+
+    if (taxonomyDropdownRef.value) {
+        taxonomyDropdown = new Dropdown(taxonomyDropdownRef.value);
+    }
 });
 
 const dismissWelcome = (): void => {
@@ -658,6 +722,11 @@ const clearRememberedToken = async (): Promise<void> => {
         isClearingToken.value = false;
     }
 };
+
+onBeforeUnmount(() => {
+    taxonomyDropdown?.dispose();
+    taxonomyDropdown = null;
+});
 </script>
 
 <style scoped>
@@ -766,6 +835,18 @@ const clearRememberedToken = async (): Promise<void> => {
     border-left: 2px solid rgba(96, 165, 250, 0.45);
 }
 
+.feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.feature-list-item {
+    color: rgba(226, 232, 240, 0.85);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: flex-start;
+}
 @media (max-width: 991.98px) {
     .info-card-body {
         padding: 2rem 1.5rem;
