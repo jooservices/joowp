@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Modules\Core\Http\Requests;
+namespace Modules\WordPress\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * @phpstan-type UpdateCategoryPayload array{
- *     name?: string,
+ * @phpstan-type StoreCategoryPayload array{
+ *     name: string,
  *     slug?: string|null,
  *     description?: string|null,
  *     parent?: int|null
  * }
  */
-final class UpdateCategoryRequest extends FormRequest
+final class StoreCategoryRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -27,7 +27,7 @@ final class UpdateCategoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['sometimes', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100'],
             'slug' => ['sometimes', 'nullable', 'string', 'max:120'],
             'description' => ['sometimes', 'nullable', 'string', 'max:500'],
             'parent' => ['sometimes', 'nullable', 'integer', 'min:0'],
@@ -35,11 +35,13 @@ final class UpdateCategoryRequest extends FormRequest
     }
 
     /**
-     * @return UpdateCategoryPayload
+     * @param  string|null  $key
+     * @param  mixed  $default
+     * @return StoreCategoryPayload
      */
     public function validated($key = null, $default = null): array
     {
-        /** @var UpdateCategoryPayload $validated */
+        /** @var StoreCategoryPayload $validated */
         $validated = parent::validated($key, $default);
 
         return $validated;

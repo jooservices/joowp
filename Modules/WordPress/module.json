@@ -1,0 +1,11 @@
+{
+    "name": "WordPress",
+    "alias": "wordpress",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\WordPress\\Providers\\WordPressServiceProvider"
+    ],
+    "files": []
+}

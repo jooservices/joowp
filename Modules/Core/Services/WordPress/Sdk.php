@@ -34,6 +34,10 @@ final class Sdk implements SdkContract
         return $this->get('posts', $query);
     }
 
+    /**
+     * @param  array<string, mixed>  $query
+     * @return array<int|string, mixed>
+     */
     public function post(int $id, array $query = []): array
     {
         return $this->get(sprintf('posts/%d', $id), $query);
@@ -54,11 +58,19 @@ final class Sdk implements SdkContract
         return $this->get('categories', $query);
     }
 
+    /**
+     * @param  array<string, mixed>  $query
+     * @return array<int|string, mixed>
+     */
     public function category(int $id, array $query = []): array
     {
         return $this->get(sprintf('categories/%d', $id), $query);
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<int|string, mixed>
+     */
     public function createCategory(array $payload): array
     {
         return $this->request(
@@ -68,6 +80,10 @@ final class Sdk implements SdkContract
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<int|string, mixed>
+     */
     public function updateCategory(int $id, array $payload): array
     {
         return $this->request(
@@ -77,6 +93,10 @@ final class Sdk implements SdkContract
         );
     }
 
+    /**
+     * @param  array<string, mixed>  $query
+     * @return array<int|string, mixed>
+     */
     public function deleteCategory(int $id, array $query = []): array
     {
         return $this->request(
@@ -96,6 +116,9 @@ final class Sdk implements SdkContract
         return $this->get('users', $query);
     }
 
+    /**
+     * @return array<int|string, mixed>
+     */
     public function token(string $username, string $password): array
     {
         return $this->request(
@@ -233,16 +256,22 @@ final class Sdk implements SdkContract
      */
     private function sanitizeOptions(array $options): array
     {
-        if (isset($options['headers']['Authorization']) && is_string($options['headers']['Authorization'])) {
-            $options['headers']['Authorization'] = $this->maskToken($options['headers']['Authorization']);
+        $headers = $options['headers'] ?? null;
+        if (is_array($headers) && isset($headers['Authorization']) && is_string($headers['Authorization'])) {
+            $headers['Authorization'] = $this->maskToken($headers['Authorization']);
+            $options['headers'] = $headers;
         }
 
-        if (isset($options['json']['password']) && is_string($options['json']['password'])) {
-            $options['json']['password'] = Str::mask($options['json']['password'], '*', 2);
+        $json = $options['json'] ?? null;
+        if (is_array($json) && isset($json['password']) && is_string($json['password'])) {
+            $json['password'] = Str::mask($json['password'], '*', 2);
+            $options['json'] = $json;
         }
 
-        if (isset($options['form_params']['password']) && is_string($options['form_params']['password'])) {
-            $options['form_params']['password'] = Str::mask($options['form_params']['password'], '*', 2);
+        $formParams = $options['form_params'] ?? null;
+        if (is_array($formParams) && isset($formParams['password']) && is_string($formParams['password'])) {
+            $formParams['password'] = Str::mask($formParams['password'], '*', 2);
+            $options['form_params'] = $formParams;
         }
 
         return $options;
@@ -272,8 +301,8 @@ final class Sdk implements SdkContract
         $maskLength = max(Str::length($token) - ($visiblePrefix + $visibleSuffix), 0);
 
         return Str::substr($token, 0, $visiblePrefix)
-            .str_repeat('*', $maskLength)
-            .Str::substr($token, -$visibleSuffix);
+            . str_repeat('*', $maskLength)
+            . Str::substr($token, -$visibleSuffix);
     }
 
     /**
@@ -283,6 +312,10 @@ final class Sdk implements SdkContract
     private function mergeAuthorization(array $options): array
     {
         $headers = $options['headers'] ?? [];
+        if (! is_array($headers)) {
+            $headers = [];
+        }
+
         $authorization = $this->authorizationHeaders();
 
         if ($authorization !== []) {
@@ -309,7 +342,7 @@ final class Sdk implements SdkContract
         }
 
         return [
-            'Authorization' => 'Bearer '.$token,
+            'Authorization' => 'Bearer ' . $token,
         ];
     }
 }

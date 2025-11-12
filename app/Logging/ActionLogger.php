@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Log;
 
 class ActionLogger
 {
+    /**
+     * @param  array<int|string, mixed>  $before
+     * @param  array<int|string, mixed>  $after
+     * @param  array<int|string, mixed>  $metadata
+     */
     public function log(
         string $operation,
         ?Authenticatable $actor,

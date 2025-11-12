@@ -17,7 +17,7 @@ trait CreatesApplication
         $_SERVER['APP_DISABLE_ENV_LOADING'] = $_SERVER['APP_DISABLE_ENV_LOADING'] ?? 'true';
         $_ENV['APP_DISABLE_ENV_LOADING'] = $_ENV['APP_DISABLE_ENV_LOADING'] ?? 'true';
 
-        $app = require __DIR__.'/../bootstrap/app.php';
+        $app = require __DIR__ . '/../bootstrap/app.php';
 
         $app->make(Kernel::class)->bootstrap();
 

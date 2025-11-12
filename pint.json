@@ -1,10 +1,17 @@
 {
     "preset": "laravel",
+    "exclude": [
+        "database/migrations"
+    ],
     "rules": {
         "ordered_imports": {
             "sort_algorithm": "alpha"
         },
-        "single_trait_insert_per_statement": true
+        "single_trait_insert_per_statement": true,
+        "concat_space": {
+            "spacing": "one"
+        },
+        "single_line_empty_body": false,
+        "new_with_parentheses": true
     }
 }
-

@@ -2,20 +2,23 @@
 
 declare(strict_types=1);
 
-namespace Modules\Core\Http\Controllers\WordPress;
+namespace Modules\WordPress\Http\Controllers;
 
 use App\Http\Responses\ApiResponse;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
-use Modules\Core\Http\Requests\DeleteCategoryRequest;
-use Modules\Core\Http\Requests\IndexCategoriesRequest;
-use Modules\Core\Http\Requests\StoreCategoryRequest;
-use Modules\Core\Http\Requests\UpdateCategoryRequest;
-use Modules\Core\Services\WordPress\CategoryService;
+use Modules\WordPress\Http\Requests\DeleteCategoryRequest;
+use Modules\WordPress\Http\Requests\IndexCategoriesRequest;
+use Modules\WordPress\Http\Requests\StoreCategoryRequest;
+use Modules\WordPress\Http\Requests\UpdateCategoryRequest;
+use Modules\WordPress\Services\CategoryService;
 
 final class CategoryController extends Controller
 {
-    public function __construct(private readonly CategoryService $service) {}
+    public function __construct(private readonly CategoryService $service)
+    {
+    }
 
     public function index(IndexCategoriesRequest $request): JsonResponse
     {
@@ -40,7 +43,9 @@ final class CategoryController extends Controller
 
     public function store(StoreCategoryRequest $request): JsonResponse
     {
-        $created = $this->service->create($request->validated(), $request->user());
+        /** @var Authenticatable|null $actor */
+        $actor = $request->user();
+        $created = $this->service->create($request->validated(), $actor);
 
         return ApiResponse::success(
             code: 'wordpress.categories.created',
@@ -52,7 +57,9 @@ final class CategoryController extends Controller
 
     public function update(UpdateCategoryRequest $request, int $category): JsonResponse
     {
-        $updated = $this->service->update($category, $request->validated(), $request->user());
+        /** @var Authenticatable|null $actor */
+        $actor = $request->user();
+        $updated = $this->service->update($category, $request->validated(), $actor);
 
         return ApiResponse::success(
             code: 'wordpress.categories.updated',
@@ -63,7 +70,9 @@ final class CategoryController extends Controller
 
     public function destroy(DeleteCategoryRequest $request, int $category): JsonResponse
     {
-        $deleted = $this->service->delete($category, (bool) $request->validated()['force'], $request->user());
+        /** @var Authenticatable|null $actor */
+        $actor = $request->user();
+        $deleted = $this->service->delete($category, (bool) $request->validated()['force'], $actor);
 
         return ApiResponse::success(
             code: 'wordpress.categories.deleted',

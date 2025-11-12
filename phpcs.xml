@@ -11,11 +11,16 @@
 
     <exclude-pattern>*/storage/*</exclude-pattern>
     <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>bootstrap/cache/*</exclude-pattern>
+    <exclude-pattern>database/migrations/*</exclude-pattern>
 
     <rule ref="PSR12">
         <exclude name="Generic.Files.LineLength.TooLong"/>
     </rule>
 
+    <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
+
     <config name="extensions" value="php"/>
 </ruleset>
-

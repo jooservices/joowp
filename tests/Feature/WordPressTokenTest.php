@@ -6,9 +6,9 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
-use Modules\Core\Models\WpToken;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
+use Modules\WordPress\Models\WpToken;
 use Tests\TestCase;
 
 final class WordPressTokenTest extends TestCase

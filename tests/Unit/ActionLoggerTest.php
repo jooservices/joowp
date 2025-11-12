@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Logging\ActionLogger;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Mockery;
 use Tests\TestCase;
+use Tests\Unit\Stubs\StubUser;
 
 class ActionLoggerTest extends TestCase
 {
@@ -39,7 +39,7 @@ class ActionLoggerTest extends TestCase
                 return true;
             });
 
-        $logger = new ActionLogger;
+        $logger = new ActionLogger();
         $logger->log(
             'user.updated',
             new StubUser(42),
@@ -70,49 +70,9 @@ class ActionLoggerTest extends TestCase
                 return true;
             });
 
-        (new ActionLogger)->log('task.run', null);
+        (new ActionLogger())->log('task.run', null);
 
         Carbon::setTestNow();
         Mockery::close();
-    }
-}
-
-final class StubUser implements Authenticatable
-{
-    public function __construct(private readonly int $identifier) {}
-
-    public function getAuthIdentifierName(): string
-    {
-        return 'id';
-    }
-
-    public function getAuthIdentifier(): int
-    {
-        return $this->identifier;
-    }
-
-    public function getAuthPassword(): string
-    {
-        return 'secret';
-    }
-
-    public function getAuthPasswordName(): ?string
-    {
-        return 'password';
-    }
-
-    public function getRememberToken()
-    {
-        return null;
-    }
-
-    public function setRememberToken($value): void
-    {
-        //
-    }
-
-    public function getRememberTokenName(): string
-    {
-        return 'remember_token';
     }
 }

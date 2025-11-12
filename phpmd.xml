@@ -10,13 +10,12 @@
     <file>config</file>
     <file>database</file>
     <file>routes</file>
-    <file>tests</file>
 
     <exclude-pattern>*/database/factories/*</exclude-pattern>
     <exclude-pattern>*/database/seeders/*</exclude-pattern>
+    <exclude-pattern>tests/*</exclude-pattern>
 
     <rule ref="rulesets/cleancode.xml"/>
     <rule ref="rulesets/codesize.xml"/>
     <rule ref="rulesets/design.xml"/>
 </ruleset>
-

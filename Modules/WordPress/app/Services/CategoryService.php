@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Core\Services\WordPress;
+namespace Modules\WordPress\Services;
 
 use App\Logging\ActionLogger;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -14,7 +14,8 @@ final class CategoryService
     public function __construct(
         private readonly SdkContract $sdk,
         private readonly ActionLogger $actionLogger
-    ) {}
+    ) {
+    }
 
     /**
      * @param  array<string, mixed>  $filters
@@ -36,7 +37,7 @@ final class CategoryService
 
     /**
      * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function create(array $payload, ?Authenticatable $actor = null): array
     {
@@ -55,7 +56,7 @@ final class CategoryService
 
     /**
      * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function update(int $categoryId, array $payload, ?Authenticatable $actor = null): array
     {
@@ -77,7 +78,7 @@ final class CategoryService
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function delete(int $categoryId, bool $force = true, ?Authenticatable $actor = null): array
     {

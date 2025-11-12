@@ -2,23 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Modules\Core\Http\Controllers\WordPress;
+namespace Modules\WordPress\Http\Controllers;
 
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
-use Modules\Core\Http\Requests\StoreWpTokenRequest;
-use Modules\Core\Models\WpToken;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
+use Modules\WordPress\Http\Requests\StoreWpTokenRequest;
+use Modules\WordPress\Models\WpToken;
 
 final class TokenController extends Controller
 {
-    public function __construct(private readonly SdkContract $sdk) {}
+    public function __construct(private readonly SdkContract $sdk)
+    {
+    }
 
     public function store(StoreWpTokenRequest $request): JsonResponse
     {
+        /** @var array{username: string, password: string, remember?: bool} $credentials */
         $credentials = $request->validated();
         $remember = (bool) ($credentials['remember'] ?? false);
 
@@ -42,6 +45,7 @@ final class TokenController extends Controller
             );
         }
 
+        /** @var WpToken|null $tokenModel */
         $tokenModel = null;
         if ($remember) {
             $tokenModel = WpToken::updateOrCreate(
@@ -71,6 +75,7 @@ final class TokenController extends Controller
 
     public function show(): JsonResponse
     {
+        /** @var WpToken|null $token */
         $token = WpToken::query()->latest('updated_at')->first();
 
         if ($token === null) {
@@ -97,6 +102,7 @@ final class TokenController extends Controller
 
     public function destroy(): JsonResponse
     {
+        /** @var WpToken|null $token */
         $token = WpToken::query()->latest('updated_at')->first();
 
         if ($token === null) {
@@ -140,7 +146,7 @@ final class TokenController extends Controller
         $maskLength = max($length - ($visiblePrefix + $visibleSuffix), 0);
 
         return Str::substr($token, 0, $visiblePrefix)
-            .str_repeat('*', $maskLength)
-            .Str::substr($token, -$visibleSuffix);
+            . str_repeat('*', $maskLength)
+            . Str::substr($token, -$visibleSuffix);
     }
 }

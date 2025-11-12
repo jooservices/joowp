@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Core\Http\Requests;
+namespace Modules\WordPress\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -33,6 +33,8 @@ final class IndexCategoriesRequest extends FormRequest
     }
 
     /**
+     * @param  string|null  $key
+     * @param  mixed  $default
      * @return IndexFilters
      */
     public function validated($key = null, $default = null): array

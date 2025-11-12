@@ -18,7 +18,7 @@ interface SdkContract
      * Retrieve a single post by its identifier.
      *
      * @param  array<string, mixed>  $query
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function post(int $id, array $query = []): array;
 
@@ -50,7 +50,7 @@ interface SdkContract
      * Retrieve a single category.
      *
      * @param  array<string, mixed>  $query
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function category(int $id, array $query = []): array;
 
@@ -58,7 +58,7 @@ interface SdkContract
      * Create a category.
      *
      * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function createCategory(array $payload): array;
 
@@ -66,7 +66,7 @@ interface SdkContract
      * Update a category.
      *
      * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function updateCategory(int $id, array $payload): array;
 
@@ -74,7 +74,7 @@ interface SdkContract
      * Delete a category.
      *
      * @param  array<string, mixed>  $query
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function deleteCategory(int $id, array $query = []): array;
 
@@ -113,7 +113,7 @@ interface SdkContract
     /**
      * Exchange WordPress credentials for a JWT token.
      *
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
     public function token(string $username, string $password): array;
 }

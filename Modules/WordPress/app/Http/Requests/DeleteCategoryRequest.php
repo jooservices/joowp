@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Modules\Core\Http\Requests;
+namespace Modules\WordPress\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -29,6 +29,8 @@ final class DeleteCategoryRequest extends FormRequest
     }
 
     /**
+     * @param  string|null  $key
+     * @param  mixed  $default
      * @return DeleteCategoryPayload
      */
     public function validated($key = null, $default = null): array

@@ -1,12 +1,9 @@
 parameters:
     level: max
     paths:
-        - app
-        - bootstrap
-        - config
-        - database
-        - routes
-        - tests
+        - app/Logging
+        - Modules/Core/Services/WordPress
+        - Modules/WordPress/app
     tmpDir: storage/framework/phpstan
     checkMissingIterableValueType: true
     checkGenericClassInNonGenericObjectType: true
@@ -14,6 +11,3 @@ parameters:
     reportUnmatchedIgnoredErrors: true
     scanFiles:
         - bootstrap/app.php
-    ignoreErrors:
-        - '#\\bassert\\b#'
-

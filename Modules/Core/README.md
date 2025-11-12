@@ -6,23 +6,21 @@ The `Core` module owns cross-cutting services that power the rest of JOOwp. Toda
 
 - Shared WordPress integration primitives (HTTP clients, contracts, token resolver).
 - Action logging helpers for CRUD auditing.
-- Taxonomy APIs (categories for now; tags to follow the existing plan).
-- Seeders for bootstrap users and remembered WordPress tokens.
+- Base service providers/config wiring consumed by feature modules (for example, the WordPress module).
 
 ## WordPress integration
 
 - `Services/WordPress/Sdk.php` wraps the WordPress REST API using Guzzle and exposes helpers for posts, taxonomies, and JWT token exchange.
 - The SDK is registered in `app/Providers/CoreServiceProvider.php` and bound to the `Modules\Core\Services\WordPress\Contracts\SdkContract` interface.
 - All outbound calls use the `external` log channel and mask sensitive payloads (passwords, JWTs).
-- The `TokenResolver` automatically attaches stored JWT tokens to outbound requests when available.
+- The `TokenResolver` automatically attaches stored JWT tokens (now saved by the WordPress module) to outbound requests when available.
+- SDK configuration now lives under `config('wordpress.api')`, keeping Core free of feature-specific settings while still supporting the historical `core.wordpress` keys for backward compatibility.
 
-## Taxonomy – Categories
+## WordPress module hand-off
 
-- Routes live in `routes/api.php` under the `/api/v1/wordpress` namespace.
-- `Http/Controllers/WordPress/TokenController.php` manages token CRUD.
-- `Http/Controllers/WordPress/CategoryController.php` (and supporting requests/services) provide list/create/update/delete operations that proxy to WordPress via the SDK while respecting remembered tokens.
-- `Models/WpToken.php` plus the migration `database/migrations/2025_11_11_000001_create_wp_tokens_table.php` persist remembered JWTs.
-- The Vue categories page at `resources/js/Pages/Taxonomy/Categories/Index.vue` mirrors WordPress’ hierarchy by default and allows column sorting when needed. Form requests enforce validation with DocBlocks and strict types.
+- All WordPress-specific HTTP layers (controllers, routes, requests, models, migrations, and tests) now live in `Modules/WordPress`. The module consumes the SDK through dependency injection and persists remembered tokens via `Modules\WordPress\Models\WpToken`.
+- `/api/v1/wordpress/*` endpoints are registered by the WordPress module, preserving the existing URIs and route names (`api.core.wordpress.*`).
+- Feature UIs such as `resources/js/Pages/Taxonomy/Categories/Index.vue` continue to call the same endpoints; no SPA changes were required for the extraction.
 
 ## Testing
 
