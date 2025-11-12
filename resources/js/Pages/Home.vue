@@ -138,7 +138,7 @@
                 </div>
             </div>
         </nav>
-        <section v-if="displayWelcome" class="hero container">
+        <section v-if="displayWelcome" class="hero container content-section">
             <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
                 <div class="col-12 col-lg-6 text-center text-lg-start">
                     <span class="badge rounded-pill bg-secondary-subtle text-uppercase tracking-wide mb-3">
@@ -210,7 +210,7 @@
             </div>
         </section>
 
-        <section v-else class="container py-5 returning">
+        <section v-else class="container py-5 returning content-section">
                     <div class="card returning-card border-0 shadow-sm">
                 <div class="card-body d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
                     <div>
@@ -236,6 +236,123 @@
                 </div>
             </div>
         </section>
+        <section class="container-fluid px-0 content-section taxonomy-highlight">
+            <div class="row g-0">
+                <div class="col-12 col-lg-6">
+                    <div class="info-card h-100 border-0 rounded-0 rounded-end-lg">
+                        <div class="info-card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="h4 text-white mb-0">
+                                    <span class="fa-solid fa-folder-open me-2 text-primary"></span>
+                                    Categories
+                                </h3>
+                                <span class="badge text-bg-dark border border-primary-subtle fw-normal">
+                                    Core content pillars
+                                </span>
+                            </div>
+                            <p class="text-secondary mb-4">
+                                Curate foundational content groups inside WordPress to drive navigation, SEO, and editorial
+                                governance for the Laravel-facing experiences.
+                            </p>
+                            <ul class="list-unstyled taxonomy-list">
+                                <li v-for="category in categoryHighlights" :key="category.name">
+                                    <h4 class="h6 text-white mb-1">{{ category.name }}</h4>
+                                    <p class="text-secondary mb-0">{{ category.description }}</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                    <div class="info-card info-card-alt h-100 border-0 rounded-0 rounded-start-lg">
+                        <div class="info-card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h3 class="h4 text-white mb-0">
+                                    <span class="fa-solid fa-tags me-2 text-info"></span>
+                                    Tags
+                                </h3>
+                                <span class="badge text-bg-dark border border-info-subtle fw-normal">
+                                    Micro-topics
+                                </span>
+                            </div>
+                            <p class="text-secondary mb-4">
+                                Capture granular signals for personalization and search. Use tags to map experiments, feature
+                                flags, or campaign overlays back to WordPress entries.
+                            </p>
+                            <ul class="list-unstyled taxonomy-list">
+                                <li v-for="tag in tagHighlights" :key="tag.name">
+                                    <h4 class="h6 text-white mb-1">{{ tag.name }}</h4>
+                                    <p class="text-secondary mb-0">{{ tag.description }}</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="site-footer mt-auto">
+            <div class="container py-5">
+                <div class="row gy-4">
+                    <div class="col-12 col-lg-4">
+                        <h3 class="h5 text-white mb-3">{{ appName }}</h3>
+                        <p class="text-secondary mb-4">
+                            Modular Laravel infrastructure purpose-built for WordPress-led experiences. Ship dark-themed,
+                            rigorously tested features with total confidence.
+                        </p>
+                        <a
+                            class="btn btn-outline-light btn-sm px-4"
+                            :href="wordpressTargetUrl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Visit WordPress Site
+                        </a>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <h4 class="h6 text-uppercase text-secondary mb-3">Platform links</h4>
+                        <ul class="list-unstyled footer-links">
+                            <li>
+                                <a href="docs/principles.md" target="_blank" rel="noopener noreferrer">
+                                    Engineering Principles
+                                </a>
+                            </li>
+                            <li>
+                                <a href="docs/guides/core-wordpress-sdk.md" target="_blank" rel="noopener noreferrer">
+                                    WordPress SDK Guide
+                                </a>
+                            </li>
+                            <li>
+                                <a
+                                    href="docs/guides/study-case-inertia-progress.md"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Inertia Study Case
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-4">
+                        <h4 class="h6 text-uppercase text-secondary mb-3">Support</h4>
+                        <ul class="list-unstyled footer-links">
+                            <li>
+                                <a href="mailto:support@joowp.local">support@joowp.local</a>
+                            </li>
+                            <li>
+                                <a href="tel:+10000000000">+1 (000) 000-0000</a>
+                            </li>
+                            <li>
+                                <span>Availability: 24/7 monitoring</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-5 d-flex flex-column flex-md-row justify-content-between text-secondary small">
+                    <span>© {{ currentYear }} {{ appName }}. All rights reserved.</span>
+                    <span>WordPress integration target: {{ wordpressTargetUrl }}</span>
+                </div>
+            </div>
+        </footer>
     </div>
 </template>
 
@@ -246,6 +363,9 @@ import { isAxiosError } from 'axios';
 const STORAGE_KEY = 'joowp.welcome.seen';
 const strapline = 'Modular Laravel • WordPress Ready • Dark Aesthetic';
 const displayWelcome = ref(false);
+const appName = ((import.meta.env.VITE_APP_NAME as string | undefined) ?? 'JOOwp').trim() || 'JOOwp';
+const wordpressTargetUrl = 'https://soulevil.com';
+const currentYear = new Date().getFullYear();
 
 interface FormState {
     username: string;
@@ -285,6 +405,10 @@ interface TokenStatusPayload {
 
 type TokenResponse = ApiResponse<TokenPayload>;
 type TokenStatusResponse = ApiResponse<TokenStatusPayload>;
+interface TaxonomyItem {
+    name: string;
+    description: string;
+}
 
 const formState = reactive<FormState>({
     username: '',
@@ -301,6 +425,36 @@ const tokenStatus = reactive<{ remembered: boolean; maskedToken: string | null; 
 });
 const isInitialising = ref(true);
 const isClearingToken = ref(false);
+const categoryHighlights: TaxonomyItem[] = [
+    {
+        name: 'Product Releases',
+        description:
+            'Announce versioned drops, changelogs, and roadmap updates tied to Laravel modules or WordPress bundles.',
+    },
+    {
+        name: 'Case Studies',
+        description:
+            'Long-form success narratives highlighting integrations delivered through JOOwp’s modular foundation.',
+    },
+    {
+        name: 'Engineering Notes',
+        description: 'Deep dives into architectural decisions, SDK enhancements, and operating procedures.',
+    },
+];
+const tagHighlights: TaxonomyItem[] = [
+    {
+        name: '#dark-ui',
+        description: 'Visual polish updates, theming experiments, and contrast audits across the portfolio.',
+    },
+    {
+        name: '#automation',
+        description: 'CI/CD improvements, Pint/PHPCS tuning, and workflow instrumentation.',
+    },
+    {
+        name: '#wordpress-integration',
+        description: 'API contracts, SDK revisions, and lessons from upstream WordPress deployments.',
+    },
+];
 
 const isSubmitDisabled = computed<boolean>(() => {
     if (formState.loading) {
@@ -511,6 +665,14 @@ const clearRememberedToken = async (): Promise<void> => {
     min-height: 100vh;
     background: radial-gradient(circle at top left, #202635, #0d0f16 55%);
     color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.content-section {
+    flex: 1 0 auto;
+    width: 100%;
 }
 
 .hero {
@@ -570,6 +732,72 @@ const clearRememberedToken = async (): Promise<void> => {
 
 .returning-card .card-body .text-muted {
     color: rgba(226, 232, 240, 0.7) !important;
+}
+
+.taxonomy-highlight {
+    background: linear-gradient(135deg, rgba(11, 15, 25, 0.98), rgba(17, 24, 39, 0.92));
+    border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.info-card {
+    background: rgba(17, 24, 39, 0.8);
+}
+
+.info-card-alt {
+    background: rgba(15, 23, 42, 0.85);
+}
+
+.info-card-body {
+    padding: 3rem;
+    border-left: 1px solid rgba(148, 163, 184, 0.1);
+    border-right: 1px solid rgba(148, 163, 184, 0.1);
+    min-height: 100%;
+}
+
+.taxonomy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin: 0;
+}
+
+.taxonomy-list li {
+    padding-left: 0.5rem;
+    border-left: 2px solid rgba(96, 165, 250, 0.45);
+}
+
+@media (max-width: 991.98px) {
+    .info-card-body {
+        padding: 2rem 1.5rem;
+        border: none;
+    }
+}
+
+.site-footer {
+    background: linear-gradient(180deg, rgba(7, 11, 20, 0.95), rgba(7, 11, 20, 0.85));
+    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    width: 100%;
+}
+
+.site-footer .text-secondary {
+    color: rgba(203, 213, 225, 0.8) !important;
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.footer-links a {
+    color: rgba(226, 232, 240, 0.85);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover,
+.footer-links a:focus {
+    color: #60a5fa;
 }
 
 .top-nav {
