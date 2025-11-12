@@ -18,6 +18,8 @@
 2. **UI changes require browser verification** in addition to type + PHP tests.
 3. **Document every regression** so future work checks these failure modes.
 4. **Dark UI ≠ unreadable UI**—always verify contrast ratios in the browser before shipping any styling.
+5. **Bootstrap JS needs wiring**—dynamic components (dropdowns, modals) must be instantiated explicitly. Missing init silently breaks behaviour even when markup and styling look correct.
+6. **Add placeholder routes early**—ensure navigation links land on real Inertia pages (even stubbed) to avoid 404/blank-state regressions during iterative builds.
 
 Always revisit this note before touching SPA bootstrap code or third-party helpers.
 
