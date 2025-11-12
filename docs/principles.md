@@ -50,3 +50,4 @@ This document consolidates the core requirements and working agreements for the 
 - Any asynchronous UI interaction (AJAX/SPA request) must indicate loading by disabling relevant controls, showing a spinner, and dimming the context to prevent duplicate submissions.
 - Fatal errors surfaced to users must render as sticky toast notifications (fixed position, dismissible by the user). Non-fatal notices may auto-dismiss after a short delay but must still use the toast pattern for consistency.
 - Binary user interactions (on/off choices) must use switch-style controls for clarity; avoid plain checkboxes for SPA toggles.
+- All PHP classes, methods, and properties must include DocBlocks describing types; add a brief description when the logic is non-trivial, keeping the summary concise.
