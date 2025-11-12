@@ -15,7 +15,7 @@ Updated: 2025-11-12
 - Achieve comprehensive unit + feature test coverage for controllers, services, and UI behaviours.
 
 ## Tasks
-- [ ] Finalise requirements: category fields, validation rules, user roles.
+- [x] Finalise requirements: category fields, validation rules, user roles.
 - [x] Design API contract (`Modules/Core` or dedicated module) for categories CRUD using the SDK.
 - [x] Implement FormRequests with DocBlocks and strict typing.
 - [x] Add controller & service layer with ActionLogger hooks and API response envelope.
@@ -24,7 +24,7 @@ Updated: 2025-11-12
 - [x] Create Vue page (`Categories/Index.vue`) with table, search, and “Remember” token handling.
 - [x] Add Inertia route and navigation entry from the home screen quick links.
 - [x] Write unit tests (FormRequest, service, controller) and feature tests (API endpoints + UI smoke).
-- [ ] Update documentation (home guide + dedicated module readme) once feature is complete.
+- [x] Update documentation (home guide + dedicated module readme) once feature is complete.
 
 ## Notes
 - Reuse existing Core module unless categories evolve into a separate domain.
@@ -40,3 +40,4 @@ Updated: 2025-11-12
 - 2025-11-12: Swapped parent ID input for contextual dropdown with self-guarded tree options (console warnings resolved) and mirrored WordPress-style hierarchy in the listing table, including ID column and formatted parent/description outputs.
 - 2025-11-12: Refined table layout with sortable headers, icon-driven actions, corrected pagination summary, and WordPress-style tree default with posts column + delete affordance.
 - 2025-11-12: Fixed navbar active-state detection to respect query strings on taxonomy pages.
+- 2025-11-12: Updated docs (`docs/guides/home-screen.md`, `Modules/Core/README.md`) to capture taxonomy workflows and maintainers.
