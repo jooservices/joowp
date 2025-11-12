@@ -412,6 +412,7 @@ try {
 - Binary toggles use switches, not checkboxes
 - Loading states: disable controls + spinner + dim context
 - Toast notifications: top-right, auto-dismiss (5s) for non-fatal
+- Primary views use `container-fluid` wrappers and Bootstrap `row`/`col-*` grids by default; document any layout exceptions inline and in plan notes.
 
 ### 9. Service Layer Pattern
 
