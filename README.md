@@ -9,6 +9,7 @@ Modular Laravel 12 platform targeting PHP 8.4 with a Vue 3 + Inertia + Pinia fro
 - [Home Screen Guide](docs/guides/home-screen.md)
 - [Core WordPress SDK](docs/guides/core-wordpress-sdk.md)
 - [Study Case: Inertia Progress Regression](docs/guides/study-case-inertia-progress.md)
+- [Plans](docs/plans/README.md)
 
 ## Key Features
 
