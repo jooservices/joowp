@@ -75,23 +75,48 @@
                             <table class="table table-dark table-hover align-middle text-white">
                                 <thead>
                                     <tr class="text-secondary">
-                                        <th scope="col">Name</th>
-                                        <th scope="col">ID</th>
-                                        <th scope="col">Slug</th>
-                                        <th scope="col">Parent</th>
-                                        <th scope="col">Entries</th>
+                                        <th scope="col" class="sortable" @click="cycleSort('id')">
+                                            <span class="sortable-inner">
+                                                <span>ID</span>
+                                                <i :class="sortIcon('id')" aria-hidden="true"></i>
+                                            </span>
+                                        </th>
+                                        <th scope="col" class="sortable" @click="cycleSort('name')">
+                                            <span class="sortable-inner">
+                                                <span>Name</span>
+                                                <i :class="sortIcon('name')" aria-hidden="true"></i>
+                                            </span>
+                                        </th>
+                                        <th scope="col" class="sortable" @click="cycleSort('slug')">
+                                            <span class="sortable-inner">
+                                                <span>Slug</span>
+                                                <i :class="sortIcon('slug')" aria-hidden="true"></i>
+                                            </span>
+                                        </th>
+                                        <th scope="col" class="sortable" @click="cycleSort('parent')">
+                                            <span class="sortable-inner">
+                                                <span>Parent</span>
+                                                <i :class="sortIcon('parent')" aria-hidden="true"></i>
+                                            </span>
+                                        </th>
+                                        <th scope="col" class="sortable" @click="cycleSort('posts')">
+                                            <span class="sortable-inner">
+                                                <span>Posts</span>
+                                                <i :class="sortIcon('posts')" aria-hidden="true"></i>
+                                            </span>
+                                        </th>
                                         <th scope="col" class="text-end">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-if="isLoading">
-                                        <td colspan="5" class="text-center">
+                                        <td colspan="6" class="text-center">
                                             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                                             Loading categories…
                                         </td>
                                     </tr>
                                     <tr v-else-if="categories.length === 0">
-                                        <td colspan="5" class="text-center text-secondary">
+                                        <td colspan="6" class="text-center text-secondary">
                                             No categories match the current filters.
                                         </td>
                                     </tr>
@@ -102,13 +127,13 @@
                                         @click="selectForEdit(category)"
                                     >
                                         <td>
+                                            <span class="badge bg-secondary-subtle text-uppercase text-dark fw-semibold">#{{ category.id }}</span>
+                                        </td>
+                                        <td>
                                             <div class="fw-semibold hierarchy-label">
                                                 {{ hierarchyLabel(category) }}
                                             </div>
                                             <div class="text-secondary small" v-html="sanitizedDescription(category.description)"></div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-secondary-subtle text-uppercase text-dark fw-semibold">#{{ category.id }}</span>
                                         </td>
                                         <td>{{ category.slug }}</td>
                                         <td>
@@ -118,29 +143,17 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <span
-                                                class="status-chip"
-                                                :class="category.count > 0 ? 'chip-live' : 'chip-empty'"
-                                            >
-                                                {{ category.count > 0 ? 'Active' : 'Empty' }}
-                                                <small class="ms-2 text-secondary">{{ category.count }}</small>
-                                            </span>
+                                            <span class="fw-semibold">{{ category.count }}</span>
                                         </td>
                                         <td class="text-end">
                                             <button
                                                 type="button"
-                                                class="btn btn-sm btn-outline-info me-2"
-                                                @click.stop="selectForEdit(category)"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                type="button"
-                                                class="btn btn-sm btn-outline-danger"
+                                                class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center gap-2 px-3"
                                                 :disabled="isSubmitting"
                                                 @click.stop="confirmDelete(category)"
                                             >
-                                                Delete
+                                                <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Delete</span>
                                             </button>
                                         </td>
                                     </tr>
@@ -299,6 +312,9 @@ interface TokenStatus {
     username?: string | null;
 }
 
+type SortColumn = 'hierarchy' | 'id' | 'name' | 'slug' | 'parent' | 'posts';
+type SortDirection = 'asc' | 'desc';
+
 const categories = ref<Category[]>([]);
 const isLoading = ref(false);
 const isSubmitting = ref(false);
@@ -306,6 +322,7 @@ const editingCategory = ref<Category | null>(null);
 const tokenStatus = ref<TokenStatus>({ remembered: false, username: null });
 const alerts = ref<Array<{ id: string; variant: 'success' | 'danger'; message: string }>>([]);
 const perPageOptions = [10, 20, 40, 80];
+const sortState = reactive<{ column: SortColumn; direction: SortDirection }>({ column: 'hierarchy', direction: 'asc' });
 const parentRegistry = reactive(new Map<number, ParentNode>());
 const parentNameMap = computed(() => {
     const map = new Map<number, string>([[0, 'Root']]);
@@ -320,10 +337,13 @@ const parentNameMap = computed(() => {
 
     return map;
 });
-const displayCategories = computed<CategoryRow[]>(() => {
+const treeContext = computed(() => {
     const items = categories.value;
+    const depthMap = new Map<number, number>();
+    const rows: CategoryRow[] = [];
+
     if (items.length === 0) {
-        return [];
+        return { rows, depthMap };
     }
 
     const knownIds = new Set(items.map((item) => item.id));
@@ -336,11 +356,10 @@ const displayCategories = computed<CategoryRow[]>(() => {
         children.set(parentId, bucket);
     });
 
-    const sortByName = (list: Category[]): Category[] =>
+    const naturalSort = (list: Category[]): Category[] =>
         list.sort((first, second) => first.name.localeCompare(second.name));
 
     const traversed = new Set<number>();
-    const rows: CategoryRow[] = [];
 
     const traverse = (parentId: number, depth: number): void => {
         const siblings = children.get(parentId);
@@ -348,10 +367,11 @@ const displayCategories = computed<CategoryRow[]>(() => {
             return;
         }
 
-        sortByName(siblings);
+        naturalSort(siblings);
 
         siblings.forEach((child) => {
             traversed.add(child.id);
+            depthMap.set(child.id, depth);
             rows.push({ ...child, depth });
             traverse(child.id, depth + 1);
         });
@@ -361,11 +381,27 @@ const displayCategories = computed<CategoryRow[]>(() => {
 
     items.forEach((item) => {
         if (! traversed.has(item.id)) {
+            depthMap.set(item.id, 0);
             rows.push({ ...item, depth: 0 });
         }
     });
 
-    return rows;
+    return { rows, depthMap };
+});
+
+const displayCategories = computed<CategoryRow[]>(() => {
+    const { rows, depthMap } = treeContext.value;
+
+    if (sortState.column === 'hierarchy') {
+        return rows;
+    }
+
+    return categories.value
+        .map((category) => ({
+            ...category,
+            depth: depthMap.get(category.id) ?? 0,
+        }))
+        .sort(compareCategories);
 });
 const parentOptions = computed<ParentOption[]>(() => {
     const options: ParentOption[] = [{ value: 0, label: 'None', depth: 0 }];
@@ -558,6 +594,50 @@ const resolveParentName = (parentId: number): string => {
     return parentNameMap.value.get(parentId) ?? `Category #${parentId}`;
 };
 
+const compareCategories = (first: CategoryRow, second: CategoryRow): number => {
+    const directionMultiplier = sortState.direction === 'asc' ? 1 : -1;
+
+    switch (sortState.column) {
+        case 'id':
+            return (first.id - second.id) * directionMultiplier;
+        case 'slug':
+            return first.slug.localeCompare(second.slug) * directionMultiplier;
+        case 'parent':
+            return resolveParentName(first.parent).localeCompare(resolveParentName(second.parent)) * directionMultiplier;
+        case 'posts':
+            return (first.count - second.count) * directionMultiplier;
+        case 'name':
+            return first.name.localeCompare(second.name) * directionMultiplier;
+        case 'hierarchy':
+        default:
+            return 0;
+    }
+};
+
+const cycleSort = (column: SortColumn): void => {
+    if (sortState.column === column) {
+        if (sortState.direction === 'asc') {
+            sortState.direction = 'desc';
+        } else {
+            sortState.column = 'hierarchy';
+            sortState.direction = 'asc';
+        }
+    } else {
+        sortState.column = column;
+        sortState.direction = 'asc';
+    }
+};
+
+const sortIcon = (column: SortColumn): string => {
+    if (sortState.column !== column) {
+        return 'fa-solid fa-sort text-secondary opacity-50';
+    }
+
+    return sortState.direction === 'asc'
+        ? 'fa-solid fa-sort-up text-info'
+        : 'fa-solid fa-sort-down text-info';
+};
+
 const sanitizedDescription = (rawDescription: string): string => {
     if (! rawDescription) {
         return '<span class="text-secondary">No description</span>';
@@ -696,6 +776,28 @@ onMounted(async () => {
     color: rgba(240, 245, 252, 0.96);
     background: rgba(39, 53, 76, 0.8);
     border-color: rgba(78, 99, 135, 0.5);
+}
+
+.toolbar .form-select {
+    color: rgba(159, 174, 203, 0.8);
+}
+
+.table thead th.sortable {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    color: rgba(148, 163, 184, 0.95);
+}
+
+.table thead th.sortable:hover,
+.table thead th.sortable:focus {
+    color: rgba(226, 232, 240, 0.95);
+}
+
+.sortable-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
 }
 
 .btn-tertiary {

@@ -38,4 +38,5 @@ Updated: 2025-11-12
 - 2025-11-12: Applied AdminLTE-inspired dark palette to taxonomy categories for richer contrast and accent colors.
 - 2025-11-12: Tightened toolbar refresh button sizing and added Font Awesome icons to category actions for visual clarity.
 - 2025-11-12: Swapped parent ID input for contextual dropdown with self-guarded tree options (console warnings resolved) and mirrored WordPress-style hierarchy in the listing table, including ID column and formatted parent/description outputs.
+- 2025-11-12: Refined table layout with sortable headers, icon-driven actions, corrected pagination summary, and WordPress-style tree default with posts column + delete affordance.
 - 2025-11-12: Fixed navbar active-state detection to respect query strings on taxonomy pages.
