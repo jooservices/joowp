@@ -1,6 +1,6 @@
 # JOOservices Platform - AI Coding Instructions
 
-Modular Laravel 12 + Vue 3 platform targeting PHP 8.4 with strict type safety and comprehensive quality gates. Before starting any work, review `docs/principles.md` and `docs/code-quality.md`.
+Modular Laravel 12 + Vue 3 platform targeting PHP 8.4 with strict type safety and comprehensive quality gates. Before starting any work, review `docs/architecture/principles.md` and `docs/development/code-quality.md`.
 
 ## Quick Start
 
@@ -588,9 +588,10 @@ Key patterns:
 
 ## Key Files to Understand
 
-- `docs/principles.md` - Core engineering requirements
-- `docs/code-quality.md` - Detailed tooling pipeline  
-- `docs/guides/core-wordpress-sdk.md` - WordPress integration guide
+- `docs/architecture/principles.md` - Core engineering requirements
+- `docs/architecture/flow.md` - Request/response flow and service layer pattern
+- `docs/development/code-quality.md` - Detailed tooling pipeline  
+- `docs/guides/wordpress-sdk.md` - WordPress integration guide
 - `composer.json` scripts - Development and quality commands
 - `vite-module-loader.js` - Module asset compilation logic
 - `config/modules.php` - Module generation and structure rules

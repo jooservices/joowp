@@ -1,10 +1,10 @@
 ## Core WordPress SDK
 
-The Core module ships with a reusable SDK for talking to the [WordPress REST API](https://developer.wordpress.org/rest-api/reference/). The SDK wraps common endpoints with a type-safe, testable service based on Guzzle so application code stays focused on business logic.
+The Core module ships with a reusable SDK for talking to the [WordPress REST API](https://developer.wordpress.org/rest-api/reference/). The SDK wraps common endpoints with a type-safe, testable service based on Guzzle so application code stays focused on business logic, while the WordPress module owns the HTTP controllers, requests, and persistence around API workflows.
 
 ### Configuration
 
-The SDK reads its configuration from `config('core.wordpress')`. Provide the following environment variables to customise connectivity:
+The SDK reads its configuration from `config('wordpress.api')` (and falls back to the same environment variables used previously inside `Modules\Core`). Provide the following environment variables to customise connectivity:
 
 | Variable | Description | Default |
 | --- | --- | --- |
@@ -55,12 +55,10 @@ The contract exposes convenience helpers for the most common content resources:
 
 All responses are returned as decoded associative arrays. Transport failures and malformed JSON are normalised to `Modules\Core\Services\WordPress\Exceptions\WordPressRequestException` for consistent error handling.
 
-### Authentication flow
-
-- Frontend credentials are posted to the platform’s own API (`POST /api/v1/wordpress/token`)—never directly to WordPress. The controller validates payloads, calls `SdkContract::token()`, persists the raw response inside the `wp_tokens` table, and returns a high-level status message to the browser.
+- Frontend credentials are posted to the platform’s own API (`POST /api/v1/wordpress/token`)—never directly to WordPress. The WordPress module’s controller validates payloads, calls `SdkContract::token()`, persists the raw response inside the `wp_tokens` table, and returns a high-level status message to the browser.
 - The navbar login form exposes a **Remember token** switch. When enabled, the resulting JWT is upserted (never duplicated) into the `wp_tokens` table; otherwise the token is used transiently and not persisted.
 - `GET /api/v1/wordpress/token` returns the current token status (`remembered`, `masked_token`, and `username`) so SPA clients can hide credential input once a token is stored. `DELETE /api/v1/wordpress/token` forgets the remembered token and re-enables manual sign-in.
-- The `wp_tokens` schema stores the original username, the issued JWT, and the entire response body (JSON) for auditing or later refresh workflows. Subsequent WordPress SDK calls automatically attach the most recently remembered token as a `Bearer` header.
+- The `wp_tokens` schema stores the original username, the issued JWT, and the entire response body (JSON) for auditing or later refresh workflows. Subsequent WordPress SDK calls automatically attach the most recently remembered token as a `Bearer` header through the shared resolver inside the Core service provider.
 - Every outbound call to WordPress (including the JWT exchange) is logged via the dedicated `external` log channel. Request logs capture HTTP method, URI, and sanitized payloads (passwords masked); response logs mask sensitive tokens but retain enough structure for traceability.
 
 ### API response envelope

@@ -11,7 +11,7 @@ The home screen (`/`) serves as the public landing page for JOOwp. Its intent is
 
 - Shows the returning card with shortcuts to the WordPress SDK guide and a button to replay the onboarding hero.
 - The navbar replicates the expected dark aesthetic and collects WordPress credentials when no token is remembered.
-- The “Remember” switch persists the JWT in the `wp_tokens` table through `POST /api/v1/wordpress/token`. The platform never sends credentials directly to WordPress; it calls the Core API which, in turn, uses the SDK.
+- The “Remember” switch persists the JWT in the `wp_tokens` table through `POST /api/v1/wordpress/token`. The platform never sends credentials directly to WordPress; it calls the WordPress module API which, in turn, uses the shared SDK.
 
 ### Remembered token state
 
@@ -37,4 +37,3 @@ The home screen (`/`) serves as the public landing page for JOOwp. Its intent is
 - **Taxonomy plans** — `docs/plans/2025-11-11-categories-management.md` and `docs/plans/2025-11-11-tags-management.md` (roadmaps for taxonomy modules).
 
 Use the home screen as the canonical starting point whenever you need to onboard teammates, validate that tokens are remembered, or navigate to feature documentation.
-
