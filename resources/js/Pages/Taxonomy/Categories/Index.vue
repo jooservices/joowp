@@ -1,5 +1,5 @@
 <template>
-    <div class="categories-page container py-5 text-white">
+    <div class="categories-page container-fluid py-5 text-white">
         <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-5 gap-3">
             <div>
                 <p class="text-uppercase text-secondary mb-2 small">Taxonomy Suite</p>
