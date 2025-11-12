@@ -15,7 +15,7 @@ final class WordPressTokenTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function testItPersistsTokenViaInternalApi(): void
+    public function test_it_persists_token_via_internal_api(): void
     {
         $sdk = Mockery::mock(SdkContract::class);
         $sdk
@@ -59,7 +59,7 @@ final class WordPressTokenTest extends TestCase
         $this->assertSame('demo***ken', $response->json('data.masked_token'));
     }
 
-    public function testItReturnsFailureEnvelopeWhenSdkFails(): void
+    public function test_it_returns_failure_envelope_when_sdk_fails(): void
     {
         $exception = new WordPressRequestException('Upstream failure', 502);
 
@@ -94,7 +94,7 @@ final class WordPressTokenTest extends TestCase
         $this->assertDatabaseCount('wp_tokens', 0);
     }
 
-    public function testItDoesNotStoreTokenWhenNotRemembered(): void
+    public function test_it_does_not_store_token_when_not_remembered(): void
     {
         $sdk = Mockery::mock(SdkContract::class);
         $sdk
@@ -128,7 +128,7 @@ final class WordPressTokenTest extends TestCase
         $this->assertDatabaseCount('wp_tokens', 0);
     }
 
-    public function testItReturnsAbsentStateWhenNoTokenRemembered(): void
+    public function test_it_returns_absent_state_when_no_token_remembered(): void
     {
         $response = $this->getJson('/api/v1/wordpress/token');
 
@@ -143,7 +143,7 @@ final class WordPressTokenTest extends TestCase
         ]);
     }
 
-    public function testItReturnsMaskedTokenWhenTokenExists(): void
+    public function test_it_returns_masked_token_when_token_exists(): void
     {
         WpToken::query()->create([
             'username' => 'demo',
@@ -165,7 +165,7 @@ final class WordPressTokenTest extends TestCase
         ]);
     }
 
-    public function testItClearsRememberedToken(): void
+    public function test_it_clears_remembered_token(): void
     {
         WpToken::query()->create([
             'username' => 'demo',

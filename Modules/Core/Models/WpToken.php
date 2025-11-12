@@ -23,4 +23,3 @@ final class WpToken extends Model
         'payload' => 'array',
     ];
 }
-

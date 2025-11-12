@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Logging\ActionLogger;
-use Modules\Core\Services\WordPress\CategoryService;
-use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Modules\Core\Services\WordPress\CategoryService;
+use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use PHPUnit\Framework\TestCase;
 
 final class WordPressCategoryServiceTest extends TestCase

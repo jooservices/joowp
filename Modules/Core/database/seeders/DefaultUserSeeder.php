@@ -20,4 +20,3 @@ final class DefaultUserSeeder extends Seeder
         );
     }
 }
-

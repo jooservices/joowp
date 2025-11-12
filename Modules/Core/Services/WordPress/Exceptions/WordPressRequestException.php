@@ -53,4 +53,3 @@ final class WordPressRequestException extends RuntimeException
         return is_int($code) && $code > 0 ? $code : null;
     }
 }
-

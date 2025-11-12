@@ -9,8 +9,8 @@ use Illuminate\Http\JsonResponse;
 final class ApiResponse
 {
     /**
-     * @param array<mixed> $data
-     * @param array<string, mixed> $meta
+     * @param  array<mixed>  $data
+     * @param  array<string, mixed>  $meta
      */
     public static function success(
         string $code,
@@ -23,8 +23,8 @@ final class ApiResponse
     }
 
     /**
-     * @param array<mixed>|null $data
-     * @param array<string, mixed> $meta
+     * @param  array<mixed>|null  $data
+     * @param  array<string, mixed>  $meta
      */
     public static function error(
         string $code,
@@ -37,15 +37,15 @@ final class ApiResponse
     }
 
     /**
-     * @param array<mixed>|null $data
-     * @param array<string, mixed> $meta
+     * @param  array<mixed>|null  $data
+     * @param  array<string, mixed>  $meta
      */
     private static function make(
         bool $ok,
         string $code,
         int $status,
         string $message,
-        array|null $data,
+        ?array $data,
         array $meta
     ): JsonResponse {
         return response()->json([
@@ -58,4 +58,3 @@ final class ApiResponse
         ], 200);
     }
 }
-

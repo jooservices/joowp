@@ -15,9 +15,7 @@ use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
 
 final class TokenController extends Controller
 {
-    public function __construct(private readonly SdkContract $sdk)
-    {
-    }
+    public function __construct(private readonly SdkContract $sdk) {}
 
     public function store(StoreWpTokenRequest $request): JsonResponse
     {
@@ -145,5 +143,4 @@ final class TokenController extends Controller
             .str_repeat('*', $maskLength)
             .Str::substr($token, -$visibleSuffix);
     }
-
 }

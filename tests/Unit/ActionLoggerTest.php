@@ -39,7 +39,7 @@ class ActionLoggerTest extends TestCase
                 return true;
             });
 
-        $logger = new ActionLogger();
+        $logger = new ActionLogger;
         $logger->log(
             'user.updated',
             new StubUser(42),
@@ -70,7 +70,7 @@ class ActionLoggerTest extends TestCase
                 return true;
             });
 
-        (new ActionLogger())->log('task.run', null);
+        (new ActionLogger)->log('task.run', null);
 
         Carbon::setTestNow();
         Mockery::close();
@@ -79,9 +79,7 @@ class ActionLoggerTest extends TestCase
 
 final class StubUser implements Authenticatable
 {
-    public function __construct(private readonly int $identifier)
-    {
-    }
+    public function __construct(private readonly int $identifier) {}
 
     public function getAuthIdentifierName(): string
     {
@@ -118,4 +116,3 @@ final class StubUser implements Authenticatable
         return 'remember_token';
     }
 }
-

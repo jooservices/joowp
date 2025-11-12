@@ -9,11 +9,11 @@ use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Log;
+use Mockery;
+use Mockery\MockInterface;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
 use Modules\Core\Services\WordPress\Sdk;
-use Mockery;
-use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Http\Message\ResponseInterface;
@@ -154,4 +154,3 @@ class WordPressSdkTest extends TestCase
             ->times($times);
     }
 }
-

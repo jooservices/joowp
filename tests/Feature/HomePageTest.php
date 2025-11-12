@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 class HomePageTest extends TestCase
 {
-    public function testHomePageRendersHomeComponent(): void
+    public function test_home_page_renders_home_component(): void
     {
         $response = $this->get(route('home'));
 
