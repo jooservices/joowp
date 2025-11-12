@@ -615,4 +615,61 @@ git commit -m "test: add unit tests for UserService (95% coverage)"
 git commit -m "fix: add missing declare(strict_types=1) to User.php"
 ```
 
+### Commit Scope and Size
+
+**1 commit = 1 logical unit of work**
+
+**Size guidelines:**
+- **1-5 files:** Usually appropriate
+- **5-15 files:** Acceptable if same feature/scope (e.g., CRUD endpoint + tests)
+- **15-30 files:** Justify in commit message (e.g., new module setup)
+- **>30 files:** Consider splitting into multiple commits
+
+**Split commits when:**
+- Multiple independent features
+- Code changes + unrelated documentation updates
+- Different bug fixes in separate areas
+- Multiple unrelated refactorings
+
+**Keep together when:**
+- Feature implementation + its tests (atomic)
+- Interface + implementation (cannot separate)
+- Related configuration changes (e.g., phpunit.xml + composer.json for coverage)
+- Complete CRUD operation (Controller + Service + FormRequest + Tests)
+
+**Decision rule:** "Could this commit be reverted independently without breaking anything?"
+- ✅ Yes → Good commit boundary
+- ❌ No → Consider combining or splitting
+
+**Examples:**
+
+```bash
+# ✅ GOOD - 12 files, single feature
+git commit -m "feat: add Category CRUD endpoints
+
+- CategoryController with 4 methods
+- 4 FormRequest classes for validation
+- CategoryService business logic
+- 2 feature tests + 1 unit test
+- API routes registration"
+
+# ✅ GOOD - 3 files, related config
+git commit -m "chore: add test coverage configuration
+
+- phpunit.xml: add coverage section
+- composer.json: add test:coverage scripts
+- phpcs.xml: exclude bootstrap/cache"
+
+# ❌ BAD - Mixed concerns
+git commit -m "update project"
+# Contains: new feature + docs + bug fix + refactoring
+# Should be 4 separate commits
+
+# ❌ BAD - Unrelated files
+git commit -m "fix issues"
+# - User.php (add strict_types)
+# - README.md (update installation)
+# Should be 2 commits with different scopes
+```
+
 **Key Documentation

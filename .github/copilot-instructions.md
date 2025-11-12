@@ -372,9 +372,33 @@ git commit -m "docs: update AI coding instructions"
 5. Commit message format: `<type>: <description>`
    - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
 
+**Commit scope guidelines:**
+- **1 commit = 1 logical unit of work**
+- **1-5 files:** Usually OK
+- **5-15 files:** Acceptable if same feature (e.g., Controller + Service + Tests)
+- **15-30 files:** Justify in message (e.g., new module setup)
+- **>30 files:** Split into multiple commits
+- **Decision rule:** "Could this be reverted independently?" → Yes = good boundary
+
 **Examples:**
-- `docs: enforce strict_types requirement in principles`
-- `feat: add CategoryController with FormRequest validation`
-- `test: add CategoryService unit tests (95% coverage)`
-- `fix: add declare(strict_types=1) to missing files`
+```bash
+# ✅ GOOD - Single feature with tests (12 files)
+git commit -m "feat: add CategoryController with CRUD endpoints
+
+- Controller, Service, 4 FormRequests
+- 2 feature tests, 1 unit test"
+
+# ✅ GOOD - Related config changes (3 files)
+git commit -m "chore: add test coverage configuration
+
+- phpunit.xml, composer.json, phpcs.xml"
+
+# ❌ BAD - Mixed concerns
+git commit -m "update stuff"
+# Contains: feature + docs + bugfix (should be 3 commits)
+```
+
+**Split when:** Multiple features, unrelated changes, different scopes  
+**Keep together when:** Feature + tests, interface + implementation, atomic CRUD
+
 
