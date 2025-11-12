@@ -349,3 +349,32 @@ Key patterns:
   - "Remember token" switch in navbar - stores JWT for reuse
 
 Remember: Read all documentation in `docs/` before starting any task. Every change must pass the full quality pipeline and have accompanying tests.
+
+## Git Workflow
+
+**CRITICAL: Only commit files you directly created or modified**
+
+```bash
+# ❌ WRONG - Commits everything including others' work
+git add .
+git commit -m "docs: update instructions"
+
+# ✅ CORRECT - Explicit files only
+git add .github/copilot-instructions.md
+git commit -m "docs: update AI coding instructions"
+```
+
+**Pre-commit checklist:**
+1. Run `git status` - review what will be committed
+2. Run `git diff --cached` - verify only your changes
+3. Stage specific files: `git add <file1> <file2>`
+4. Never use `git add .` or `git add -A` unless you created ALL changed files
+5. Commit message format: `<type>: <description>`
+   - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
+
+**Examples:**
+- `docs: enforce strict_types requirement in principles`
+- `feat: add CategoryController with FormRequest validation`
+- `test: add CategoryService unit tests (95% coverage)`
+- `fix: add declare(strict_types=1) to missing files`
+

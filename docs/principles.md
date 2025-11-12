@@ -553,3 +553,66 @@ npm run build
 - `README.md` - Project overview and setup
 
 **Read all documentation before starting any task.**
+
+## Git Commit Guidelines
+
+### Commit Discipline
+
+**ONLY commit files you directly created or modified:**
+- ❌ WRONG: `git add .` or `git add -A` (commits everything including others' work)
+- ✅ CORRECT: `git add specific-file.php specific-file2.md` (explicit file list)
+
+**Example violation:**
+```bash
+# You updated docs/principles.md
+git add .
+git commit -m "docs: update principles"
+# ERROR: Also commits unrelated PHP files from other work
+```
+
+**Correct workflow:**
+```bash
+# You updated docs/principles.md
+git add docs/principles.md
+git commit -m "docs: update principles"
+# CORRECT: Only commits your documentation change
+```
+
+**Before every commit:**
+```bash
+# 1. Check what will be committed
+git status
+git diff --cached
+
+# 2. Verify ONLY your changes are staged
+# 3. If wrong files staged: git reset HEAD <file>
+# 4. Stage only files you modified: git add <specific-files>
+# 5. Commit with clear message
+git commit -m "scope: description"
+```
+
+**Commit message format:**
+```
+<type>: <description>
+
+<optional body>
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `style`: Code style (formatting, no logic change)
+- `refactor`: Code change (no feature/fix)
+- `test`: Adding/updating tests
+- `chore`: Build/tooling changes
+
+**Examples:**
+```bash
+git commit -m "docs: add coverage requirements to principles.md"
+git commit -m "feat: implement CategoryService with audit logging"
+git commit -m "test: add unit tests for UserService (95% coverage)"
+git commit -m "fix: add missing declare(strict_types=1) to User.php"
+```
+
+**Key Documentation
