@@ -502,6 +502,13 @@ try {
 - **Toast notifications REQUIRED** - Top-right position, auto-dismiss (5s) for non-fatal errors
 - **Container layout REQUIRED** - Primary views use `container-fluid` wrappers and Bootstrap `row`/`col-*` grids by default
 
+**Delete actions (MANDATORY):**
+- **Delete buttons MUST be red** - Use `btn-danger` class for all delete actions
+- **Icons REQUIRED** - Use appropriate FontAwesome icons for context (trash, times, remove, etc.)
+- **Confirmation modal MANDATORY** - All delete actions MUST show confirmation dialog before execution
+- **Modal content MUST include:** Action description, item being deleted, warning about irreversibility
+- **Modal buttons:** Cancel (secondary) + Confirm Delete (danger/red)
+
 **Layout requirements (MANDATORY):**
 - **All pages MUST include Navbar** - No exceptions, ensures consistent navigation
 - **Active state indication REQUIRED** - Must highlight current page's parent and child nav items
@@ -510,7 +517,12 @@ try {
 - **Active child item:** Must be highlighted when exact route matches
 - **Route matching logic REQUIRED** - Automatic determination of active states based on current route
 
-**WHY:** Consistent UI/UX across all pages, users always know where they are in navigation hierarchy, professional appearance with dark theme.
+**WHY:** 
+- Consistent UI/UX across all pages
+- Users always know where they are in navigation hierarchy
+- Professional appearance with dark theme
+- Delete confirmations prevent accidental data loss
+- Red color universally signals destructive action
 
 ### 9. Service Layer Pattern
 

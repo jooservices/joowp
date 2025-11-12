@@ -395,6 +395,127 @@ $logger->log(
 - **Axios integration**: Available globally via `window.axios`, handle errors with type guards
 - **Component structure**: `<template>`, `<script setup lang="ts">`, `<style scoped>` order
 
+### Implementing Delete Actions
+
+**All delete actions MUST follow this pattern:**
+
+1. **Delete button with red styling and icon:**
+   ```vue
+   <button 
+       @click="showDeleteModal(item)" 
+       class="btn btn-sm btn-danger"
+       :disabled="loading"
+   >
+       <i class="fas fa-trash"></i> Delete
+   </button>
+   ```
+
+2. **Confirmation modal (Bootstrap 5):**
+   ```vue
+   <template>
+       <!-- Delete Confirmation Modal -->
+       <div class="modal fade" id="deleteModal" tabindex="-1">
+           <div class="modal-dialog">
+               <div class="modal-content bg-dark">
+                   <div class="modal-header border-secondary">
+                       <h5 class="modal-title">Confirm Delete</h5>
+                       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                   </div>
+                   <div class="modal-body">
+                       <p>Are you sure you want to delete <strong>{{ itemToDelete?.name }}</strong>?</p>
+                       <p class="text-warning mb-0">
+                           <i class="fas fa-exclamation-triangle"></i> 
+                           This action cannot be undone.
+                       </p>
+                   </div>
+                   <div class="modal-footer border-secondary">
+                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                           Cancel
+                       </button>
+                       <button 
+                           type="button" 
+                           class="btn btn-danger" 
+                           @click="confirmDelete"
+                           :disabled="deleting"
+                       >
+                           <span v-if="deleting">
+                               <i class="fas fa-spinner fa-spin"></i> Deleting...
+                           </span>
+                           <span v-else>
+                               <i class="fas fa-trash"></i> Confirm Delete
+                           </span>
+                       </button>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </template>
+   
+   <script setup lang="ts">
+   import { ref } from 'vue';
+   import { Modal } from 'bootstrap';
+   
+   interface Item {
+       id: number;
+       name: string;
+   }
+   
+   const itemToDelete = ref<Item | null>(null);
+   const deleting = ref<boolean>(false);
+   let deleteModalInstance: Modal | null = null;
+   
+   const showDeleteModal = (item: Item) => {
+       itemToDelete.value = item;
+       if (!deleteModalInstance) {
+           const modalEl = document.getElementById('deleteModal');
+           deleteModalInstance = new Modal(modalEl!);
+       }
+       deleteModalInstance.show();
+   };
+   
+   const confirmDelete = async () => {
+       if (!itemToDelete.value) return;
+       
+       deleting.value = true;
+       
+       try {
+           await window.axios.delete(`/api/v1/items/${itemToDelete.value.id}`);
+           
+           // Close modal
+           deleteModalInstance?.hide();
+           
+           // Show success toast
+           toast.success('Item deleted successfully');
+           
+           // Reload data or remove from list
+           // ... your data refresh logic
+       } catch (error) {
+           if (axios.isAxiosError(error)) {
+               toast.error(error.response?.data?.message || 'Delete failed', {
+                   autoClose: false
+               });
+           }
+       } finally {
+           deleting.value = false;
+           itemToDelete.value = null;
+       }
+   };
+   </script>
+   ```
+
+3. **Icon variations for different contexts:**
+   - Generic delete: `<i class="fas fa-trash"></i>`
+   - Remove from list: `<i class="fas fa-times"></i>`
+   - Clear/reset: `<i class="fas fa-eraser"></i>`
+   - Archive: `<i class="fas fa-archive"></i>`
+
+**Key requirements:**
+- Always use `btn-danger` class for delete buttons
+- Always show confirmation modal before executing delete
+- Modal must explain what will be deleted and warn about irreversibility
+- Show loading state during delete operation
+- Display success/error toast after operation
+
 ### Creating a Vue Page with Navbar
 1. Create SFC in `resources/js/Pages/YourPage.vue`:
    ```vue
