@@ -286,7 +286,7 @@ interface SdkContract
 | 0.2.18 (Jul 2024) | ⚠️ Limited | Chat/completions + embeddings only | No audio/image support; SSE sometimes omits `usage` chunk—patch by synthesizing usage via token counts. |
 | <0.2.18 | 🚫 Unsupported | Legacy/local-only | Missing OpenAI-compatible server; SDK will hard-fail with `UnsupportedVersionException`. |
 
-### Decision Log & Risk Notes (to sync into `docs/decisions/2025-11-13-lm-studio-api.md`)
+### Decision Log & Risk Notes (mirrored in `docs/decisions/2025-11-13-lm-studio-api.md`)
 1. **DL-2025-11-13-01 – Streaming transport:** Standardize on SSE and defer WebSocket implementation until LM Studio publishes a GA socket endpoint. Risk: streaming reconnect jitter; mitigation: observer buffering + downgrade path.
 2. **DL-2025-11-13-02 – Authentication posture:** Require `LM_STUDIO_API_KEY` outside `local` and emit telemetry when missing to prevent accidental LAN exposure. Mitigation: config validator + Artisan doctor command.
 3. **DL-2025-11-13-03 – Version floor:** Support LM Studio ≥0.2.18, prefer ≥0.2.20. Mitigation: health check enforces version + capability gating before binding services.
