@@ -197,6 +197,6 @@ After completion:
 
 ## References
 
-- [Engineering Principles](../principles.md#type-safety-first)
-- [Code Compliance Plan](2025-11-12-code-compliance.md)
+- [Engineering Principles](../../architecture/principles.md#type-safety-first)
+- [Code Compliance Plan](../../technical/code-compliance.md)
 - [Pre-commit Hook](../../hooks/README.md)
