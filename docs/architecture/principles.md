@@ -11,6 +11,12 @@ JOOservices Platform is built on strict type safety, comprehensive testing, and 
 - Explicit types on all methods, `final` classes, `readonly` dependencies
 - PHPStan level max
 
+### PHP 8.4 Strict Compliance
+- **Modern PHP features only:** Use PHP 8.4 features for better type safety
+- **Enhanced type system:** Leverage union types, readonly properties, property hooks
+- **Performance optimization:** JIT compilation and memory improvements
+- **AI-friendly patterns:** Clear type declarations for better AI code generation
+
 ### Quality Pipeline  
 - **Order:** Pint → PHPCS → PHPMD → PHPStan
 - **Command:** `composer lint` (must pass before commit)
@@ -170,7 +176,64 @@ Document array shapes and collection types using PHPDoc to help static analysis 
 
 ---
 
-## 2. Quality Pipeline
+## 2. PHP 8.4 Strict Compliance
+
+### 🎯 Principle: Modern PHP Feature Adoption
+**What you must do:** Use PHP 8.4 features exclusively with strict typing and modern language patterns.
+
+**Why:** PHP 8.4 provides superior type safety, performance optimizations, and developer experience. Modern features enable better AI code generation, static analysis, and runtime performance. Strict compliance ensures consistent codebase patterns.
+
+### 📋 Guidelines: PHP 8.4 Feature Usage
+
+#### 1. Enhanced Type System
+Leverage PHP 8.4's improved union types, intersection types, and generic support for better type safety.
+
+#### 2. Property Hooks and Readonly
+Use property hooks for computed properties and readonly for immutable data structures.
+
+#### 3. Performance Features
+Utilize JIT compilation benefits and memory improvements for better runtime performance.
+
+#### 4. AI-Friendly Patterns
+Write code that AI agents can easily understand and generate using clear type declarations.
+
+### ⚙️ Rules/Standards: PHP 8.4 Requirements
+
+#### Language Feature Requirements:
+- ✅ **MUST:** Use PHP 8.4 syntax and features exclusively
+- ✅ **MUST:** Leverage property hooks for computed properties
+- ✅ **MUST:** Use readonly properties for immutable data
+- ✅ **MUST:** Implement union and intersection types where appropriate
+
+#### Type System Enhancement:
+- ✅ **MUST:** Use enhanced array shape declarations: `array{key: string, value: int}`
+- ✅ **MUST:** Leverage improved generic type support
+- ✅ **MUST:** Use intersection types for complex dependencies: `ServiceInterface&LoggerAwareInterface`
+- ✅ **MUST:** Implement proper null safety with union types: `string|null`
+
+#### Performance Optimization:
+- ✅ **MUST:** Design code to benefit from JIT compilation
+- ✅ **MUST:** Use efficient memory patterns with readonly properties
+- ✅ **MUST:** Implement proper caching with PHP 8.4's improved reflection performance
+- ❌ **FORBIDDEN:** Legacy PHP patterns that prevent JIT optimization
+
+#### AI-Friendly Code Patterns:
+- ✅ **MUST:** Clear, explicit type declarations for AI code generation
+- ✅ **MUST:** Use attributes for metadata instead of PHPDoc where possible
+- ✅ **MUST:** Consistent patterns that AI agents can reliably reproduce
+- ✅ **MUST:** Self-documenting code structures using modern PHP features
+
+#### Migration Standards:
+- ✅ **MUST:** All new code uses PHP 8.4 features
+- ✅ **MUST:** Refactor existing code to PHP 8.4 patterns during modifications
+- ❌ **FORBIDDEN:** Mixing PHP 7.x/8.0/8.1 patterns with modern code
+- ❌ **FORBIDDEN:** Legacy workarounds when native PHP 8.4 solutions exist
+
+> **Implementation Details:** See [Development Guidelines](../development/guidelines.md#php-84-implementation) for specific feature usage patterns and migration strategies.
+
+---
+
+## 3. Quality Pipeline
 
 ### 🎯 Principle: Automated Quality Gates
 **What you must do:** All code must pass automated quality checks before merge to maintain consistent standards.
@@ -208,7 +271,7 @@ Maintain tool configurations in version control; never override locally.
 
 ---
 
-## 3. Test Coverage
+## 4. Test Coverage
 
 ### 🎯 Principle: Comprehensive Testing
 **What you must do:** All code must be covered by automated tests that verify correctness and prevent regressions.
@@ -273,7 +336,7 @@ composer test:coverage-check  # Enforce coverage thresholds (CI gate)
 
 ---
 
-## 4. Modular Architecture
+## 5. Modular Architecture
 
 ### 🎯 Principle: Domain-Driven Modularity
 **What you must do:** Organize code by business domain, not technical layer, with clear module boundaries.
@@ -325,7 +388,7 @@ Ask: "Does this contain business-specific logic?"
 
 ---
 
-## 5. API Response Standardization
+## 6. API Response Standardization
 
 ### 🎯 Principle: Consistent API Responses
 **What you must do:** All API endpoints must use a standardized response format for predictable client integration.
@@ -359,7 +422,7 @@ Use the same error structure across all endpoints for predictable error handling
 
 ---
 
-## 6. Audit Logging
+## 7. Audit Logging
 
 ### 🎯 Principle: Comprehensive Audit Trail
 **What you must do:** All domain mutations must be logged with actor, before/after state, and metadata.
@@ -400,7 +463,7 @@ Include request IP, user agent, and other relevant context.
 
 ---
 
-## 7. Third-Party Integration Security
+## 8. Third-Party Integration Security
 
 ### 🎯 Principle: Secure Third-Party Proxy
 **What you must do:** All third-party API interactions must be proxied through Laravel backend, never called directly from frontend.
@@ -448,7 +511,7 @@ Implement consistent error handling and respect third-party rate limits.
 
 ---
 
-## 8. Frontend Standards
+## 9. Frontend Standards
 
 ### 🎯 Principle: Type-Safe Dark Theme UI
 **What you must do:** All frontend code must be TypeScript-only with consistent dark theme UI patterns.
@@ -492,7 +555,7 @@ Use appropriate controls for different interaction types (switches vs checkboxes
 
 ---
 
-## 9. Layered Request Architecture
+## 10. Layered Request Architecture
 
 ### 🎯 Principle: Strict Layer Separation
 **What you must do:** Follow Middleware → FormRequest → Controller → Service → Repository flow with single responsibility per layer.
@@ -543,7 +606,7 @@ HTTP Request → Middleware → FormRequest → Controller → Service → Repos
 
 ---
 
-## 10. SOLID Design Principles
+## 11. SOLID Design Principles
 
 ### 🎯 Principle: SOLID Object-Oriented Design
 **What you must do:** Apply SOLID principles to create maintainable, extensible, and testable object-oriented code.
@@ -608,7 +671,7 @@ High-level modules should not depend on low-level modules. Both should depend on
 
 ---
 
-## 11. API Documentation Standards
+## 12. API Documentation Standards
 
 ### 🎯 Principle: Living API Documentation
 **What you must do:** All API endpoints must be automatically documented and kept current with code changes.
@@ -665,7 +728,7 @@ Provide live API testing capabilities for development and debugging.
 
 ---
 
-## 12. API Versioning Discipline
+## 13. API Versioning Discipline
 
 ### 🎯 Principle: Backward Compatibility and Version Control
 **What you must do:** All API changes must maintain backward compatibility or use proper versioning to prevent breaking existing integrations.
@@ -727,7 +790,7 @@ Maintain multiple API versions simultaneously to support gradual client migratio
 
 ---
 
-## 13. FormRequest Validation
+## 14. FormRequest Validation
 
 ### 🎯 Principle: Centralized Input Validation
 **What you must do:** All input validation must be handled by FormRequest classes with 100% test coverage.
@@ -766,7 +829,7 @@ FormRequests must have 100% test coverage due to their simplicity.
 
 ---
 
-## 14. Pre-Commit Workflow
+## 15. Pre-Commit Workflow
 
 ### 🎯 Principle: Quality Gates Before Merge
 **What you must do:** All code must pass quality pipeline and coverage checks before any commit.
@@ -807,7 +870,7 @@ npm run build
 
 ---
 
-## 15. Git Standards
+## 16. Git Standards
 
 ### 🎯 Principle: Atomic Commits
 **What you must do:** Only commit files you directly created or modified, with clear commit boundaries.
@@ -839,7 +902,7 @@ npm run build
 
 ---
 
-## 16. Task Completion Accountability
+## 17. Task Completion Accountability
 
 ### 🎯 Principle: Plan-Code Synchronization
 **What you must do:** Update plan files immediately when features are completed to maintain accurate project state.
@@ -895,7 +958,7 @@ Ensure next AI agent has clear understanding of what's been accomplished.
 
 ---
 
-## 17. Commit Discipline
+## 18. Commit Discipline
 
 ### 🎯 Principle: Atomic and Traceable Commits
 **What you must do:** Break work into small, independent tasks with meaningful commits that can be safely rolled back.
@@ -961,7 +1024,7 @@ Link commits back to specific plan tasks and requirements.
 
 ---
 
-## 18. AI-Driven Development Workflow
+## 19. AI-Driven Development Workflow
 
 ### 🎯 Principle: Multi-Agent Quality Pipeline
 **What you must do:** Follow strict AI handoff protocol with atomic commits and multi-stage review gates.
@@ -1008,7 +1071,7 @@ Ultimate quality gate before public release.
 
 ---
 
-## 19. Zero Tolerance Quality
+## 20. Zero Tolerance Quality
 
 ### 🎯 Principle: Perfect Code Quality
 **What you must do:** Maintain absolutely zero warnings, deprecations, or suppressions in production code.
@@ -1043,7 +1106,7 @@ Any suppression requires explicit justification and human approval.
 
 ---
 
-## 20. Documentation as Code
+## 21. Documentation as Code
 
 ### 🎯 Principle: Self-Documenting Code
 **What you must do:** All code must be self-documenting with comprehensive PHPDoc annotations and clear inline comments.
@@ -1093,7 +1156,7 @@ Maintain production branches free of TODO comments and temporary documentation.
 
 ---
 
-## 21. Performance by Design
+## 22. Performance by Design
 
 ### 🎯 Principle: Performance-First Architecture
 **What you must do:** Consider performance implications in all architectural decisions and implement efficient data access patterns.
@@ -1149,7 +1212,7 @@ Design database indexes that support your query patterns.
 
 ---
 
-## 22. Security First
+## 23. Security First
 
 ### 🎯 Principle: Security-by-Design
 **What you must do:** Security must be a primary consideration in all design decisions with comprehensive protection against common vulnerabilities.
@@ -1218,7 +1281,7 @@ Secure all API endpoints with proper rate limiting and access controls.
 
 ---
 
-## 23. Defensive Programming
+## 24. Defensive Programming
 
 ### 🎯 Principle: Fail Fast and Explicit
 **What you must do:** Validate all inputs and assumptions with explicit checks that fail immediately when violated.
