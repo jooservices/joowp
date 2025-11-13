@@ -1,0 +1,9 @@
+ignore:
+  - vendor/**
+  - node_modules/**
+  - storage/**
+  - bootstrap/**
+  - public/**
+  - .git/**
+  - .env
+  - tests/Fixtures/**
