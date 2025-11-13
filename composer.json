@@ -67,7 +67,7 @@
             "vendor/bin/phpmd app,bootstrap,config,database,routes,tests text phpmd.xml"
         ],
         "analyze:phpstan": [
-            "vendor/bin/phpstan analyse"
+            "vendor/bin/phpstan analyse --memory-limit=512M"
         ],
         "test": [
             "@php artisan config:clear --ansi",
