@@ -1,202 +1,89 @@
-# Strict Types Enforcement Plan
+# Plan – Strict Types Enforcement
 
-**Created:** 2025-11-12  
-**Status:** To Do  
-**Priority:** P0 (Critical - Blocks quality gates)  
-**Estimated Time:** 45 minutes
+Status: Ready  
+Priority: P0  
+Owner: TBD  
+Created: 2025-11-12  
+Updated: 2025-11-12  
+Target: 2025-11-13  
+Epic: Code Quality
 
-## Overview
+## Summary
+Add mandatory `declare(strict_types=1)` to all PHP files missing this requirement. Pre-commit hook blocks commits without strict types, but 21 existing files have violations that prevent clean development workflow.
 
-Add `declare(strict_types=1)` to all PHP files missing this mandatory requirement. Pre-commit hook already enforces this for new files, but existing codebase has 20+ violations.
+**Scope:** Existing codebase cleanup only. All new files already enforced by pre-commit hook.
 
-## Rationale
+## Dependencies
+- Access to modify app/, config/, database/, and Modules/ directories
+- Ability to run quality pipeline tools locally
+- Pre-commit hook configuration (already in place)
 
-**Why this is critical:**
-- Type safety is non-negotiable in our codebase
-- Prevents runtime type coercion bugs
-- PHPStan max level requires strict types
-- Pre-commit hook blocks commits without it
-- Existing violations prevent clean commits
+## Objectives
+- Achieve 100% strict types compliance across entire PHP codebase (21 files)
+- Enable clean commits without pre-commit hook violations
+- Eliminate potential type coercion bugs from non-strict mode
+- Ensure PHPStan max level analysis works correctly
 
-## Current Violations
+## Tasks
+- [ ] Fix App layer files (3 files)
+  - DoD: Add `declare(strict_types=1)` to app/Models/User.php
+  - DoD: Add `declare(strict_types=1)` to app/Providers/AppServiceProvider.php  
+  - DoD: Add `declare(strict_types=1)` to app/Http/Controllers/Controller.php
+  - DoD: All files pass `grep -L "declare(strict_types=1)"` verification
+  - Estimated: 1 hour
 
-### App Layer (3 files)
-1. `app/Models/User.php`
-2. `app/Providers/AppServiceProvider.php`
-3. `app/Http/Controllers/Controller.php`
+- [ ] Fix Config layer files (11 files)
+  - DoD: Add strict types declaration to all config/*.php files
+  - DoD: Verify placement before return statements in config arrays
+  - DoD: All 11 config files have proper strict types declaration
+  - DoD: Configuration still loads correctly after changes
+  - Estimated: 1.5 hours
 
-### Config Layer (11 files)
-1. `config/app.php`
-2. `config/auth.php`
-3. `config/cache.php`
-4. `config/database.php`
-5. `config/filesystems.php`
-6. `config/logging.php`
-7. `config/mail.php`
-8. `config/modules.php`
-9. `config/queue.php`
-10. `config/services.php`
-11. `config/session.php`
+- [ ] Fix Database migration files (3 files)
+  - DoD: Add strict types to database/migrations/0001_01_01_000000_create_users_table.php
+  - DoD: Add strict types to database/migrations/0001_01_01_000001_create_cache_table.php
+  - DoD: Add strict types to database/migrations/0001_01_01_000002_create_jobs_table.php
+  - DoD: Migrations still run successfully with `php artisan migrate:fresh`
+  - Estimated: 0.5 hours
 
-### Database Layer (3 Laravel defaults)
-1. `database/migrations/0001_01_01_000000_create_users_table.php`
-2. `database/migrations/0001_01_01_000001_create_cache_table.php`
-3. `database/migrations/0001_01_01_000002_create_jobs_table.php`
+- [ ] Fix Core Module files (4 files)
+  - DoD: Add strict types to Modules/Core/app/Providers/CoreServiceProvider.php
+  - DoD: Add strict types to Modules/Core/app/Providers/RouteServiceProvider.php
+  - DoD: Add strict types to Modules/Core/app/Providers/EventServiceProvider.php
+  - DoD: Add strict types to Modules/Core/database/seeders/CoreDatabaseSeeder.php
+  - DoD: Module still loads and functions correctly
+  - Estimated: 1 hour
 
-### Core Module (4 files)
-1. `Modules/Core/app/Providers/CoreServiceProvider.php`
-2. `Modules/Core/app/Providers/RouteServiceProvider.php`
-3. `Modules/Core/app/Providers/EventServiceProvider.php`
-4. `Modules/Core/database/seeders/CoreDatabaseSeeder.php`
+- [ ] Run comprehensive verification
+  - DoD: `find app config database/migrations Modules/Core -name "*.php" -exec grep -L "declare(strict_types=1)" {} \;` returns empty
+  - DoD: Full quality pipeline passes: `composer lint`
+  - DoD: All tests pass: `composer test`
+  - DoD: Pre-commit hook validation passes on test commit
+  - Estimated: 0.5 hours
 
-**Total:** 21 files
+**Total Estimated Effort:** 4.5 hours (~half day for 1 developer)
 
-## Implementation Tasks
+## Success Metrics
+- **Compliance:** 100% of PHP files have `declare(strict_types=1)` (21/21 files)
+- **Quality:** Full pipeline passes without strict types violations
+- **Workflow:** Pre-commit hooks pass without `--no-verify` flag
+- **Stability:** All existing tests continue to pass after changes
 
-### Task 1: App Layer (5 mins)
+## Risks & Mitigations
+| Risk | Impact | Probability | Mitigation |
+|------|--------|-------------|------------|
+| Tests fail due to type coercion bugs | Medium | Low | Fix underlying bugs rather than removing strict types |
+| Config loading breaks | High | Low | Test configuration loading after each file change |
+| Migration issues | Medium | Low | Test migrations in fresh database environment |
+| Module loading problems | Medium | Low | Verify service providers still register correctly |
 
-**Files:**
-- `app/Models/User.php`
-- `app/Providers/AppServiceProvider.php`
-- `app/Http/Controllers/Controller.php`
+## Related Plans
+- `docs/technical/code-compliance.md` - Overall code quality improvement strategy
+- `docs/architecture/principles.md#type-safety` - PHP 8.4 Strict Compliance principle (#2)
+- Phase 2: Final class enforcement and readonly property adoption
 
-**Change for each file:**
-```php
-<?php
-
-declare(strict_types=1);  // ADD THIS LINE
-
-namespace App\...;
-```
-
-**Validation:**
-```bash
-grep -L "declare(strict_types=1)" app/Models/User.php app/Providers/AppServiceProvider.php app/Http/Controllers/Controller.php
-# Should return empty (no results = all have declare)
-```
-
-### Task 2: Config Layer (10 mins)
-
-**Files:** All 11 files in `config/*.php`
-
-**Change for each file:**
-```php
-<?php
-
-declare(strict_types=1);  // ADD THIS LINE
-
-return [
-```
-
-**Note:** Config files return arrays directly, so declaration goes before return statement.
-
-**Validation:**
-```bash
-grep -L "declare(strict_types=1)" config/*.php
-# Should return empty
-```
-
-### Task 3: Database Layer (10 mins)
-
-**Files:** 3 Laravel migration files in `database/migrations/`
-
-**Change for each migration:**
-```php
-<?php
-
-declare(strict_types=1);  // ADD THIS LINE
-
-use Illuminate\Database\Migrations\Migration;
-```
-
-**Validation:**
-```bash
-grep -L "declare(strict_types=1)" database/migrations/0001_01_01_*.php
-# Should return empty
-```
-
-### Task 4: Core Module (10 mins)
-
-**Files:**
-- `Modules/Core/app/Providers/CoreServiceProvider.php`
-- `Modules/Core/app/Providers/RouteServiceProvider.php`
-- `Modules/Core/app/Providers/EventServiceProvider.php`
-- `Modules/Core/database/seeders/CoreDatabaseSeeder.php`
-
-**Change for each file:**
-```php
-<?php
-
-declare(strict_types=1);  // ADD THIS LINE
-
-namespace Modules\Core\...;
-```
-
-**Validation:**
-```bash
-grep -L "declare(strict_types=1)" Modules/Core/app/Providers/*.php Modules/Core/database/seeders/CoreDatabaseSeeder.php
-# Should return empty
-```
-
-### Task 5: Final Verification (5 mins)
-
-**Verify all PHP files have strict types:**
-```bash
-# Check all PHP files in key directories
-find app config database/migrations Modules/Core/app Modules/Core/database/seeders -name "*.php" -exec grep -L "declare(strict_types=1)" {} \;
-# Should return empty if all files fixed
-```
-
-**Run quality pipeline:**
-```bash
-composer lint:pint      # Should pass
-composer lint:phpcs     # Should pass
-composer analyze:phpmd  # Should pass
-composer analyze:phpstan # Should pass
-```
-
-**Test pre-commit hook:**
-```bash
-# Make a trivial change to trigger hook
-touch test.txt
-git add test.txt
-git commit -m "test: verify strict types enforcement"
-# Hook should check PHP files and pass
-git reset HEAD~1
-rm test.txt
-```
-
-## Acceptance Criteria
-
-- [ ] All 21 files have `declare(strict_types=1)` after `<?php` opening tag
-- [ ] Grep verification returns empty (no files missing declaration)
-- [ ] Quality pipeline passes without strict types violations
-- [ ] Pre-commit hook validation passes
-- [ ] PHPStan analysis completes without missing strict types errors
-
-## Risk Assessment
-
-**Low Risk:**
-- Adding `declare(strict_types=1)` is additive only
-- Doesn't change function signatures or logic
-- PHP will catch type mismatches immediately if any exist
-- All tests should still pass (or reveal pre-existing bugs)
-
-**If tests fail after adding:**
-- Indicates pre-existing type coercion bug
-- Must fix the actual type issue, not remove strict types
-- Good thing we're catching it now
-
-## Post-Implementation
-
-After completion:
-1. Commit changes: `git commit -m "refactor: add declare(strict_types=1) to all PHP files"`
-2. Run full test suite: `composer test`
-3. Update compliance plan status
-4. Move to Phase 3 (Final Classes)
-
-## References
-
-- [Engineering Principles](../../architecture/principles.md#type-safety-first)
-- [Code Compliance Plan](../../technical/code-compliance.md)
-- [Pre-commit Hook](../../hooks/README.md)
+## Notes
+- This is blocking work - P0 priority because it prevents clean git workflow
+- Changes are additive only - no logic modifications required
+- Pre-existing type coercion bugs (if any) will surface as test failures
+- Consider this a prerequisite for all other quality improvement work
