@@ -10,25 +10,39 @@ An Architecture Decision Record captures important architectural decisions along
 
 Each ADR should include:
 
-```markdown
-# ADR-NNN: Title
+# Architecture Decision Records (ADRs)
 
-**Status:** Proposed | Accepted | Deprecated | Superseded
+Documents key technical decisions and their rationale.
 
-**Date:** YYYY-MM-DD
+## Active ADRs
 
-**Context:**
-What is the issue we're facing?
+- [**2025-11-13: LM Studio API Selection**](2025-11-13-lm-studio-api.md) - Why we chose LM Studio over alternatives
 
-**Decision:**
-What did we decide to do?
+## ADR Format
 
-**Consequences:**
-What are the implications of this decision?
+Each ADR should include:
 
-**Alternatives Considered:**
-What other options did we evaluate?
-```
+- **Status:** Proposed | Accepted | Deprecated | Superseded
+- **Context:** What problem are we solving?
+- **Decision:** What did we decide?
+- **Consequences:** What are the tradeoffs?
+- **Alternatives Considered:** What else did we evaluate?
+
+## Creating New ADRs
+
+1. Name: `YYYY-MM-DD-decision-title.md`
+2. Follow format above
+3. Link from this README
+4. Reference in related plans/guides
+
+## Proposed Future ADRs
+
+Based on current architecture:
+
+- **ADR-002**: Service layer pattern (1 service = 1 business logic)
+- **ADR-003**: Repository pattern for database access only
+- **ADR-004**: Resource vs raw JSON response strategy
+- **ADR-005**: No repository layer for external APIs
 
 ## Existing Decisions
 

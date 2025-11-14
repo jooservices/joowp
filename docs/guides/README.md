@@ -1,22 +1,37 @@
-# Guides
+# Implementation Guides
 
-How-to tutorials and step-by-step instructions for common development tasks.
+Feature-specific tutorials and complete code examples.
 
 ## Available Guides
 
-### Process & Planning
-- **[Writing Plans](writing-plans.md)** - Standard format for feature implementation plans with status tracking, DoD criteria, and workflow integration
+### SDK Integration
+- [**WordPress SDK**](core-wordpress-sdk.md) - WordPress REST API integration patterns
+- [**LM Studio SDK**](lm-studio-sdk.md) - Local AI model integration and usage
 
-### Integration Guides
-- **[WordPress SDK](wordpress-sdk.md)** - Using the WordPress REST API integration for posts, categories, media, and authentication
+### Planning & Process
+- [**Writing Plans**](writing-plans.md) - How to write technical implementation plans
 
-### Technical Studies
-- **[Inertia Progress Regression](inertia-progress-regression.md)** - Case study on implementing progress indicators and handling edge cases
+## Guide vs Plan
+
+**Plans** (in `docs/plans/`) define **WHAT** to build:
+- Task breakdown with Definition of Done
+- Success metrics and acceptance criteria
+- Time estimates and dependencies
+
+**Guides** (this directory) show **HOW** to build:
+- Complete code examples
+- Best practices and patterns
+- Common pitfalls and solutions
+
+**Example:**
+- **Plan:** "Implement LM Studio SDK with chat completion endpoint"
+- **Guide:** Full working code for chat completion with all parameters
 
 ## Contributing
 
 When creating a new guide:
 1. Use clear, action-oriented title: "How to X", "Writing Y", "Implementing Z"
-2. Include code examples with expected output
-3. Link to related architecture docs and existing guides
-4. Add entry to this README with brief description
+2. Include complete code examples with expected output
+3. Show both success and error cases
+4. Link to related architecture docs and existing guides
+5. Add entry to this README with brief description

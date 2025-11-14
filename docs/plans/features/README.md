@@ -1,20 +1,33 @@
 # Feature Plans
 
-This directory contains product and user-facing feature planning documents.
+Product and user-facing feature implementation plans.
 
-## Coming Soon
+## Active Plans
 
-Feature planning documents will be organized here using the same date-prefixed naming convention:
+- [**AI Content Suite**](2025-11-14-ai-content-suite.md) - AI-powered content generation and management
 
-- `YYYY-MM-DD-feature-name.md`
+## Planning Standards
 
-Examples of future feature plans:
+All feature plans follow the template defined in [Writing Plans Guide](../../guides/writing-plans.md):
+
+- **Naming:** `YYYY-MM-DD-feature-name.md` (date-prefixed)
+- **Required sections:** Status, Priority, Owner, Summary, Objectives, Tasks with DoD
+- **Success metrics:** Measurable acceptance criteria
+- **Time estimates:** Per task with total estimate
+
+## Creating New Plans
+
+1. Copy template from [plans/README.md](../README.md#plan-file-template)
+2. Name file: `YYYY-MM-DD-feature-name.md`
+3. Fill all required sections
+4. Link from this README
+5. Update main [docs/README.md](../../README.md) if major feature
+
+## Future Feature Plans
+
+Examples of upcoming features:
 - User authentication improvements
 - New dashboard features  
 - API enhancements
 - Integration features
 - UI/UX improvements
-
-## Template
-
-Use the standard plan template from [../README.md](../README.md#plan-file-template) for all feature plans.

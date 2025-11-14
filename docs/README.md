@@ -52,42 +52,47 @@ Complete documentation for the JOOservices WordPress platform following the **Pr
 
 ---
 
-## � Specialized Documentation
+## 📖 Specialized Documentation
 
-### �📖 Guides
+### 🤖 AI Development
+
+- [**AI Workflow**](ai-workflow.md) - ⭐ **START HERE** for all AI agents (multi-agent pipeline)
+- [**AI Infrastructure Setup**](ai-infrastructure-setup.md) - Personal hardware/tools configuration
+
+### 📖 Guides
 Step-by-step tutorials and how-to documentation.
 
 - [**WordPress SDK**](guides/core-wordpress-sdk.md) - Using the WordPress REST API SDK
+- [**LM Studio SDK**](guides/lm-studio-sdk.md) - Local AI model integration
 - [**Writing Plans**](guides/writing-plans.md) - Creating implementation plans
 
-### 🎯 Features
-Feature implementation plans organized by business domain.
+### 📋 Planning & Implementation
 
-#### WordPress
-- [**Categories**](features/wordpress/categories.md) - Category management implementation
-- [**Posts**](features/wordpress/posts.md) - Post management implementation  
-- [**Tags**](features/wordpress/tags.md) - Tag management implementation
-- [**Media**](features/wordpress/media.md) - Media upload and management
-- [**Home Screen**](features/wordpress/home-screen.md) - Home page UI/UX
+#### Active Plans
 
-#### AI
-- [**AI Content Suite**](features/ai-content-suite.md) - AI-powered content generation
+See [plans/](plans/) directory for all implementation plans following our [planning standards](plans/README.md).
 
-### 🔧 Technical
-Technical improvement and infrastructure plans.
+**Feature Plans:**
+- [**AI Content Suite**](plans/features/2025-11-14-ai-content-suite.md) - AI-powered content generation
 
-- [**Caching Strategy**](technical/caching-strategy.md) - Caching implementation
-- [**Code Compliance**](technical/code-compliance.md) - Code standards compliance  
-- [**Code Quality Remediation**](technical/code-quality-remediation.md) - Quality improvements
-- [**Parent Category Dropdown**](technical/parent-category-dropdown.md) - UI component enhancement
-- [**Realtime Socket Integration**](technical/realtime-socket-integration.md) - WebSocket implementation
-- [**Strict Types Enforcement**](technical/strict-types-enforcement.md) - Type safety enforcement
-- [**WordPress Module**](technical/wordpress-module.md) - WordPress module architecture
+**Technical Plans:**
+- [**Parent Category Dropdown**](plans/technical/2025-11-12-parent-category-dropdown.md) - Category hierarchy UI
+- [**Realtime Socket Integration**](plans/technical/2025-11-12-realtime-socket-integration.md) - WebSocket support
+- [**Strict Types Enforcement**](plans/technical/2025-11-12-strict-types-enforcement.md) - PHP 8.4 compliance
+- [**WordPress Module**](plans/technical/2025-11-12-wordpress-module.md) - WordPress SDK modularization
+- [**LM Studio SDK**](plans/technical/2025-11-13-lm-studio-sdk.md) - Local AI integration
+- [**Caching Strategy**](plans/technical/2025-11-14-caching-strategy.md) - Redis caching layer
+- [**Code Compliance**](plans/technical/2025-11-14-code-compliance.md) - PSR-12 & strict types
+- [**Code Quality Remediation**](plans/technical/2025-11-14-code-quality-remediation.md) - Quality improvements
+
+#### Planning Resources
+- [**Writing Plans Guide**](guides/writing-plans.md) - How to write implementation plans
+- [**Plan Template**](plans/README.md#plan-file-template) - Standard plan structure
 
 ### 📝 Decisions
 Architecture Decision Records (ADRs) documenting major architectural choices.
 
-_(Coming soon: Service layer pattern, Repository pattern, Resource vs JSON)_
+- [**2025-11-13: LM Studio API Selection**](decisions/2025-11-13-lm-studio-api.md) - Why we chose LM Studio over alternatives
 
 ### 🔍 Retrospectives
 Post-mortems and lessons learned from production issues.
