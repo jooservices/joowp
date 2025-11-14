@@ -22,6 +22,7 @@
 ## 🔄 Multi-Agent Pipeline
 
 ### Stage 1: Cursor AI (Team Lead)
+**Model Used:** [To Be Decided]
 **Role:** Strategic planning, documentation management, architectural decisions
 **Responsibilities:**
 - Create project plans with atomic, testable tasks
@@ -35,6 +36,7 @@
 - Review existing `plans/` to understand project direction
 
 ### Stage 2: ChatGPT Plus (Full Stack Developer)
+**Model Used:** [To Be Decided]
 **Role:** Feature implementation with atomic commits
 **Responsibilities:**
 - Implement tasks from Cursor AI's plans
@@ -58,6 +60,7 @@
 6. Move to next task
 
 ### Stage 3: GitHub Pro (Code Reviewer)
+**Model Used:** [To Be Decided]
 **Role:** Quality enforcement and approval gateway
 **Responsibilities:**
 - Review all code against documented standards
@@ -72,6 +75,7 @@
 - Understand `development/code-quality.md` for tool expectations
 
 ### Stage 4: LM Studio (Documentation Manager)
+**Model Used:** [To Be Decided]
 **Role:** Automated documentation and changelog generation
 **Responsibilities:**
 - Monitor git hooks for completed tasks
@@ -83,6 +87,7 @@
 **Focus:** Plan file analysis and changelog generation
 
 ### Stage 5: Human (Final Approver)
+**Model Used:** Not Applicable
 **Role:** Ultimate quality gate and business decision maker
 **Responsibilities:**
 - Final review of completed features
