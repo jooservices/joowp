@@ -127,8 +127,118 @@ npm run build              # Production build succeeds
 ### Forbidden Practices:
 - ❌ **Never assume requirements** - always reference documentation
 - ❌ **Never bypass quality gates** - all tools must pass
-- ❌ **Never commit partial work** - only complete, working features
+- ❌ **Never commit partial work** - only complete, working sub-tasks
 - ❌ **Never modify files you didn't create** - explicit file staging only
+- ❌ **NEVER commit without explicit human approval** - AI agents MUST ask and wait
+
+## 🚫 CRITICAL: Commit Authorization
+
+**ABSOLUTE RULE:** AI agents are **FORBIDDEN** from executing `git commit` without explicit human approval.
+
+### Atomic Commits Per Sub-task
+
+Break features into tasks, commit each task separately:
+
+```
+Feature: User Authentication
+├─ Task A1: User model + tests → Commit 1
+├─ Task A2: UserRepository + tests → Commit 2
+├─ Task A3: AuthService + tests → Commit 3
+└─ Task A4: Controllers + tests → Commit 4
+```
+
+### Workflow for Each Sub-task:
+
+1. **Complete ONE task completely**
+   - Code implementation finished
+   - Tests written and passing
+   - Quality gates passed (`composer lint && composer test:coverage-check`)
+   - **Do NOT proceed until 100% complete**
+
+2. **Stage files for THAT task only**
+   ```bash
+   git add app/Models/User.php tests/Unit/Models/UserTest.php
+   ```
+   **Rule:** Stage ONLY when task is complete. Never stage work-in-progress.
+
+3. **Ask human for approval**
+   ```
+   "Ready to commit? Task A1 complete: User model with validation
+   
+   Staged files:
+   - app/Models/User.php  
+   - tests/Unit/Models/UserTest.php
+   
+   Quality gates: ✅ All passed"
+   ```
+
+4. **WAIT for human response**
+   - Valid approval: "commit", "yes", "ok", "go ahead"
+   - Any other response = do NOT commit
+
+5. **Execute commit (only after approval)**
+   ```bash
+   git commit -m "feat: add User model with validation (Task A1)"
+   ```
+
+6. **Repeat for next task**
+
+### Examples:
+
+✅ **CORRECT:**
+```
+[AI completes Task A1: User model]
+[AI runs composer lint && composer test - all pass]
+AI: git add app/Models/User.php tests/Unit/Models/UserTest.php
+AI: "Ready to commit? Task A1 complete: User model with validation
+     
+     Staged files:
+     - app/Models/User.php
+     - tests/Unit/Models/UserTest.php
+     
+     Quality gates: ✅ All passed"
+[AI WAITS]
+Human: "commit"
+AI: git commit -m "feat: add User model with validation (Task A1)"
+```
+
+❌ **WRONG:**
+```
+AI: "I've completed the work."
+AI: [executes git commit without asking]
+```
+
+❌ **WRONG:**
+```
+AI: "Ready to commit?"
+AI: [commits immediately without waiting for response]
+```
+
+❌ **WRONG:**
+```
+AI: [stages 3 tasks at once and commits together]
+# Should be: 1 task = 1 commit
+```
+
+### Enforcement:
+
+- **Pre-commit hook:** Verifies human approval
+- **CI/CD:** Rejects unauthorized commits
+- **Code review:** Auto-commits = PR rejection
+
+**Violation consequences:**
+- Session terminated
+- Changes rolled back  
+- Incident logged for review
+
+### Commit Scope Guidelines:
+
+- **1-7 files:** Perfect (one sub-task)
+- **7-15 files:** OK if same logical unit
+- **15-30 files:** Must justify in message
+- **>30 files:** SPLIT into multiple commits
+
+**Remember:** 1 sub-task = 1 commit. Each commit must be atomic, complete, and independently reversible.
 
 ## 🔗 Quick Navigation
 

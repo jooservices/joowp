@@ -83,6 +83,132 @@ public function handle($request): array
 
 ---
 
+## Git & Commit Workflow
+
+### AI Agent Commit Authorization
+
+**ABSOLUTE RULE:** AI agents are **FORBIDDEN** from executing `git commit` without explicit human approval.
+
+#### Atomic Commits Per Sub-task
+
+Break features into tasks, commit each task separately:
+
+```
+Feature: User Authentication
+├─ Task A1: User model + tests → Commit 1
+├─ Task A2: UserRepository + tests → Commit 2
+├─ Task A3: AuthService + tests → Commit 3
+└─ Task A4: Controllers + tests → Commit 4
+```
+
+#### Required Process for Each Sub-task:
+
+**1. Complete ALL work for that task**
+   - Code implementation finished
+   - Tests written and passing
+   - Quality gates passed (`composer lint && composer test:coverage-check`)
+
+**2. Stage specific files (only when 100% complete)**
+   ```bash
+   git add path/to/file1.php path/to/file2.php
+   # NEVER use: git add . or git add -A
+   ```
+
+**3. Ask human for approval**
+   ```
+   AI: "Ready to commit? Task A1 complete: User model with validation
+   
+   Staged files:
+   - app/Models/User.php
+   - tests/Unit/Models/UserTest.php
+   
+   Quality gates: ✅ All passed"
+   ```
+
+**4. Wait for human response**
+   - Do NOT proceed until human responds
+   - Valid responses: "commit", "yes", "ok", "go ahead"
+   - Any other response = do NOT commit
+
+**5. Execute commit (only after approval)**
+   ```bash
+   git commit -m "feat: add User model with validation (Task A1)"
+   ```
+
+**6. Repeat for next task**
+
+#### Examples:
+
+✅ **CORRECT:**
+```
+[AI completes UserService implementation]
+[AI runs quality checks - all pass]
+AI: git add app/Services/UserService.php tests/Unit/Services/UserServiceTest.php
+AI: "Ready to commit? Task A2 complete: UserService with validation
+     
+     Staged files:
+     - app/Services/UserService.php
+     - tests/Unit/Services/UserServiceTest.php
+     
+     Quality gates: ✅ All passed"
+[AI WAITS]
+Human: "commit"
+AI: git commit -m "feat: add UserService with validation (Task A2)"
+```
+
+❌ **WRONG:**
+```
+[AI completes work]
+AI: git add .
+AI: git commit -m "update files"
+[No human approval requested]
+```
+
+❌ **WRONG:**
+```
+AI: "Ready to commit?"
+AI: git commit -m "..."
+[Did not wait for human response]
+```
+
+❌ **WRONG:**
+```
+[AI stages 3 tasks together]
+AI: git commit -m "add user management"
+[Should be 3 separate commits]
+```
+
+#### Commit Scope Guidelines:
+
+- **1-7 files:** Perfect (one sub-task)
+- **7-15 files:** OK if same logical unit (justify in message)
+- **15-30 files:** Must justify in message
+- **>30 files:** SPLIT into multiple commits
+
+#### Commit Message Format:
+
+`<type>: <description> (Task ID)`
+
+**Types:** `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
+
+**Examples:**
+```bash
+feat: add User model with validation (Task A1)
+feat: implement UserRepository with CRUD (Task A2)
+feat: add AuthService with JWT logic (Task A3)
+test: add UserService integration tests (Task A2.1)
+```
+
+#### Enforcement:
+
+- Pre-commit hooks verify human approval
+- Unauthorized commits are automatically reverted
+- Violations logged and escalated
+
+**Remember:** 1 sub-task = 1 commit. Each commit must be atomic, complete, and independently reversible.
+
+---
+
 ## Quality Pipeline Workflow
 
 ### Daily Development Workflow

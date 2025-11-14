@@ -631,53 +631,105 @@ Remember: Read all documentation in `docs/` before starting any task. Every chan
 
 ## Git Workflow
 
-**CRITICAL: Only commit files you directly created or modified**
+**🚫 CRITICAL: NEVER COMMIT WITHOUT EXPLICIT HUMAN APPROVAL**
 
-```bash
-# ❌ WRONG - Commits everything including others' work
-git add .
-git commit -m "docs: update instructions"
+### Atomic Commits Per Sub-task
 
-# ✅ CORRECT - Explicit files only
-git add .github/copilot-instructions.md
-git commit -m "docs: update AI coding instructions"
+Break features into tasks, commit each task separately:
+
+```
+Feature: User Authentication
+├─ Task A1: User model + tests → Commit 1
+├─ Task A2: UserRepository + tests → Commit 2  
+├─ Task A3: AuthService + tests → Commit 3
+└─ Task A4: Controllers + tests → Commit 4
 ```
 
-**Pre-commit checklist:**
-1. Run `git status` - review what will be committed
-2. Run `git diff --cached` - verify only your changes
-3. Stage specific files: `git add <file1> <file2>`
-4. Never use `git add .` or `git add -A` unless you created ALL changed files
-5. Commit message format: `<type>: <description>`
-   - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
+### Commit Authorization Process (FOR EACH SUB-TASK):
 
-**Commit scope guidelines:**
-- **1 commit = 1 logical unit of work**
-- **1-5 files:** Usually OK
-- **5-15 files:** Acceptable if same feature (e.g., Controller + Service + Tests)
-- **15-30 files:** Justify in message (e.g., new module setup)
-- **>30 files:** Split into multiple commits
-- **Decision rule:** "Could this be reverted independently?" → Yes = good boundary
+1. **Complete ONE task** → Code + tests + quality gates ✅
+   ```bash
+   composer lint && composer test:coverage-check
+   npm run typecheck
+   ```
+
+2. **Stage files for THAT task only** (after step 1 complete)
+   ```bash
+   git add app/Models/User.php tests/Unit/Models/UserTest.php
+   # NEVER: git add . or git add -A
+   # NEVER: Stage before quality gates pass
+   ```
+
+3. **ASK & WAIT FOR APPROVAL**
+   ```
+   "Ready to commit? Task A1 complete: User model with validation
+   
+   Staged files:
+   - app/Models/User.php
+   - tests/Unit/Models/UserTest.php
+   
+   Quality gates: ✅ All passed"
+   ```
+   **WAIT for human to say "commit", "yes", or "ok"**
+
+4. **Execute commit (only after approval)**
+   ```bash
+   git commit -m "feat: add User model with validation (Task A1)"
+   ```
+
+5. **Repeat for next task**
+
+---
+
+### ❌ FORBIDDEN:
+- Committing without asking first
+- Committing without waiting for approval
+- Auto-committing after completing work
+- Using `git add .` or `git add -A`
+- Staging work-in-progress
+- Committing multiple tasks together
+
+### ✅ REQUIRED:
+- Explicit human confirmation for EVERY commit
+- Clear list of staged files
+- Quality gates status (✅ passed)
+- Wait for approval before executing
+- Only commit files you directly created/modified
+- 1 sub-task = 1 commit
+
+---
+
+### Commit Scope Guidelines:
+
+- **1-7 files:** Perfect (one sub-task)
+- **7-15 files:** OK if same logical unit (justify in message)
+- **15-30 files:** Must justify in message
+- **>30 files:** SPLIT into multiple commits
+
+### Commit Message Format:
+
+`<type>: <description> (Task ID)`
+
+**Types:** `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
 
 **Examples:**
 ```bash
-# ✅ GOOD - Single feature with tests (12 files)
-git commit -m "feat: add CategoryController with CRUD endpoints
+# ✅ CORRECT workflow
+[Complete Task A1: User model]
+composer lint && composer test  # ✅ PASS
+git add app/Models/User.php tests/Unit/Models/UserTest.php
+# AI asks: "Ready to commit? Task A1: User model. Files: User.php, UserTest.php. Quality: ✅"
+# Human: "commit"
+git commit -m "feat: add User model with validation (Task A1)"
 
-- Controller, Service, 4 FormRequests
-- 2 feature tests, 1 unit test"
-
-# ✅ GOOD - Related config changes (3 files)
-git commit -m "chore: add test coverage configuration
-
-- phpunit.xml, composer.json, phpcs.xml"
-
-# ❌ BAD - Mixed concerns
-git commit -m "update stuff"
-# Contains: feature + docs + bugfix (should be 3 commits)
+[Complete Task A2: UserRepository]
+composer lint && composer test  # ✅ PASS
+git add app/Repositories/UserRepository.php tests/Unit/Repositories/UserRepositoryTest.php
+# AI asks again
+# Human: "commit"  
+git commit -m "feat: add UserRepository with CRUD (Task A2)"
 ```
 
-**Split when:** Multiple features, unrelated changes, different scopes  
-**Keep together when:** Feature + tests, interface + implementation, atomic CRUD
+**REMEMBER: 1 task = 1 commit. ALWAYS ASK BEFORE EVERY COMMIT!**
 
 
