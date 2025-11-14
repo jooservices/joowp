@@ -1,10 +1,10 @@
 # Plan – LM Studio Local SDK Enablement
 
-Status: Active  
+Status: Phase 1 Complete (In Progress - Phase 2)  
 Priority: P1  
 Owner: Platform Engineering  
 Created: 2025-11-13  
-Updated: 2025-11-13  
+Updated: 2025-11-14  
 Target: 2025-11-27  
 Epic: AI Platform Enablement
 
@@ -75,14 +75,21 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
   - DoD: Risks + mitigations captured in the decision log (✅ below).
   - Estimated: 6 hours (actual: 5.5h including validation)
 
-- [ ] Phase 1 – Scaffold Core SDK (PHP)
-  - DoD: `Modules/Core/Services/LmStudio/Contracts/SdkContract.php` defined with typed methods.
-  - DoD: HTTP client wrapper implemented using Laravel HTTP client with retry/backoff policies.
-  - DoD: SSE streaming abstraction stubbed with interface + placeholder implementation.
-  - DoD: `config/lmstudio.php` published with env bindings (`LM_STUDIO_HOST`, `LM_STUDIO_PORT`, etc.).
-  - DoD: Service provider binds contract, publishes config, and registers health check.
-  - Status: _In progress_ – Contract + DTO scaffolding completed (2025-11-14, Codex). HTTP client + streaming transport TBD.
-  - Estimated: 9 hours
+- [x] Phase 1 – Scaffold Core SDK (PHP)
+  - DoD: `Modules/Core/Services/LmStudio/Contracts/SdkContract.php` defined with typed methods. ✅
+  - DoD: HTTP client wrapper implemented using Laravel HTTP client with retry/backoff policies. ✅
+  - DoD: SSE streaming abstraction stubbed with interface + placeholder implementation. ✅
+  - DoD: `config/lmstudio.php` published with env bindings (`LM_STUDIO_HOST`, `LM_STUDIO_PORT`, etc.). ✅
+  - DoD: Service provider binds contract, publishes config, and registers health check. ✅
+  - Status: _Complete_ – Full SDK scaffolding completed (2025-11-14, Claude Sonnet 4.5).
+    - Exception hierarchy: 6 classes with 100% test coverage (SDK-1)
+    - Config file: 12 settings with env bindings (SDK-6)
+    - Service provider: Singleton binding with config injection (SDK-7)
+    - SDK implementation: healthCheck() + listModels() with HTTP client (SDK-8)
+    - Test suite: 13 tests, 32 assertions, 100% pass rate (SDK-9)
+    - All quality gates passed: pint ✅, phpcs ✅, phpmd ✅, phpstan ✅, tests ✅
+  - Estimated: 9 hours (actual: ~4 hours)
+  - Commits: 5b31f0c, f34f5cb, 511a60d, 3d90d74, f7e3dc2
 
 - [ ] Phase 1 – Tooling & Telemetry
   - DoD: Artisan commands for health check (`lmstudio:ping`) and model list sync created.
