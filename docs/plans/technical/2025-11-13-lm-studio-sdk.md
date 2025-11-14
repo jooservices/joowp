@@ -109,11 +109,13 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
   - DoD: Demo route (`/ai/lmstudio/demo`) behind auth guard renders an Inertia page describing manual verification steps.
   - Estimated: 8 hours (actual: 7.5h including tests + telemetry updates)
 
-- [ ] Phase 2 – Frontend Client
-  - DoD: `resources/js/sdk/lmStudio/` contains typed client, Pinia store, composables, and mocks.
-  - DoD: Demo component displays streaming output with retry + offline handling.
-  - DoD: Vitest unit coverage ≥90% for store/composables; component story documented.
-  - Estimated: 8 hours
+- [x] Phase 2 – Frontend Client
+  - Completed: 2025-11-15 (ChatGPT Plus – GPT-5.1-Codex)
+  - Output: `resources/js/sdk/lmStudio/` SDK (client, store, composables, stream helpers, mocks) + Vitest suite + Story doc.
+  - DoD: Typed client + Pinia store + composables live under `resources/js/sdk/lmStudio/` with reusable mocks.
+  - DoD: `/ai/lmstudio/demo` now renders streaming output UI with retry/offline toggle consuming the new store.
+  - DoD: Vitest coverage ≥90% (`npm run test:frontend`) for store/composables + story documented at `docs/stories/lmstudio-streaming-demo.md`.
+  - Estimated: 8 hours (actual: ~7 hours including Vitest wiring)
 
 - [ ] Phase 3 – Testing & Documentation
   - DoD: PHPUnit unit + feature tests cover happy path, offline fallback, timeout errors.
