@@ -240,7 +240,132 @@ AI: [stages 3 tasks at once and commits together]
 
 **Remember:** 1 sub-task = 1 commit. Each commit must be atomic, complete, and independently reversible.
 
-## 🔗 Quick Navigation
+## � Plan File Update Protocol
+
+### After Each Task Completion
+
+**AI agents MUST update plan files to track progress:**
+
+#### 1. Mark Task Complete
+
+Update the task in plan file:
+
+```markdown
+# Before
+- [ ] Task A1: User model with validation
+  - DoD: Model with strict types, validation rules, tests
+  - Estimate: 2 hours
+
+# After  
+- [x] Task A1: User model with validation
+  - DoD: Model with strict types, validation rules, tests ✅
+  - Status: Completed (2025-11-14, ChatGPT)
+  - Commit: abc123f
+```
+
+#### 2. Add Completion Metadata
+
+Include who completed and when:
+
+```markdown
+- [x] Task A2: UserRepository with CRUD
+  - DoD: Repository with all CRUD methods, unit tests ✅
+  - Status: Completed (2025-11-14, ChatGPT)
+  - Commit: def456a
+  - Duration: 1.5 hours
+```
+
+#### 3. Update Plan Status (If Applicable)
+
+When all tasks in a phase complete:
+
+```markdown
+# At top of plan file
+
+Status: In Progress → Active
+Updated: 2025-11-14
+Progress: Phase 1 complete (4/4 tasks)
+```
+
+#### 4. Stage Plan File WITH Code
+
+Always include plan file in the same commit:
+
+```bash
+# Stage code + tests + plan file together
+git add app/Models/User.php \
+        tests/Unit/Models/UserTest.php \
+        docs/plans/technical/2025-11-12-user-auth.md
+```
+
+#### 5. Reference in Commit Message
+
+```bash
+git commit -m "feat: add User model with validation (Task A1)
+
+- Implement User model with strict types
+- Add validation rules (email, password)
+- Write comprehensive unit tests
+- Update plan: mark Task A1 complete
+
+Refs: docs/plans/technical/2025-11-12-user-auth.md"
+```
+
+### Complete Example Workflow:
+
+```
+[AI completes Task A1: User model]
+[AI runs quality gates - pass]
+
+# 1. Update plan file
+AI: [Opens docs/plans/technical/2025-11-12-user-auth.md]
+AI: [Changes - [ ] to - [x], adds completion metadata]
+
+# 2. Stage code + plan together
+AI: git add app/Models/User.php \
+           tests/Unit/Models/UserTest.php \
+           docs/plans/technical/2025-11-12-user-auth.md
+
+# 3. Ask for approval
+AI: "Ready to commit? Task A1 complete: User model with validation
+
+     Staged files:
+     - app/Models/User.php
+     - tests/Unit/Models/UserTest.php
+     - docs/plans/technical/2025-11-12-user-auth.md (updated)
+     
+     Quality gates: ✅ All passed"
+
+# 4. Wait for human
+[Human: "commit"]
+
+# 5. Commit with plan reference
+AI: git commit -m "feat: add User model with validation (Task A1)
+
+- Implement User model with strict types
+- Add validation rules
+- Write unit tests
+- Update plan: mark Task A1 complete"
+```
+
+### Plan Update Checklist:
+
+Before committing each task:
+
+- [ ] Task marked complete with `[x]`
+- [ ] Completion metadata added (date, agent, commit)
+- [ ] Plan status updated if needed
+- [ ] Plan file staged WITH code files
+- [ ] Commit message references plan update
+
+**Why This Matters:**
+- ✅ Progress is visible and trackable
+- ✅ Git history links code to plan tasks
+- ✅ Easy to see what's done vs pending
+- ✅ Human can review progress at any time
+- ✅ Plan stays in sync with codebase
+
+## �🔗 Quick Navigation
 
 - **Engineering Principles:** [architecture/principles.md](architecture/principles.md)
 - **Implementation Guide:** [development/guidelines.md](development/guidelines.md)  
