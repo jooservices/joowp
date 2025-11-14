@@ -135,6 +135,25 @@ npm run build              # Production build succeeds
 
 **ABSOLUTE RULE:** AI agents are **FORBIDDEN** from executing `git commit` without explicit human approval.
 
+## AI Commit Execution Workflow
+
+To ensure clarity and control over commit operations involving AI tools, the following workflow applies to all AI agents (e.g., ChatGPT, Claude, etc.):
+
+1. **No Automatic Commits**:
+   - AI agents must never execute a `git commit` without explicit permission from the user.
+
+2. **Commit Execution Upon User Approval**:
+   - When the user explicitly says "commit" or provides a similar approval, the AI agent will automatically execute the commit.
+   - The commit message will be prepared in advance and used directly unless the user specifies otherwise.
+
+3. **Quality Checks Before Commit**:
+   - AI agents must ensure that all quality gates (e.g., linting, testing, type checking, building) are passed before executing the commit.
+
+4. **Responsibility**:
+   - The user retains control over when commits are executed, but AI agents handle the actual commit process once approval is given.
+
+This workflow ensures that commits are deliberate, meet all quality standards, and minimize manual effort for the user.
+
 ### Atomic Commits Per Sub-task
 
 Break features into tasks, commit each task separately:
