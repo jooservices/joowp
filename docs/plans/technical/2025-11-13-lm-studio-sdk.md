@@ -31,10 +31,9 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
 | `POST /v1/audio/speech` | Text-to-speech synthesis | `createSpeech(SpeechRequest $request): SpeechResponse` | Optional; may require binary stream handling |
 | `POST /v1/images/generations` | Image generation (if enabled) | `createImage(ImageGenerationRequest $request): ImageGenerationResponse` | Optional; large payload considerations |
 | `GET /health` | Server readiness check | `healthCheck(): HealthStatus` | Used by CLI + readiness probes |
-| `WS /v1/chat/completions` (if offered) | Real-time streaming channel | `streamChatCompletion(ChatCompletionRequest $request, StreamObserver $observer): void` | Fallback to HTTP streaming when unavailable |
 
 ## Objectives
-- Provide a `Modules\Core` service contract and concrete implementation wrapping LM Studio REST/WebSocket APIs with strict typing and structured exceptions.
+- Provide a `Modules\Core` service contract and concrete implementation wrapping LM Studio REST APIs with SSE streaming, strict typing, and structured exceptions.
 - Ship frontend TypeScript client utilities (Pinia/composables) that talk to Laravel endpoints and stream inference results.
 - Standardize configuration, authentication, and environment flags for local LM Studio connectivity.
 - Supply developer tooling (Artisan commands, mocks, fixtures) to validate connectivity and simulate LM Studio responses.
@@ -42,13 +41,13 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
 
 ## Milestones
 - **Phase 0 – Research & Discovery**
-  - Catalogue LM Studio API surface (REST, WebSocket streaming, model management).
+  - Catalogue LM Studio API surface (REST, SSE streaming, model management).
   - Confirm auth requirements, transport protocols, and CORS/network constraints.
   - Produce decision log covering fallback strategy, security posture, and local deployment assumptions.
   - Establish compatibility matrix (supported LM Studio versions, feature availability, negotiation rules).
 
 - **Phase 1 – Core SDK Foundations**
-  - Implement PHP contracts, DTOs, HTTP/WebSocket clients, and error taxonomy.
+  - Implement PHP contracts, DTOs, HTTP client, and error taxonomy.
   - Configure `config/lmstudio.php` with env-driven defaults and bind services in Core provider.
   - Add telemetry hooks (ActionLogger + external log channel) for all outbound calls.
 
@@ -79,11 +78,11 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
 - [ ] Phase 1 – Scaffold Core SDK (PHP)
   - DoD: `Modules/Core/Services/LmStudio/Contracts/SdkContract.php` defined with typed methods.
   - DoD: HTTP client wrapper implemented using Laravel HTTP client with retry/backoff policies.
-  - DoD: WebSocket/stream abstraction stubbed with interface + placeholder implementation.
+  - DoD: SSE streaming abstraction stubbed with interface + placeholder implementation.
   - DoD: `config/lmstudio.php` published with env bindings (`LM_STUDIO_HOST`, `LM_STUDIO_PORT`, etc.).
   - DoD: Service provider binds contract, publishes config, and registers health check.
   - Status: _In progress_ – Contract + DTO scaffolding completed (2025-11-14, Codex). HTTP client + streaming transport TBD.
-  - Estimated: 10 hours
+  - Estimated: 9 hours
 
 - [ ] Phase 1 – Tooling & Telemetry
   - DoD: Artisan commands for health check (`lmstudio:ping`) and model list sync created.
@@ -187,7 +186,7 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
   ]
 }
 ```
-- Final SSE message is `[DONE]` with aggregated `usage`. WebSocket streaming is not yet GA (0.2.21); SSE remains the authoritative transport with HTTP streaming fallback when EventSource isn’t available.
+- Final SSE message is `[DONE]` with aggregated `usage`. SSE remains the authoritative transport with HTTP streaming fallback when EventSource isn't available.
 
 `POST /v1/completions`
 - Legacy completion endpoint that accepts `prompt`/`suffix` instead of `messages`. We will use it only for parity tests; otherwise the chat endpoint covers all needs.
@@ -288,7 +287,7 @@ interface SdkContract
 | <0.2.18 | 🚫 Unsupported | Legacy/local-only | Missing OpenAI-compatible server; SDK will hard-fail with `UnsupportedVersionException`. |
 
 ### Decision Log & Risk Notes (mirrored in `docs/decisions/2025-11-13-lm-studio-api.md`)
-1. **DL-2025-11-13-01 – Streaming transport:** Standardize on SSE and defer WebSocket implementation until LM Studio publishes a GA socket endpoint. Risk: streaming reconnect jitter; mitigation: observer buffering + downgrade path.
+1. **DL-2025-11-13-01 – Streaming transport:** Standardize on SSE exclusively. LM Studio does not publish a GA WebSocket endpoint (as of 0.2.21), and SSE provides sufficient streaming capabilities. Risk: streaming reconnect jitter; mitigation: observer buffering + downgrade path.
 2. **DL-2025-11-13-02 – Authentication posture:** Require `LM_STUDIO_API_KEY` outside `local` and emit telemetry when missing to prevent accidental LAN exposure. Mitigation: config validator + Artisan doctor command.
 3. **DL-2025-11-13-03 – Version floor:** Support LM Studio ≥0.2.18, prefer ≥0.2.20. Mitigation: health check enforces version + capability gating before binding services.
 4. **DL-2025-11-13-04 – Feature flags:** Audio, image, and speech endpoints stay behind feature flags until infra owners validate workloads. Mitigation: toggles under `features.lmstudio` namespace with documentation for each path.
