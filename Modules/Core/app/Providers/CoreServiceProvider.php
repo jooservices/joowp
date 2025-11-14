@@ -43,6 +43,7 @@ class CoreServiceProvider extends ServiceProvider
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+        $this->app->register(LmStudioServiceProvider::class);
         $this->registerWordPressBindings();
     }
 
