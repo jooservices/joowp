@@ -14,3 +14,7 @@ Route::prefix('taxonomy')->name('taxonomy.')->group(function (): void {
     Route::inertia('/categories', 'Taxonomy/Categories/Index')->name('categories');
     Route::inertia('/tags', 'Taxonomy/Tags/Index')->name('tags');
 });
+
+Route::get('/lmstudio', function (): Response {
+    return Inertia::render('LmStudio/Client');
+})->name('lmstudio.client');

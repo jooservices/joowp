@@ -77,7 +77,7 @@
                 <div class="card-body d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4">
                     <div>
                         <h2 class="h3 text-light mb-2">Welcome back to JOOwp</h2>
-                        <p class="text-muted mb-0">
+                        <p class="returning-subtitle mb-0">
                             You have already seen the onboarding experience. Dive straight into your workflow or revisit the
                             guides whenever you need a refresher.
                         </p>
@@ -391,6 +391,13 @@ const resetWelcome = (): void => {
     background: rgba(15, 23, 42, 0.85);
     border-radius: 1.25rem;
     padding: 2rem;
+}
+
+.returning-subtitle {
+    color: rgba(236, 244, 255, 0.82);
+    line-height: 1.65;
+    max-width: 44rem;
+    letter-spacing: 0.01em;
 }
 
 .taxonomy-highlight .info-card {

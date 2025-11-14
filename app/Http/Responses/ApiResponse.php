@@ -55,6 +55,6 @@ final class ApiResponse
             'message' => $message,
             'data' => $data,
             'meta' => (object) $meta,
-        ], 200);
+        ], $status);
     }
 }

@@ -35,7 +35,7 @@ final class WordPressTokenTest extends TestCase
             'remember' => true,
         ]);
 
-        $response->assertOk();
+        $response->assertStatus(201);
 
         $response->assertJson([
             'ok' => true,
@@ -78,7 +78,7 @@ final class WordPressTokenTest extends TestCase
             'remember' => true,
         ]);
 
-        $response->assertOk();
+        $response->assertStatus(502);
 
         $response->assertJson([
             'ok' => false,
@@ -113,7 +113,7 @@ final class WordPressTokenTest extends TestCase
             'remember' => false,
         ]);
 
-        $response->assertOk();
+        $response->assertStatus(201);
         $response->assertJson([
             'ok' => true,
             'code' => 'wordpress.token_created',

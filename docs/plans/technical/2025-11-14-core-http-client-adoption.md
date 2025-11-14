@@ -80,3 +80,4 @@ Refactor existing Core integrations (WordPress SDK, LM Studio SDK, future extern
 - `docs/plans/technical/2025-11-14-core-http-client.md` – foundational client implementation.
 - `docs/plans/technical/2025-11-13-lm-studio-sdk.md` – SDK that will adopt the shared client.
 
+

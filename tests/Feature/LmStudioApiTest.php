@@ -78,7 +78,7 @@ final class LmStudioApiTest extends TestCase
         ];
 
         $this->postJson('/api/v1/ai/lmstudio/infer', $payload)
-            ->assertOk()
+            ->assertStatus(202)
             ->assertJsonPath('status', 202)
             ->assertJsonPath('data.job_id', 'job-123')
             ->assertJsonPath('code', 'lmstudio.infer.accepted');
@@ -93,7 +93,7 @@ final class LmStudioApiTest extends TestCase
                 ['role' => 'user', 'content' => 'hello'],
             ],
         ])
-            ->assertOk()
+            ->assertStatus(503)
             ->assertJsonPath('code', 'lmstudio.disabled')
             ->assertJsonPath('status', 503);
     }

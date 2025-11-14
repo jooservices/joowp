@@ -98,6 +98,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Queue Connection
+    |--------------------------------------------------------------------------
+    |
+    | LM Studio jobs can run on a dedicated queue connection to avoid
+    | interfering with other background work.
+    |
+    */
+    'queue_connection' => env('LM_STUDIO_QUEUE_CONNECTION', env('QUEUE_CONNECTION', 'redis')),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Queue Name
+    |--------------------------------------------------------------------------
+    |
+    | Queue or tube that LM Studio jobs should use.
+    |
+    */
+    'queue' => env('LM_STUDIO_QUEUE', 'lmstudio'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Default Embedding Model
     |--------------------------------------------------------------------------
     |

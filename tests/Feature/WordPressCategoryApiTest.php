@@ -57,7 +57,7 @@ final class WordPressCategoryApiTest extends TestCase
         ]);
 
         $response
-            ->assertOk()
+            ->assertStatus(201)
             ->assertJsonPath('code', 'wordpress.categories.created')
             ->assertJsonPath('status', 201)
             ->assertJsonPath('data.name', 'News');

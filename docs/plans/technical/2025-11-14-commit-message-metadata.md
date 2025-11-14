@@ -60,3 +60,4 @@ Define and enforce a standardized commit message metadata block (agent attributi
 ## Related Plans
 - `docs/plans/technical/2025-11-13-lm-studio-sdk.md` – commits from LM Studio work must follow the new metadata standard.
 
+

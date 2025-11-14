@@ -1,0 +1,4 @@
+{"total": {"lines":{"total":164,"covered":153,"skipped":0,"pct":93.29},"statements":{"total":164,"covered":153,"skipped":0,"pct":93.29},"functions":{"total":13,"covered":12,"skipped":0,"pct":92.3},"branches":{"total":22,"covered":18,"skipped":0,"pct":81.81},"branchesTrue":{"total":0,"covered":0,"skipped":0,"pct":100}}
+,"/Users/vietvu/Sites/JOOservices/joowp/resources/js/sdk/lmStudio/store.ts": {"lines":{"total":132,"covered":123,"skipped":0,"pct":93.18},"functions":{"total":9,"covered":9,"skipped":0,"pct":100},"statements":{"total":132,"covered":123,"skipped":0,"pct":93.18},"branches":{"total":19,"covered":15,"skipped":0,"pct":78.94}}
+,"/Users/vietvu/Sites/JOOservices/joowp/resources/js/sdk/lmStudio/composables/useLmStudio.ts": {"lines":{"total":32,"covered":30,"skipped":0,"pct":93.75},"functions":{"total":4,"covered":3,"skipped":0,"pct":75},"statements":{"total":32,"covered":30,"skipped":0,"pct":93.75},"branches":{"total":3,"covered":3,"skipped":0,"pct":100}}
+}
