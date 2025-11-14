@@ -82,6 +82,7 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
   - DoD: WebSocket/stream abstraction stubbed with interface + placeholder implementation.
   - DoD: `config/lmstudio.php` published with env bindings (`LM_STUDIO_HOST`, `LM_STUDIO_PORT`, etc.).
   - DoD: Service provider binds contract, publishes config, and registers health check.
+  - Status: _In progress_ – Contract + DTO scaffolding completed (2025-11-14, Codex). HTTP client + streaming transport TBD.
   - Estimated: 10 hours
 
 - [ ] Phase 1 – Tooling & Telemetry
