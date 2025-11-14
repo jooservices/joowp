@@ -8,6 +8,8 @@ use GuzzleHttp\Client;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Console\Commands\LmStudioPingCommand;
+use Modules\Core\Console\Commands\LmStudioSyncModelsCommand;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Sdk;
 use Modules\WordPress\Models\WpToken;
@@ -52,7 +54,10 @@ class CoreServiceProvider extends ServiceProvider
      */
     protected function registerCommands(): void
     {
-        // $this->commands([]);
+        $this->commands([
+            LmStudioPingCommand::class,
+            LmStudioSyncModelsCommand::class,
+        ]);
     }
 
     /**

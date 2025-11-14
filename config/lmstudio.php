@@ -137,4 +137,14 @@ return [
     |
     */
     'enable_streaming' => (bool) env('LM_STUDIO_ENABLE_STREAMING', true),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Telemetry Log Channel
+    |--------------------------------------------------------------------------
+    |
+    | Channel used for LM Studio outbound request logs. Defaults to "external".
+    |
+    */
+    'log_channel' => env('LM_STUDIO_LOG_CHANNEL', 'external'),
 ];

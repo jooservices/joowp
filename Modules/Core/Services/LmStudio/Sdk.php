@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Core\Services\LmStudio;
 
+use App\Logging\ActionLogger;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Modules\Core\Services\LmStudio\Contracts\SdkContract;
 use Modules\Core\Services\LmStudio\DTO\Audio\SpeechRequest;
 use Modules\Core\Services\LmStudio\DTO\Audio\SpeechResponse;
@@ -29,12 +31,14 @@ use Modules\Core\Services\LmStudio\Streaming\StreamObserver;
 final class Sdk implements SdkContract
 {
     public function __construct(
+        private readonly ActionLogger $actionLogger,
         private readonly string $baseUrl,
         private readonly ?string $apiKey = null,
         private readonly int $timeout = 30,
         private readonly int $connectTimeout = 10,
         private readonly int $maxRetries = 2,
         private readonly bool $verifyTls = true,
+        private readonly string $logChannel = 'external',
     ) {
     }
 
@@ -76,7 +80,15 @@ final class Sdk implements SdkContract
     // Stub methods for other contract methods
     public function createChatCompletion(ChatCompletionRequest $request, ?StreamObserver $observer = null): ChatCompletionResponse
     {
-        throw new \BadMethodCallException('Not implemented yet');
+        try {
+            $response = $this->makeRequest('POST', '/v1/chat/completions', $request->toArray());
+
+            return ChatCompletionResponse::fromArray($response);
+        } catch (\Throwable $e) {
+            throw new ConnectionException('Failed to create chat completion: ' . $e->getMessage(), 0, $e, [
+                'endpoint' => '/v1/chat/completions',
+            ]);
+        }
     }
 
     public function createCompletion(CompletionRequest $request, ?StreamObserver $observer = null): CompletionResponse
@@ -115,10 +127,12 @@ final class Sdk implements SdkContract
      */
     private function makeRequest(string $method, string $endpoint, array $params = []): array
     {
+        $startedAt = microtime(true);
         $request = Http::baseUrl($this->baseUrl)
             ->timeout($this->timeout)
             ->connectTimeout($this->connectTimeout)
             ->retry($this->maxRetries, 100);
+        $response = null;
 
         if (! $this->verifyTls) {
             $request = $request->withOptions(['verify' => false]);
@@ -130,16 +144,92 @@ final class Sdk implements SdkContract
             ]);
         }
 
-        $response = match ($method) {
-            'GET' => $request->get($endpoint, $params),
-            'POST' => $request->post($endpoint, $params),
-            default => throw new \InvalidArgumentException("Unsupported HTTP method: {$method}"),
-        };
+        try {
+            $response = match ($method) {
+                'GET' => $request->get($endpoint, $params),
+                'POST' => $request->post($endpoint, $params),
+                default => throw new \InvalidArgumentException("Unsupported HTTP method: {$method}"),
+            };
 
-        if ($response->failed()) {
-            throw new ConnectionException("HTTP {$response->status()}: {$response->body()}");
+            if ($response->failed()) {
+                throw new ConnectionException("HTTP {$response->status()}: {$response->body()}", context: [
+                    'endpoint' => $endpoint,
+                    'status' => $response->status(),
+                ]);
+            }
+
+            $decoded = $response->json() ?? [];
+
+            $this->recordTelemetry(
+                method: $method,
+                endpoint: $endpoint,
+                params: $params,
+                startedAt: $startedAt,
+                success: true,
+                status: $response->status(),
+            );
+
+            return $decoded;
+        } catch (\Throwable $exception) {
+            $this->recordTelemetry(
+                method: $method,
+                endpoint: $endpoint,
+                params: $params,
+                startedAt: $startedAt,
+                success: false,
+                status: $response?->status(),
+                exception: $exception,
+            );
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $params
+     */
+    private function recordTelemetry(
+        string $method,
+        string $endpoint,
+        array $params,
+        float $startedAt,
+        bool $success,
+        ?int $status = null,
+        ?\Throwable $exception = null,
+    ): void {
+        $durationMs = (int) round((microtime(true) - $startedAt) * 1000);
+
+        $metadata = [
+            'method' => $method,
+            'endpoint' => $endpoint,
+            'status' => $status,
+            'duration_ms' => $durationMs,
+            'success' => $success,
+            'payload_keys' => array_keys($params),
+        ];
+
+        if ($exception !== null) {
+            $metadata['error'] = $exception->getMessage();
         }
 
-        return $response->json() ?? [];
+        Log::channel($this->logChannel)->info('LM Studio request', $metadata);
+
+        $this->actionLogger->log(
+            operation: 'lmstudio.request',
+            actor: null,
+            before: [
+                'method' => $method,
+                'endpoint' => $endpoint,
+            ],
+            after: [
+                'status' => $status,
+                'success' => $success,
+            ],
+            metadata: [
+                'duration_ms' => $durationMs,
+                'payload_keys' => $metadata['payload_keys'],
+                'error' => $exception?->getMessage(),
+            ],
+        );
     }
 }

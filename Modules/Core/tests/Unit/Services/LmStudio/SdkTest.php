@@ -4,7 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Core\Tests\Unit\Services\LmStudio;
 
+use App\Logging\ActionLogger;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Mockery;
+use Mockery\MockInterface;
+use Modules\Core\Services\LmStudio\DTO\Chat\ChatCompletionRequest;
+use Modules\Core\Services\LmStudio\DTO\Chat\ChatMessage;
+use Modules\Core\Services\LmStudio\DTO\Chat\ChatRole;
 use Modules\Core\Services\LmStudio\DTO\HealthStatus;
 use Modules\Core\Services\LmStudio\DTO\ListModelsFilter;
 use Modules\Core\Services\LmStudio\DTO\ModelSummary;
@@ -16,18 +23,35 @@ final class SdkTest extends TestCase
 {
     private Sdk $sdk;
 
+    private MockInterface $actionLogger;
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        Log::swap($logger = Mockery::mock(\Illuminate\Log\LogManager::class));
+        $logger->shouldReceive('channel')->andReturnSelf();
+        $logger->shouldReceive('info')->andReturnNull();
+
+        $this->actionLogger = Mockery::spy(ActionLogger::class);
+
         $this->sdk = new Sdk(
+            actionLogger: $this->actionLogger,
             baseUrl: 'http://127.0.0.1:1234',
             apiKey: 'test-key',
             timeout: 30,
             connectTimeout: 10,
             maxRetries: 2,
             verifyTls: true,
+            logChannel: 'external',
         );
+    }
+
+    protected function tearDown(): void
+    {
+        Mockery::close();
+
+        parent::tearDown();
     }
 
     public function test_health_check_returns_health_status(): void
@@ -196,12 +220,14 @@ final class SdkTest extends TestCase
         ]);
 
         $sdk = new Sdk(
+            actionLogger: $this->actionLogger,
             baseUrl: 'http://127.0.0.1:1234',
             apiKey: null,
             timeout: 30,
             connectTimeout: 10,
             maxRetries: 2,
             verifyTls: true,
+            logChannel: 'external',
         );
 
         $sdk->healthCheck();
@@ -224,12 +250,14 @@ final class SdkTest extends TestCase
         ]);
 
         $sdk = new Sdk(
+            actionLogger: $this->actionLogger,
             baseUrl: 'http://127.0.0.1:1234',
             apiKey: null,
             timeout: 30,
             connectTimeout: 10,
             maxRetries: 2,
             verifyTls: false,
+            logChannel: 'external',
         );
 
         $sdk->healthCheck();
@@ -307,5 +335,82 @@ final class SdkTest extends TestCase
             $this->assertEquals('/v1/models', $context['endpoint']);
             $this->assertIsArray($context['filter']);
         }
+    }
+
+    public function test_create_chat_completion_returns_response(): void
+    {
+        Http::fake([
+            '*/v1/chat/completions' => Http::response([
+                'id' => 'chatcmpl-123',
+                'object' => 'chat.completion',
+                'created' => 1731614400,
+                'model' => 'mistral',
+                'choices' => [
+                    [
+                        'index' => 0,
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => 'Hello from LM Studio.',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $request = new ChatCompletionRequest(
+            model: 'mistral',
+            messages: [
+                new ChatMessage(ChatRole::User, 'Hello'),
+            ],
+            stream: false,
+        );
+
+        $response = $this->sdk->createChatCompletion($request);
+
+        $this->assertEquals('chatcmpl-123', $response->id);
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'http://127.0.0.1:1234/v1/chat/completions';
+        });
+    }
+
+    public function test_create_chat_completion_throws_connection_exception_on_failure(): void
+    {
+        Http::fake([
+            '*/v1/chat/completions' => Http::response('Error', 500),
+        ]);
+
+        $request = new ChatCompletionRequest(
+            model: 'mistral',
+            messages: [
+                new ChatMessage(ChatRole::User, 'Hello'),
+            ],
+            stream: false,
+        );
+
+        $this->expectException(ConnectionException::class);
+
+        $this->sdk->createChatCompletion($request);
+    }
+
+    public function test_action_logger_records_telemetry(): void
+    {
+        Http::fake([
+            '*/health' => Http::response([
+                'status' => 'ok',
+            ], 200),
+        ]);
+
+        $this->sdk->healthCheck();
+
+        $this->actionLogger->shouldHaveReceived('log')->with(
+            'lmstudio.request',
+            null,
+            Mockery::type('array'),
+            Mockery::type('array'),
+            Mockery::type('array'),
+        );
+
+        $this->assertTrue(true, 'ActionLogger expectation verified.');
     }
 }
