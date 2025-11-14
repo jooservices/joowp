@@ -1,18 +1,10 @@
-# Decisions
+# Architecture Decision Records (ADRs)
 
-Architecture Decision Records (ADRs) documenting major architectural choices.
+Documents key technical decisions and their rationale.
 
 ## What is an ADR?
 
 An Architecture Decision Record captures important architectural decisions along with their context and consequences.
-
-## Format
-
-Each ADR should include:
-
-# Architecture Decision Records (ADRs)
-
-Documents key technical decisions and their rationale.
 
 ## Active ADRs
 
@@ -43,16 +35,3 @@ Based on current architecture:
 - **ADR-003**: Repository pattern for database access only
 - **ADR-004**: Resource vs raw JSON response strategy
 - **ADR-005**: No repository layer for external APIs
-
-## Existing Decisions
-
-_(Coming soon)_
-
-## Proposed ADRs
-
-Based on current architecture:
-
-- **ADR-001**: Service layer pattern (1 service = 1 business logic)
-- **ADR-002**: Repository pattern for database access only
-- **ADR-003**: Resource vs raw JSON response strategy
-- **ADR-004**: No repository layer for external APIs
