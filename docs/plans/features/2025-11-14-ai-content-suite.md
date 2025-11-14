@@ -1,9 +1,9 @@
 # Plan – AI Content Suite
 
-Status: Active  
+Status: Ready  
 Owner: TBD  
 Created: 2025-11-11  
-Updated: 2025-11-11
+Updated: 2025-11-14
 
 ## Summary
 - Coordinate AI-powered workflows that augment the editorial experience: fact checking, assisted generation, tone alignment, and post-publication insights. All features must respect the local-AI policy defined in `docs/ai-dev-workflow-2025-en.md`.

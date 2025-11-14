@@ -1,8 +1,9 @@
 # Code Compliance Implementation Plan
 
 **Created:** 2025-11-12  
-**Status:** To Do  
+**Status:** Ready  
 **Priority:** P0 (Critical - Blocks quality gates)  
+**Updated:** 2025-11-14  
 **Estimated Time:** 4 hours
 
 ## Overview
@@ -47,87 +48,41 @@ Bring entire codebase into compliance with documented principles:
 
 ### Phase 1: Quality Pipeline Fixes (15 mins)
 
-#### Task 1.1: Fix PHPCS Configuration
-**File:** `phpcs.xml`  
-**Change:** Add bootstrap cache exclusion
-```xml
-<exclude-pattern>*/bootstrap/cache/*</exclude-pattern>
-```
+- [ ] **Task 1.1: Fix PHPCS Configuration**
+  - DoD: Add `<exclude-pattern>*/bootstrap/cache/*</exclude-pattern>` to `phpcs.xml`
+  - DoD: Run `composer lint:phpcs` - should not scan bootstrap/cache
+  - File: `phpcs.xml`
 
-#### Task 1.2: Add Coverage Configuration
-**File:** `phpunit.xml`  
-**Change:** Add `<coverage>` section
-```xml
-<coverage processUncoveredFiles="true">
-    <report>
-        <html outputDirectory="storage/coverage"/>
-        <text outputFile="php://stdout"/>
-    </report>
-</coverage>
+- [ ] **Task 1.2: Add Coverage Configuration**
+  - DoD: Add `<coverage>` section to `phpunit.xml`
+  - DoD: Add `<source>` with app/ and Modules/ includes
+  - DoD: Exclude Providers, Migrations, Seeders from coverage
+  - File: `phpunit.xml`
 
-<source>
-    <include>
-        <directory>app</directory>
-        <directory>Modules</directory>
-    </include>
-    <exclude>
-        <directory>app/Providers</directory>
-        <directory>Modules/*/Providers</directory>
-        <directory>Modules/*/Database/Migrations</directory>
-        <directory>Modules/*/Database/Seeders</directory>
-    </exclude>
-</source>
-```
-
-#### Task 1.3: Add Composer Coverage Scripts
-**File:** `composer.json`  
-**Change:** Add to `scripts` section
-```json
-"test:coverage": "XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html storage/coverage --coverage-text",
-"test:coverage-check": "XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text --coverage-clover=coverage.xml && php -r \"$xml = simplexml_load_file('coverage.xml'); $metrics = $xml->project->metrics; $coverage = (float)$metrics['coveredstatements'] / (float)$metrics['statements'] * 100; echo 'Coverage: ' . round($coverage, 2) . '%' . PHP_EOL; exit($coverage < 80 ? 1 : 0);\""
-```
-
-**Validation:**
-```bash
-composer test:coverage  # Should generate storage/coverage/index.html
-composer test:coverage-check  # Should report current %
-```
+- [ ] **Task 1.3: Add Composer Coverage Scripts**
+  - DoD: Add `test:coverage` script to `composer.json`
+  - DoD: Add `test:coverage-check` script with 80% threshold
+  - DoD: Run `composer test:coverage-check` - should report current coverage %
+  - File: `composer.json`
 
 ### Phase 2: Type Safety Compliance (45 mins)
 
-#### Task 2.1: Add `declare(strict_types=1)` to App Layer
-**Files to update:**
-1. `app/Models/User.php`
-2. `app/Providers/AppServiceProvider.php`
-3. `app/Http/Controllers/Controller.php`
+- [ ] **Task 2.1: Add `declare(strict_types=1)` to App Layer (3 files)**
+  - DoD: Add to `app/Models/User.php`
+  - DoD: Add to `app/Providers/AppServiceProvider.php`
+  - DoD: Add to `app/Http/Controllers/Controller.php`
+  - Pattern: Place immediately after `<?php` opening tag
 
-**Pattern:**
-```php
-<?php
+- [ ] **Task 2.2: Add to Core Module (4 files)**
+  - DoD: Add to `Modules/Core/app/Providers/CoreServiceProvider.php`
+  - DoD: Add to `Modules/Core/app/Providers/RouteServiceProvider.php`
+  - DoD: Add to `Modules/Core/app/Providers/EventServiceProvider.php`
+  - DoD: Add to `Modules/Core/database/seeders/CoreDatabaseSeeder.php`
 
-declare(strict_types=1);
-
-namespace App\...;
-```
-
-#### Task 2.2: Add to Core Module
-**Files to update:**
-1. `Modules/Core/app/Providers/CoreServiceProvider.php`
-2. `Modules/Core/app/Providers/RouteServiceProvider.php`
-3. `Modules/Core/app/Providers/EventServiceProvider.php`
-4. `Modules/Core/database/seeders/CoreDatabaseSeeder.php`
-
-#### Task 2.3: Add to Config Files (Decision Required)
-**Files (11 total):**
-- `config/app.php`
-- `config/auth.php`
-- `config/database.php`
-- `config/cache.php`
-- `config/session.php`
-- `config/queue.php`
-- `config/modules.php`
-- `config/logging.php`
-- `config/filesystems.php`
+- [ ] **Task 2.3: Add to Config Files (11 files)**
+  - DoD: Add to all 11 config files in `config/` directory
+  - DoD: Pre-commit hook should pass without violations
+  - Files: app.php, auth.php, database.php, cache.php, session.php, queue.php, modules.php, logging.php, filesystems.php, mail.php, services.php
 - `config/mail.php`
 - `config/services.php`
 

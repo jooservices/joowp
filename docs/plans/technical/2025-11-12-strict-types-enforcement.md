@@ -1,11 +1,11 @@
 # Plan – Strict Types Enforcement
 
-Status: Ready  
+Status: On Hold  
 Priority: P0  
 Owner: TBD  
 Created: 2025-11-12  
-Updated: 2025-11-12  
-Target: 2025-11-13  
+Updated: 2025-11-14  
+Target: TBD (was 2025-11-13, postponed pending resource allocation)  
 Epic: Code Quality
 
 ## Summary

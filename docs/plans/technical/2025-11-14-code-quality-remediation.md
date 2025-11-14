@@ -1,9 +1,9 @@
 # Plan – Code Quality Remediation
 
-Status: Active  
+Status: Ready  
 Owner: TBD  
 Created: 2025-11-12  
-Updated: 2025-11-12
+Updated: 2025-11-14
 
 ## Summary
 - Eliminate legacy PHPCS, PHPMD, and PHPStan violations so pre-commit hooks can run without manual bypasses.
