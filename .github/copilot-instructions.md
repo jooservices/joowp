@@ -712,22 +712,96 @@ Feature: User Authentication
 
 **Types:** `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
 
+**AI Tool Metadata (REQUIRED for AI-generated code):**
+
+Use Git trailers + Co-authored-by to track AI contributions:
+
+```bash
+git commit -m "feat: description (Task ID)
+
+Implementation details...
+
+Co-authored-by: Viet Vu <jooservices@gmail.com>
+Generated-By: <AI Model Name>
+Generated-By-Tool: <Tool Name>
+Model: <model-version-date>
+Reviewed-By: Viet Vu
+Task-ID: <PREFIX-N>
+Plan: docs/plans/...
+Coverage: XX%"
+```
+
+**Standardized Tool Values:**
+- `Cursor AI` - Primary IDE with Claude integration
+- `GitHub Copilot` - GPT-4 Turbo inline suggestions
+- `ChatGPT Plus` - Web-based GPT-4/o1 sessions
+- `LM Studio` - Local model testing
+
+**Model Format Examples:**
+- `claude-sonnet-3.5-20241022` (Cursor AI default)
+- `gpt-4-turbo-2024-04-09` (GitHub Copilot)
+- `gpt-4o` or `o1` (ChatGPT Plus)
+- `llama-3.1-8b-instruct` (LM Studio local)
+
+**Task ID Format:**
+- Pattern: `PREFIX-N` (e.g., SDK-1, AUTH-2, CACHE-3)
+- Common Prefixes: SDK, AUTH, CACHE, WP, AI, CORE
+
 **Examples:**
 ```bash
-# ✅ CORRECT workflow
-[Complete Task A1: User model]
+# ✅ CORRECT workflow with AI metadata
+[Complete Task SDK-1: LM Studio SDK scaffold]
 composer lint && composer test  # ✅ PASS
-git add app/Models/User.php tests/Unit/Models/UserTest.php
-# AI asks: "Ready to commit? Task A1: User model. Files: User.php, UserTest.php. Quality: ✅"
+git add Modules/LMStudio/Services/Sdk.php tests/Unit/Services/SdkTest.php
+# AI asks: "Ready to commit? Task SDK-1: SDK scaffold. Files: Sdk.php, SdkTest.php. Quality: ✅"
 # Human: "commit"
-git commit -m "feat: add User model with validation (Task A1)"
+git commit -m "feat: scaffold LM Studio SDK with health check (Task SDK-1)
 
-[Complete Task A2: UserRepository]
+Implement base SDK class with HTTP client and health endpoint
+
+Co-authored-by: Viet Vu <jooservices@gmail.com>
+Generated-By: Claude Sonnet 3.5
+Generated-By-Tool: Cursor AI
+Model: claude-sonnet-3.5-20241022
+Reviewed-By: Viet Vu
+Task-ID: SDK-1
+Plan: docs/plans/technical/2025-11-13-lm-studio-sdk.md
+Coverage: 95%"
+
+[Complete Task AUTH-2: Login FormRequest]
 composer lint && composer test  # ✅ PASS
-git add app/Repositories/UserRepository.php tests/Unit/Repositories/UserRepositoryTest.php
+git add app/Http/Requests/LoginRequest.php tests/Unit/Requests/LoginRequestTest.php
 # AI asks again
 # Human: "commit"  
-git commit -m "feat: add UserRepository with CRUD (Task A2)"
+git commit -m "feat: add LoginRequest with validation (Task AUTH-2)
+
+Email + password validation with rate limiting rules
+
+Co-authored-by: Viet Vu <jooservices@gmail.com>
+Generated-By: GPT-4 Turbo
+Generated-By-Tool: GitHub Copilot
+Model: gpt-4-turbo-2024-04-09
+Reviewed-By: Viet Vu
+Task-ID: AUTH-2
+Coverage: 100%"
+```
+
+**Query Examples for Analytics:**
+```bash
+# Find all AI-generated commits
+git log --grep="Generated-By:"
+
+# Commits by specific AI tool
+git log --grep="Generated-By-Tool: Cursor AI"
+
+# Commits by specific model
+git log --grep="Model: claude-sonnet-3.5"
+
+# Commits for specific task
+git log --grep="Task-ID: SDK-1"
+
+# Commits with low coverage
+git log --grep="Coverage:" --grep="[1-7][0-9]%"
 ```
 
 **REMEMBER: 1 task = 1 commit. ALWAYS ASK BEFORE EVERY COMMIT!**
