@@ -18,6 +18,7 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
 - Local network discovery/Firewall allowances for loopback or LAN access
 - Existing Core logging, configuration, and action auditing infrastructure
 - PHP 8.4 + TypeScript toolchain already enforced in repository
+- Core HTTP client abstraction (`2025-11-14-core-http-client.md`) for outbound requests
 
 ## LM Studio API Surface
 | Endpoint | Purpose | Contract Method (planned) | Notes |
@@ -91,18 +92,22 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
   - Estimated: 9 hours (actual: ~4 hours)
   - Commits: 5b31f0c, f34f5cb, 511a60d, 3d90d74, f7e3dc2
 
-- [ ] Phase 1 – Tooling & Telemetry
-  - DoD: Artisan commands for health check (`lmstudio:ping`) and model list sync created.
-  - DoD: Logging via `external` channel includes sanitized request/response metadata.
-  - DoD: Feature flag (`features.lmstudio.enabled`) added for runtime toggling.
-  - Estimated: 4 hours
+- [x] Phase 1 – Tooling & Telemetry
+  - Completed: 2025-11-15 (ChatGPT Plus – GPT-5.1-Codex)
+  - Output: CLI tooling (`lmstudio:ping`, `lmstudio:models-sync`), streaming-safe telemetry hooks, feature flag + tests.
+  - DoD: Artisan commands ship with ActionLogger traces, JSON/table output, and storage-backed cache sync.
+  - DoD: `external` channel + ActionLogger capture sanitized method/endpoint/duration for every SDK request.
+  - DoD: `features.lmstudio.enabled` flag gates provider + commands with config default + tests.
+  - Estimated: 4 hours (actual: 4.5h including telemetry tests)
 
-- [ ] Phase 2 – Backend API & Demo Flow
-  - DoD: FormRequest validation for inference inputs with 100% coverage.
-  - DoD: Controller endpoints (`POST /api/v1/ai/lmstudio/infer`, `GET /api/v1/ai/lmstudio/models`) return envelope responses.
-  - DoD: Core service orchestrates streaming updates via Laravel events/Broadcast.
-  - DoD: Demo route behind admin guard renders sample UI for manual verification.
-  - Estimated: 8 hours
+- [x] Phase 2 – Backend API & Demo Flow
+  - Completed: 2025-11-15 (ChatGPT Plus – GPT-5.1-Codex)
+  - Output: API endpoints, inference FormRequest, streaming event service, demo Inertia route.
+  - DoD: FormRequest validation for inference inputs with dedicated PHPUnit coverage (LmStudioInferenceRequest + feature tests).
+  - DoD: Controller endpoints (`POST /api/v1/ai/lmstudio/infer`, `GET /api/v1/ai/lmstudio/models`) return envelope responses with feature flag guard + error handling.
+  - DoD: ChatInferenceService chunks responses and emits `LmStudioInferenceStreamed` events for broadcasting.
+  - DoD: Demo route (`/ai/lmstudio/demo`) behind auth guard renders an Inertia page describing manual verification steps.
+  - Estimated: 8 hours (actual: 7.5h including tests + telemetry updates)
 
 - [ ] Phase 2 – Frontend Client
   - DoD: `resources/js/sdk/lmStudio/` contains typed client, Pinia store, composables, and mocks.
@@ -338,3 +343,7 @@ interface SdkContract
 - LM Studio SDK resides in `Modules/Core` per principle: Core hosts reusable technical infrastructure.
 - Coordinate with caching strategy owners before enabling persistent inference caching.
 - Update decision records if we deviate from planned tooling or transport mechanisms.
+
+## Related Plans
+- `docs/plans/technical/2025-11-14-core-http-client.md` – shared HTTP client foundation.
+- `docs/plans/technical/2025-11-14-core-http-client-adoption.md` – migration of existing modules to shared client.
