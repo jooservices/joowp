@@ -11,7 +11,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 
-class WordPressServiceProvider extends ServiceProvider
+final class WordPressServiceProvider extends ServiceProvider
 {
     use PathNamespace;
 
