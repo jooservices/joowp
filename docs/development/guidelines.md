@@ -91,14 +91,20 @@ public function handle($request): array
 
 #### Atomic Commits Per Sub-task
 
+**CRITICAL RULES:**
+- ✅ **MUST:** Break feature into atomic tasks BEFORE starting implementation
+- ✅ **MUST:** Complete and commit one task before starting the next
+- ❌ **FORBIDDEN:** Implementing multiple tasks simultaneously
+- ❌ **FORBIDDEN:** Committing files from multiple tasks in one commit
+
 Break features into tasks, commit each task separately:
 
 ```
 Feature: User Authentication
-├─ Task A1: User model + tests → Commit 1
-├─ Task A2: UserRepository + tests → Commit 2
-├─ Task A3: AuthService + tests → Commit 3
-└─ Task A4: Controllers + tests → Commit 4
+├─ Task A1: User model + tests → Commit 1 (COMPLETE & COMMIT FIRST)
+├─ Task A2: UserRepository + tests → Commit 2 (THEN START THIS)
+├─ Task A3: AuthService + tests → Commit 3 (THEN START THIS)
+└─ Task A4: Controllers + tests → Commit 4 (THEN START THIS)
 ```
 
 #### Required Process for Each Sub-task:
@@ -195,6 +201,25 @@ AI: git commit -m "..."
 [AI stages 3 tasks together]
 AI: git commit -m "add user management"
 [Should be 3 separate commits]
+# FORBIDDEN: Committing multiple tasks together
+```
+
+❌ **WRONG:**
+```
+[AI implements Task A1, A2, A3 simultaneously]
+AI: git add app/Models/User.php app/Repositories/UserRepository.php app/Services/AuthService.php
+AI: git commit -m "feat: implement user authentication"
+# FORBIDDEN: Implementing multiple tasks simultaneously
+# FORBIDDEN: Committing multiple tasks together
+# Should be: Complete A1 → Commit → Then start A2
+```
+
+❌ **WRONG:**
+```
+[AI starts implementing without breaking feature into tasks]
+AI: [implements entire feature at once]
+# FORBIDDEN: Starting implementation without task breakdown
+# Should be: Break feature into tasks FIRST, then implement one by one
 ```
 
 #### Commit Scope Guidelines:

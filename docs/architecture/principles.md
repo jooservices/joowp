@@ -985,11 +985,28 @@ Link commits back to specific plan tasks and requirements.
 
 ### ⚙️ Rules/Standards: Commit Requirements
 
+#### Task Breakdown Requirements:
+- ✅ **MUST:** Break feature into atomic tasks BEFORE starting implementation
+- ✅ **MUST:** Define task boundaries and dependencies in plan file first
+- ✅ **MUST:** Each task must be independently completable and testable
+- ❌ **FORBIDDEN:** Starting implementation without task breakdown
+- ❌ **FORBIDDEN:** Implementing multiple tasks simultaneously
+- ❌ **FORBIDDEN:** Committing files from multiple tasks in one commit
+
+#### Sequential Implementation Requirements:
+- ✅ **MUST:** Complete and commit one task before starting the next
+- ✅ **MUST:** Wait for human approval and commit completion before proceeding
+- ✅ **MUST:** Update plan file to mark task complete before starting next
+- ❌ **FORBIDDEN:** Working on multiple tasks in parallel
+- ❌ **FORBIDDEN:** Staging files from incomplete tasks
+- ❌ **FORBIDDEN:** Proceeding to next task without committing current task
+
 #### Task Atomicity:
 - ✅ **MUST:** One logical task = one commit (feature, bugfix, refactor)
 - ✅ **MUST:** Task can be completed and tested independently  
 - ✅ **MUST:** Commit represents working, deployable state
 - ❌ **FORBIDDEN:** Partial implementations or work-in-progress commits
+- ❌ **FORBIDDEN:** Combining multiple tasks into single commit
 
 #### File Management:
 - ✅ **MUST:** Stage specific files explicitly: `git add file1.php file2.md`

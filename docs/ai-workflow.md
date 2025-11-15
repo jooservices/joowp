@@ -163,14 +163,20 @@ This workflow ensures that commits are deliberate, meet all quality standards, a
 
 ### Atomic Commits Per Sub-task
 
+**CRITICAL RULES:**
+- ✅ **MUST:** Break feature into atomic tasks BEFORE starting implementation
+- ✅ **MUST:** Complete and commit one task before starting the next
+- ❌ **FORBIDDEN:** Implementing multiple tasks simultaneously
+- ❌ **FORBIDDEN:** Committing files from multiple tasks in one commit
+
 Break features into tasks, commit each task separately:
 
 ```
 Feature: User Authentication
-├─ Task A1: User model + tests → Commit 1
-├─ Task A2: UserRepository + tests → Commit 2
-├─ Task A3: AuthService + tests → Commit 3
-└─ Task A4: Controllers + tests → Commit 4
+├─ Task A1: User model + tests → Commit 1 (COMPLETE & COMMIT FIRST)
+├─ Task A2: UserRepository + tests → Commit 2 (THEN START THIS)
+├─ Task A3: AuthService + tests → Commit 3 (THEN START THIS)
+└─ Task A4: Controllers + tests → Commit 4 (THEN START THIS)
 ```
 
 ### Workflow for Each Sub-task:
@@ -272,6 +278,21 @@ AI: [assumes approval based on previous pattern and commits]
 ```
 AI: [stages 3 tasks at once and commits together]
 # Should be: 1 task = 1 commit
+# FORBIDDEN: Committing multiple tasks together
+```
+
+❌ **WRONG:**
+```
+AI: [implements Task A1, A2, A3 simultaneously without committing]
+# Should be: Complete A1 → Commit → Then start A2
+# FORBIDDEN: Implementing multiple tasks simultaneously
+```
+
+❌ **WRONG:**
+```
+AI: [starts implementing without breaking feature into tasks]
+# Should be: Break feature into tasks FIRST, then implement one by one
+# FORBIDDEN: Starting implementation without task breakdown
 ```
 
 ### Enforcement:
