@@ -1071,6 +1071,29 @@ public function store(StoreProductRequest $request): JsonResponse
 }
 ```
 
+#### Controller Logging for Audit Trail
+```php
+public function models(Request $request): JsonResponse
+{
+    try {
+        $models = $this->sdk->listModels(...);
+    } catch (LmStudioException $exception) {
+        // Log request context for audit trail
+        // SDK already logs the error, but controller adds user/request context
+        Log::channel('external')->warning('LM Studio API error', [
+            'user_id' => auth()->id(),
+            'endpoint' => $request->path(),
+            'method' => $request->method(),
+            'params' => $request->all(),
+            'exception' => $exception->getMessage(),
+            'context' => $exception->getContext(),
+        ]);
+        
+        return $this->errorFromException($exception);
+    }
+}
+```
+
 ### Frontend Error Handling
 
 #### Axios Error Handling

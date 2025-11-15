@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Modules\Core\Http\Requests\LmStudioInferenceRequest;
 use Modules\Core\Services\LmStudio\Contracts\SdkContract;
 use Modules\Core\Services\LmStudio\DTO\ListModelsFilter;
@@ -38,6 +39,17 @@ final class LmStudioController extends Controller
         try {
             $models = $this->sdk->listModels($filter->isEmpty() ? null : $filter);
         } catch (LmStudioException $exception) {
+            // Log request context for audit trail
+            // SDK already logs the error, but controller adds user/request context
+            Log::channel('external')->warning('LM Studio API error in controller', [
+                'user_id' => auth()->id(),
+                'endpoint' => $request->path(),
+                'method' => $request->method(),
+                'params' => $request->all(),
+                'exception' => $exception->getMessage(),
+                'context' => $exception->getContext(),
+            ]);
+
             return $this->errorFromException($exception);
         }
 
@@ -62,6 +74,17 @@ final class LmStudioController extends Controller
         try {
             $result = $this->inferenceService->start($request->toDto());
         } catch (LmStudioException $exception) {
+            // Log request context for audit trail
+            // Inference service already logs the error, but controller adds user/request context
+            Log::channel('external')->warning('LM Studio inference error in controller', [
+                'user_id' => auth()->id(),
+                'endpoint' => $request->path(),
+                'method' => $request->method(),
+                'request_data' => $request->validated(),
+                'exception' => $exception->getMessage(),
+                'context' => $exception->getContext(),
+            ]);
+
             return $this->errorFromException($exception);
         }
 

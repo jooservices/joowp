@@ -253,6 +253,85 @@ final class CategoryController extends Controller
 
 ---
 
+## Try-Catch Logging Requirements
+
+### When to Log
+
+#### ✅ MUST Log:
+- **External API calls** - All HTTP client errors (Guzzle, external SDKs)
+- **Service layer errors** - Business logic failures that need audit trail
+- **Critical operations** - Payment processing, data mutations, security events
+- **Controller catch blocks** - Log request context (user, endpoint, params) even if exception already logged below
+
+#### ⚠️ MAY Skip Log (with justification):
+- **Exception already logged** - Lower layer (service/SDK) already logged with full context
+- **Only transforming exception** - Converting exception type to HTTP response without changing message/context
+- **Requirement:** Must include comment explaining why log is skipped
+
+#### ❌ NEVER Log:
+- **Test code** - Unit tests, feature tests (no logging needed)
+- **Finally blocks** - Cleanup only, no catch block
+
+### Examples
+
+#### ✅ GOOD: Controller logs request context
+```php
+public function models(Request $request): JsonResponse
+{
+    try {
+        $models = $this->sdk->listModels(...);
+    } catch (LmStudioException $exception) {
+        // Log request context for audit trail
+        // (SDK already logs the error, but controller adds request context)
+        Log::channel('external')->warning('LM Studio API error in controller', [
+            'user_id' => auth()->id(),
+            'endpoint' => $request->path(),
+            'method' => $request->method(),
+            'params' => $request->all(),
+            'exception' => $exception->getMessage(),
+            'context' => $exception->getContext(),
+        ]);
+        
+        return $this->errorFromException($exception);
+    }
+}
+```
+
+#### ⚠️ ACCEPTABLE: Skip log if already logged below
+```php
+public function store(StoreProductRequest $request): JsonResponse
+{
+    try {
+        $product = $this->service->create($request->validated());
+        return ProductResource::make($product)->response();
+    } catch (\InvalidArgumentException $e) {
+        // ⚠️ Skip log: Service layer already logged with full context
+        // Only transforming exception → HTTP response
+        return ApiResponse::error(
+            code: 'product.invalid_data',
+            message: $e->getMessage(),
+            status: 400
+        );
+    }
+}
+```
+
+#### ❌ BAD: No log in controller catch
+```php
+public function models(Request $request): JsonResponse
+{
+    try {
+        $models = $this->sdk->listModels(...);
+    } catch (LmStudioException $exception) {
+        // ❌ BAD: Missing request context logging
+        // Even if SDK logged, controller should log user/request context
+        return $this->errorFromException($exception);
+    }
+}
+```
+
+---
+
 ## Frontend Error Handling
 
 ### Axios Error Handling

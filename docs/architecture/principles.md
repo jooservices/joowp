@@ -1317,6 +1317,13 @@ Throw specific exceptions with detailed context about what failed and why.
 - ✅ **MUST:** Log all errors with sufficient debugging context
 - ❌ **FORBIDDEN:** Empty catch blocks or ignored exceptions
 
+#### Try-Catch Logging Requirement:
+- ✅ **MUST:** Log errors in try-catch blocks for external API calls, service layer errors, and critical operations
+- ✅ **MUST:** Log request context (user, endpoint, params) in controller catch blocks for audit trail
+- ⚠️ **MAY Skip Log:** If exception already logged at lower layer (service/SDK) AND only transforming exception type
+- ⚠️ **REQUIREMENT:** If skipping log, must include comment explaining why
+- ❌ **FORBIDDEN:** Empty catch blocks or catching without logging (unless exception already logged below)
+
 #### Resource Management:
 - ✅ **MUST:** Explicit cleanup of database connections, file handles, external resources
 - ✅ **MUST:** Try-finally blocks for guaranteed resource cleanup
