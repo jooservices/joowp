@@ -135,6 +135,8 @@ npm run build              # Production build succeeds
 - ❌ **Never commit partial work** - only complete, working sub-tasks
 - ❌ **Never modify files you didn't create** - explicit file staging only
 - ❌ **NEVER commit without explicit human approval** - AI agents MUST ask and wait
+- ❌ **NEVER assume approval from previous messages** - Always ask after implementation, regardless of previous message patterns
+- ❌ **NEVER commit based on pattern matching** - Only commit when human explicitly approves
 
 ## 🚫 CRITICAL: Commit Authorization
 
@@ -185,7 +187,10 @@ Feature: User Authentication
    ```
    **Rule:** Stage ONLY when task is complete. Never stage work-in-progress.
 
-3. **Ask human for approval**
+3. **ALWAYS ask human for approval (MANDATORY)**
+   - **Rule:** After ANY implementation, you MUST ask before committing
+   - **Rule:** Do NOT rely on previous message patterns or assume approval
+   - **Rule:** Ask in yes/no format: "Implementation complete. Ready to commit?"
    ```
    "Ready to commit? Task A1 complete: User model with validation
    
@@ -196,8 +201,11 @@ Feature: User Authentication
    Quality gates: ✅ All passed"
    ```
 
-4. **WAIT for human response**
-   - Valid approval: "commit", "yes", "ok", "go ahead"
+4. **WAIT for human response (MANDATORY)**
+   - **MANDATORY:** Do NOT proceed until human responds
+   - **Approve = any indication of agreement** (flexible, not pattern-based)
+   - Valid approval examples: "commit", "yes", "ok", "go ahead", etc.
+   - Do NOT rely on pattern matching from previous messages
    - Any other response = do NOT commit
 
 5. **Execute commit (only after approval)**
@@ -214,15 +222,15 @@ Feature: User Authentication
 [AI completes Task A1: User model]
 [AI runs composer lint && composer test - all pass]
 AI: git add app/Models/User.php tests/Unit/Models/UserTest.php
-AI: "Ready to commit? Task A1 complete: User model with validation
+AI: "Implementation complete. Ready to commit? Task A1 complete: User model with validation
      
      Staged files:
      - app/Models/User.php
      - tests/Unit/Models/UserTest.php
      
      Quality gates: ✅ All passed"
-[AI WAITS]
-Human: "commit"
+[AI WAITS for human response]
+Human: "commit" (or "yes", "ok", etc. - any approval indication)
 AI: git commit -m "feat: add User model with validation (Task A1)"
 ```
 
@@ -236,6 +244,14 @@ AI: [executes git commit without asking]
 ```
 AI: "Ready to commit?"
 AI: [commits immediately without waiting for response]
+```
+
+❌ **WRONG:**
+```
+[AI completes implementation]
+[User previously said "commit" for different task]
+AI: [assumes approval based on previous pattern and commits]
+# Should: Always ask again, regardless of previous messages
 ```
 
 ❌ **WRONG:**

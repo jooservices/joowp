@@ -114,9 +114,12 @@ Feature: User Authentication
    # NEVER use: git add . or git add -A
    ```
 
-**3. Ask human for approval**
+**3. ALWAYS ask human for approval (MANDATORY)**
+   - **Rule:** After ANY implementation, you MUST ask before committing
+   - **Rule:** Do NOT rely on previous message patterns or assume approval
+   - **Rule:** Ask in yes/no format: "Implementation complete. Ready to commit?"
    ```
-   AI: "Ready to commit? Task A1 complete: User model with validation
+   AI: "Implementation complete. Ready to commit? Task A1 complete: User model with validation
    
    Staged files:
    - app/Models/User.php
@@ -125,9 +128,11 @@ Feature: User Authentication
    Quality gates: ✅ All passed"
    ```
 
-**4. Wait for human response**
-   - Do NOT proceed until human responds
-   - Valid responses: "commit", "yes", "ok", "go ahead"
+**4. Wait for human response (MANDATORY)**
+   - **MANDATORY:** Do NOT proceed until human responds
+   - **Approve = any indication of agreement** (flexible, not pattern-based)
+   - Do NOT rely on pattern matching from previous messages
+   - Valid approval: Any indication of agreement (commit, yes, ok, go ahead, etc.)
    - Any other response = do NOT commit
 
 **5. Execute commit (only after approval)**
@@ -144,15 +149,15 @@ Feature: User Authentication
 [AI completes UserService implementation]
 [AI runs quality checks - all pass]
 AI: git add app/Services/UserService.php tests/Unit/Services/UserServiceTest.php
-AI: "Ready to commit? Task A2 complete: UserService with validation
+AI: "Implementation complete. Ready to commit? Task A2 complete: UserService with validation
      
      Staged files:
      - app/Services/UserService.php
      - tests/Unit/Services/UserServiceTest.php
      
      Quality gates: ✅ All passed"
-[AI WAITS]
-Human: "commit"
+[AI WAITS for human response]
+Human: "commit" (or "yes", "ok", etc. - any approval indication)
 AI: git commit -m "feat: add UserService with validation (Task A2)"
 ```
 

@@ -665,9 +665,12 @@ Feature: User Authentication
    # NEVER: Stage before quality gates pass
    ```
 
-3. **ASK & WAIT FOR APPROVAL**
+3. **ALWAYS ASK & WAIT FOR APPROVAL (MANDATORY)**
+   - **Rule:** After ANY implementation, you MUST ask before committing
+   - **Rule:** Do NOT rely on previous message patterns or assume approval
+   - **Rule:** Ask in yes/no format: "Implementation complete. Ready to commit?"
    ```
-   "Ready to commit? Task A1 complete: User model with validation
+   "Implementation complete. Ready to commit? Task A1 complete: User model with validation
    
    Staged files:
    - app/Models/User.php
@@ -675,7 +678,11 @@ Feature: User Authentication
    
    Quality gates: ✅ All passed"
    ```
-   **WAIT for human to say "commit", "yes", or "ok"**
+   **MANDATORY: WAIT for human response**
+   - **Approve = any indication of agreement** (flexible, not pattern-based)
+   - Do NOT rely on pattern matching from previous messages
+   - Valid approval: "commit", "yes", "ok", "go ahead", etc.
+   - Any other response = do NOT commit
 
 4. **Execute commit (only after approval)**
    ```bash
@@ -690,6 +697,8 @@ Feature: User Authentication
 - Committing without asking first
 - Committing without waiting for approval
 - Auto-committing after completing work
+- Assuming approval from previous messages
+- Committing based on pattern matching
 - Using `git add .` or `git add -A`
 - Staging work-in-progress
 - Committing multiple tasks together
