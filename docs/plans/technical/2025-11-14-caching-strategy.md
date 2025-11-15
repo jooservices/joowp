@@ -375,5 +375,5 @@ sqlite3 database/database.sqlite "SELECT COUNT(*) FROM cache;"
 ## References
 
 - [Laravel Cache Documentation](https://laravel.com/docs/11.x/cache)
-- [Engineering Principles](../principles.md)
-- [WordPress SDK Guide](../guides/core-wordpress-sdk.md)
+- [Engineering Principles](../../architecture/principles.md)
+- [WordPress SDK Guide](../../guides/core-wordpress-sdk.md)

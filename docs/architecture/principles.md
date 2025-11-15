@@ -955,7 +955,7 @@ Ensure next AI agent has clear understanding of what's been accomplished.
 - ✅ **MUST:** Completion status enables proper git hook processing
 - ✅ **MUST:** Task completion feeds into automated documentation generation
 
-> **Implementation Details:** See [AI Workflow Guide](../guides/ai-development-workflow.md) for plan file formats and completion tracking procedures.
+> **Implementation Details:** See [AI Workflow Guide](../ai-workflow.md) for plan file formats and completion tracking procedures.
 
 ---
 
@@ -1086,7 +1086,7 @@ Ultimate quality gate before public release.
 - ✅ **MUST:** Explicit acceptance criteria for each deliverable
 - ❌ **FORBIDDEN:** Ambiguous requirements that cause AI confusion
 
-> **Implementation Details:** See [AI Workflow Guide](../guides/ai-development-workflow.md) for detailed agent responsibilities and handoff procedures.
+> **Implementation Details:** See [AI Workflow Guide](../ai-workflow.md) for detailed agent responsibilities and handoff procedures.
 
 ---
 
