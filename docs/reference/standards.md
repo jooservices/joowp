@@ -203,14 +203,19 @@ return ApiResponse::error(
 ]
 ```
 
-**OPTIONAL Fields:**
+**OPTIONAL Fields (with conditions):**
 ```php
 [
-    'before' => [...],  // Optional: State before mutation
-    'after' => [...],  // Optional: State after mutation
-    'metadata' => [...],  // Optional: Additional context (IP, request ID, etc.)
+    'before' => [...],  // REQUIRED for update operations, optional for create/delete
+    'after' => [...],  // REQUIRED for create/update operations, optional for delete
+    'metadata' => [...],  // REQUIRED for security events, optional for regular operations
 ]
 ```
+
+**Conditions:**
+- **`before`:** REQUIRED when logging update operations (to track state changes)
+- **`after`:** REQUIRED when logging create/update operations (to track new state)
+- **`metadata`:** REQUIRED for security events (login, permission changes, etc.)
 
 **Complete Example:**
 ```php
@@ -244,8 +249,29 @@ Log::channel('action')->info('Domain action recorded', [
 - **File:** `storage/logs/external.log` (or `general.log` in the future)
 - **Retention:** 14 days
 - **Use:** General errors, warnings, and info (not third-party requests)
-- **Format:** Flexible, includes timestamp, service, message, context
+- **Format:** Flexible structure, but MUST include minimum required fields
 
+**MANDATORY Fields (Minimum Requirements):**
+```php
+[
+    'timestamp' => '2025-01-15T10:30:45.123Z',  // MANDATORY: ISO 8601 timestamp (auto-added by Laravel)
+    'level' => 'error|warning|info',  // MANDATORY: Log level (implicit from Log::error/warning/info)
+    'message' => '...',  // MANDATORY: Human-readable message
+]
+```
+
+**RECOMMENDED Fields:**
+```php
+[
+    'service' => 'product|user|...',  // RECOMMENDED: Service name
+    'context' => [...],  // RECOMMENDED: Additional context
+    'user_id' => 123,  // RECOMMENDED: If applicable
+]
+```
+
+**Note:** Format is flexible (you can add custom fields), but minimum required fields MUST be present. Laravel automatically adds timestamp and level.
+
+**Examples:**
 ```php
 // Controller error logging
 Log::channel('external')->warning('LM Studio API error in controller', [

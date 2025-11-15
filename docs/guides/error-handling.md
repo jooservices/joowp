@@ -263,10 +263,17 @@ final class CategoryController extends Controller
 - **Critical operations** - Payment processing, data mutations, security events
 - **Controller catch blocks** - Log request context (user, endpoint, params) even if exception already logged below
 
-#### ⚠️ MAY Skip Log (with justification):
+#### ⚠️ MAY Skip Log (with STRICT conditions):
 - **Exception already logged** - Lower layer (service/SDK) already logged with full context
+  - **Condition:** Must verify lower layer actually logged (check logs or code)
+  - **Requirement:** Must include comment with reference to where exception was logged
 - **Only transforming exception** - Converting exception type to HTTP response without changing message/context
-- **Requirement:** Must include comment explaining why log is skipped
+  - **Condition:** No additional context added, only type transformation
+  - **Requirement:** Must include comment explaining transformation
+
+**Validation:**
+- Code review must verify justification is valid
+- Pre-commit hook may check for missing logs in catch blocks (future enhancement)
 
 #### ❌ NEVER Log:
 - **Test code** - Unit tests, feature tests (no logging needed)
@@ -340,7 +347,17 @@ public function models(Request $request): JsonResponse
 
 **Channel:** `external` (currently) or `general` (future)
 
-**Format:** Flexible, includes timestamp, service, message, context
+**Format:** Flexible structure, but MUST include minimum required fields
+
+**MANDATORY Fields (Minimum Requirements):**
+- `timestamp` (ISO 8601, auto-added by Laravel)
+- `level` (error/warning/info, implicit from Log method)
+- `message` (human-readable message)
+
+**RECOMMENDED Fields:**
+- `service` (service name)
+- `context` (additional context)
+- `user_id` (if applicable)
 
 **Use Cases:**
 - Controller error logging
