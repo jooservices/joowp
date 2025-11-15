@@ -356,6 +356,26 @@ test(lmstudio): add inference service tests
 - **15-30 files:** Justify in commit message (e.g., new module setup)
 - **>30 files:** Consider splitting into multiple commits
 
+### Commit Message Metadata (Optional)
+For traceability, you may include metadata in commit messages:
+
+```
+<type>(<scope>): <description>
+
+<optional body>
+
+Co-authored-by: Name <email@example.com>
+Generated-By: Tool or Agent Name
+Task-ID: Task or Plan Reference
+```
+
+**Metadata Fields:**
+- `Co-authored-by`: Name and email of co-author(s)
+- `Generated-By`: Tool or agent responsible for the commit
+- `Task-ID`: Reference to the task or plan
+
+**Note:** Metadata fields are optional unless specified by the team. See [Commit Message Metadata Plan](../plans/technical/2025-11-14-commit-message-metadata.md) for future enforcement requirements.
+
 ### Decision Rule
 "Could this commit be reverted independently without breaking anything?"
 - ✅ Yes → Good commit boundary

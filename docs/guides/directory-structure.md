@@ -74,7 +74,6 @@ This guide explains the purpose and organization of each directory within the `d
 - `core-wordpress-sdk.md` - WordPress REST API integration patterns
 - `lm-studio-sdk.md` - Local AI model integration and usage
 - `writing-plans.md` - How to write technical implementation plans
-- `guidelines.md` - Commit message standards and examples
 - `directory-structure.md` - This guide
 
 **When to Use:**

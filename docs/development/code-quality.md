@@ -27,8 +27,8 @@ This executes the tools in priority order (Pint → PHP_CodeSniffer → PHPMD �
 The sections related to commit message standards and AI-specific workflows have been moved to their respective documents:
 
 1. **Commit Message Standards**:
-   - Now located in `docs/guides/guidelines.md`.
-   - Refer to this document for detailed rules and examples.
+   - Now located in `docs/reference/standards.md#commit-message-format`.
+   - Refer to this document for exact format requirements and metadata examples.
 
 2. **AI Commit Execution Workflow**:
    - Now located in `docs/ai-workflow.md`.
