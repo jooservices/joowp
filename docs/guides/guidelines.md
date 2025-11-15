@@ -2,11 +2,14 @@
 
 To ensure consistency and traceability, all commit messages must adhere to the following standards:
 
+> **Exact Format:** See [Standards Reference](../reference/standards.md#commit-message-format) for complete format specification.
+
 ### Format
 1. **Title**:
-   - Format: `<type>(<scope>): <description>`
+   - Format: `<type>(<scope>): <description>` (scope is required)
    - Example: `feat(lmstudio): add inference API`
-   - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`.
+   - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
+   - Scope: Module or component name (e.g., `core`, `wordpress`, `lmstudio`, `app`, `config`, `plans`)
 
 2. **Body**:
    - Provide a concise explanation of the change.

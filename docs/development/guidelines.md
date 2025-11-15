@@ -187,16 +187,23 @@ AI: git commit -m "add user management"
 
 #### Commit Message Format:
 
-`<type>: <description> (Task ID)`
+Format: `<type>(<scope>): <description>`
+
+> **Exact Format:** See [Standards Reference](../reference/standards.md#commit-message-format) for complete format specification.
 
 **Types:** `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
 
+**Scope:** Module or component name (required)
+- Examples: `core`, `wordpress`, `lmstudio`, `app`, `config`, `plans`
+
 **Examples:**
 ```bash
-feat: add User model with validation (Task A1)
-feat: implement UserRepository with CRUD (Task A2)
-feat: add AuthService with JWT logic (Task A3)
-test: add UserService integration tests (Task A2.1)
+feat(core): add HTTP client service (Task A1)
+feat(wordpress): implement CategoryRepository with CRUD (Task A2)
+feat(lmstudio): add inference service with streaming (Task A3)
+test(core): add HTTP client service tests (Task A1.1)
+fix(wordpress): resolve category parent validation (Task B1)
+docs(plans): update LM Studio SDK plan status (Task C1)
 ```
 
 #### Enforcement:

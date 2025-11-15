@@ -315,12 +315,40 @@ try {
 
 ### Commit Message Format
 ```
-<type>: <description>
+<type>(<scope>): <description>
 
 <optional body>
 ```
 
-**Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+**Format Requirements:**
+- ✅ **MUST:** Format: `<type>(<scope>): <description>`
+- ✅ **MUST:** Scope is required (module or component name)
+- ✅ **MUST:** Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `test`: Adding/updating tests
+- `refactor`: Code change (no new features/fixes)
+- `style`: Formatting, no logic change
+- `chore`: Build/tooling/config changes
+
+**Scope Examples:**
+- `core`: Core module changes
+- `wordpress`: WordPress module changes
+- `lmstudio`: LM Studio module changes
+- `app`: Root application changes
+- `config`: Configuration changes
+- `plans`: Planning documentation
+
+**Examples:**
+```
+feat(core): add HTTP client service
+fix(wordpress): resolve category parent validation
+docs(plans): update LM Studio SDK plan
+test(lmstudio): add inference service tests
+```
 
 ### Commit Size Guidelines
 - **1-5 files:** Usually appropriate

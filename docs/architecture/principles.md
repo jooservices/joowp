@@ -997,8 +997,9 @@ Link commits back to specific plan tasks and requirements.
 - ❌ **FORBIDDEN:** Including files modified by other developers
 
 #### Commit Message Standards:
-- ✅ **MUST:** Format: `<type>(<scope>): <description>`
+- ✅ **MUST:** Format: `<type>(<scope>): <description>` (see [Standards Reference](../reference/standards.md#commit-message-format) for exact format)
 - ✅ **MUST:** Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
+- ✅ **MUST:** Scope is required (module or component name)
 - ✅ **MUST:** Include task reference when applicable
 - ✅ **MUST:** Explain what and why, not how
 
