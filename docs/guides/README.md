@@ -8,6 +8,15 @@ Feature-specific tutorials and complete code examples.
 - [**WordPress SDK**](core-wordpress-sdk.md) - WordPress REST API integration patterns
 - [**LM Studio SDK**](lm-studio-sdk.md) - Local AI model integration and usage
 
+### Development Patterns
+- [**Testing Patterns**](testing-patterns.md) - Unit tests, feature tests, and testing strategies
+- [**Error Handling**](error-handling.md) - Exception handling, error responses, and logging
+- [**Frontend Patterns**](frontend-patterns.md) - Vue 3, TypeScript, and Inertia.js patterns
+- [**Module Creation**](module-creation.md) - Step-by-step module creation workflow
+- [**API Versioning**](api-versioning.md) - Semantic versioning and backward compatibility
+- [**Security Best Practices**](security-best-practices.md) - Input validation, CSRF, rate limiting
+- [**Performance Optimization**](performance-optimization.md) - Database optimization, caching, async calls
+
 ### Planning & Process
 - [**Writing Plans**](writing-plans.md) - How to write technical implementation plans
 - [**Directory Structure**](directory-structure.md) - Documentation directory organization and purpose
