@@ -205,42 +205,83 @@ PATCH /api/v1/products/{uuid}
 
 ### Rules
 
-- ✅ **MUST:** Use `200` for successful GET, PUT, PATCH
-- ✅ **MUST:** Use `201` for successful POST (resource created)
-- ✅ **MUST:** Use `204` for successful DELETE (no response body)
-- ✅ **MUST:** Use `400` for business logic errors (invalid state, rule violation)
-- ✅ **MUST:** Use `401` for missing/invalid authentication
-- ✅ **MUST:** Use `403` for authorization failures (authenticated but not allowed)
-- ✅ **MUST:** Use `404` for resource not found
-- ✅ **MUST:** Use `422` for validation errors (FormRequest handles automatically)
-- ✅ **MUST:** Use `429` for rate limit exceeded
-- ✅ **MUST:** Use `500` for unexpected server errors
+- ✅ **MUST:** Use `Response::HTTP_OK` (200) for successful GET, PUT, PATCH
+- ✅ **MUST:** Use `Response::HTTP_CREATED` (201) for successful POST (resource created)
+- ✅ **MUST:** Use `Response::HTTP_NO_CONTENT` (204) for successful DELETE (no response body)
+- ✅ **MUST:** Use `Response::HTTP_BAD_REQUEST` (400) for business logic errors (invalid state, rule violation)
+- ✅ **MUST:** Use `Response::HTTP_UNAUTHORIZED` (401) for missing/invalid authentication
+- ✅ **MUST:** Use `Response::HTTP_FORBIDDEN` (403) for authorization failures (authenticated but not allowed)
+- ✅ **MUST:** Use `Response::HTTP_NOT_FOUND` (404) for resource not found
+- ✅ **MUST:** Use `Response::HTTP_UNPROCESSABLE_ENTITY` (422) for validation errors (FormRequest handles automatically)
+- ✅ **MUST:** Use `Response::HTTP_TOO_MANY_REQUESTS` (429) for rate limit exceeded
+- ✅ **MUST:** Use `Response::HTTP_INTERNAL_SERVER_ERROR` (500) for unexpected server errors
+- ❌ **FORBIDDEN:** Using magic numbers (200, 201, 404, etc.) instead of constants
 - ❌ **FORBIDDEN:** Returning stack traces or sensitive error details in production
+
+**Required Import:**
+```php
+use Illuminate\Http\Response;
+```
 
 ### Examples
 
 ```php
+use Illuminate\Http\Response;
+use App\Http\Responses\ApiResponse;
+
 // ✅ 200: Successful GET
-return ProductResource::make($product)->response()->setStatusCode(200);
+return ProductResource::make($product)
+    ->response()
+    ->setStatusCode(Response::HTTP_OK);
 
 // ✅ 201: Resource created
-return ProductResource::make($product)->response()->setStatusCode(201);
+return ProductResource::make($product)
+    ->response()
+    ->setStatusCode(Response::HTTP_CREATED);
 
 // ✅ 204: Resource deleted
-return response()->noContent();  // Status 204
+return response()->noContent();  // Automatically uses Response::HTTP_NO_CONTENT
 
 // ✅ 400: Business logic error
 return ApiResponse::error(
     code: 'product.out_of_stock',
     message: 'Product is out of stock',
-    status: 400
+    status: Response::HTTP_BAD_REQUEST
+);
+
+// ✅ 401: Unauthorized
+return ApiResponse::error(
+    code: 'auth.unauthorized',
+    message: 'Authentication required',
+    status: Response::HTTP_UNAUTHORIZED
+);
+
+// ✅ 403: Forbidden
+return ApiResponse::error(
+    code: 'auth.forbidden',
+    message: 'Insufficient permissions',
+    status: Response::HTTP_FORBIDDEN
 );
 
 // ✅ 404: Resource not found
-// Laravel automatically returns 404 if Model::findOrFail() fails
+// Laravel automatically returns Response::HTTP_NOT_FOUND if Model::findOrFail() fails
 
 // ✅ 422: Validation failed
-// Laravel automatically returns 422 if FormRequest validation fails
+// Laravel automatically returns Response::HTTP_UNPROCESSABLE_ENTITY if FormRequest validation fails
+
+// ✅ 429: Rate limit exceeded
+return ApiResponse::error(
+    code: 'rate_limit.exceeded',
+    message: 'Too many requests',
+    status: Response::HTTP_TOO_MANY_REQUESTS
+);
+
+// ✅ 500: Internal server error
+return ApiResponse::error(
+    code: 'server.error',
+    message: 'An unexpected error occurred',
+    status: Response::HTTP_INTERNAL_SERVER_ERROR
+);
 ```
 
 ---
@@ -520,11 +561,13 @@ X-RateLimit-Reset: 1640995200
 ### Error Response
 
 ```php
+use Illuminate\Http\Response;
+
 // 429 Too Many Requests
 return ApiResponse::error(
     code: 'rate_limit.exceeded',
     message: 'Too many requests. Please try again later.',
-    status: 429,
+    status: Response::HTTP_TOO_MANY_REQUESTS,
     meta: [
         'retry_after' => 60,  // seconds
         'limit' => 60,
@@ -586,6 +629,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Modules\Product\Http\Requests\IndexProductRequest;
 use Modules\Product\Http\Requests\StoreProductRequest;
 use Modules\Product\Http\Requests\UpdateProductRequest;
@@ -629,7 +673,7 @@ final class ProductController extends Controller
         
         return ProductResource::make($product)
             ->response()
-            ->setStatusCode(201);
+            ->setStatusCode(Response::HTTP_CREATED);
     }
 
     public function show(string $uuid): JsonResponse

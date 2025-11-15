@@ -137,6 +137,87 @@ composer test:coverage-check  # Enforce coverage thresholds (CI gate)
 
 ---
 
+## Constants Usage Policy
+
+### ✅ MUST: Use Constants (Not Magic Numbers)
+
+**Rules:**
+- ✅ **MUST:** Use constants for all HTTP status codes
+- ✅ **MUST:** Use constants for all numeric values that have semantic meaning
+- ✅ **MUST:** Use `Illuminate\Http\Response` constants for HTTP status codes
+- ❌ **FORBIDDEN:** Magic numbers in code (200, 201, 404, 500, etc.)
+- ❌ **FORBIDDEN:** Hardcoded numeric values without constants
+
+### HTTP Status Code Constants
+
+**Required Import:**
+```php
+use Illuminate\Http\Response;
+```
+
+**Available Constants:**
+- `Response::HTTP_OK` (200) - Successful GET, PUT, PATCH
+- `Response::HTTP_CREATED` (201) - Successful POST (resource created)
+- `Response::HTTP_NO_CONTENT` (204) - Successful DELETE
+- `Response::HTTP_BAD_REQUEST` (400) - Invalid request, business logic error
+- `Response::HTTP_UNAUTHORIZED` (401) - Missing or invalid authentication
+- `Response::HTTP_FORBIDDEN` (403) - Authenticated but not authorized
+- `Response::HTTP_NOT_FOUND` (404) - Resource not found
+- `Response::HTTP_UNPROCESSABLE_ENTITY` (422) - Validation failed
+- `Response::HTTP_TOO_MANY_REQUESTS` (429) - Rate limit exceeded
+- `Response::HTTP_INTERNAL_SERVER_ERROR` (500) - Server error
+
+### Examples
+
+```php
+use Illuminate\Http\Response;
+use App\Http\Responses\ApiResponse;
+
+// ✅ CORRECT: Use constants
+return ApiResponse::success(
+    code: 'resource.created',
+    message: 'Resource created successfully',
+    data: $resource->toArray(),
+    status: Response::HTTP_CREATED
+);
+
+return ApiResponse::error(
+    code: 'resource.validation_failed',
+    message: 'Invalid data',
+    status: Response::HTTP_UNPROCESSABLE_ENTITY
+);
+
+return ProductResource::make($product)
+    ->response()
+    ->setStatusCode(Response::HTTP_CREATED);
+
+return response()->noContent();  // Automatically uses Response::HTTP_NO_CONTENT
+
+// ❌ WRONG: Magic numbers
+return ApiResponse::success(..., status: 201);  // FORBIDDEN
+return ApiResponse::error(..., status: 400);  // FORBIDDEN
+->setStatusCode(201);  // FORBIDDEN
+```
+
+### Other Constants
+
+For other numeric values with semantic meaning, create project-specific constants:
+
+```php
+// ✅ CORRECT: Define constants for semantic values
+final class PaginationLimits
+{
+    public const DEFAULT_PER_PAGE = 15;
+    public const MAX_PER_PAGE = 100;
+    public const MIN_PER_PAGE = 1;
+}
+
+// Usage
+$perPage = min($request->get('per_page', PaginationLimits::DEFAULT_PER_PAGE), PaginationLimits::MAX_PER_PAGE);
+```
+
+---
+
 ## Job Data Passing Policy
 
 ### ✅ MUST: Pass ID/UUID, NOT Model Instances
@@ -240,13 +321,15 @@ Configure in `modules_statuses.json`:
 ```php
 use App\Http\Responses\ApiResponse;
 
+use Illuminate\Http\Response;
+
 // Success
 return ApiResponse::success(
     code: 'resource.created',
     message: 'Resource created successfully',
     data: $resource->toArray(),
     meta: ['timestamp' => now()],
-    status: 201
+    status: Response::HTTP_CREATED
 );
 
 // Error
@@ -255,7 +338,7 @@ return ApiResponse::error(
     message: 'Invalid data',
     meta: ['errors' => $validator->errors()],
     data: [],
-    status: 422
+    status: Response::HTTP_UNPROCESSABLE_ENTITY
 );
 ```
 
