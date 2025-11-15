@@ -1,10 +1,10 @@
 # Plan – Home Welcome Text Readability Fix
 
-Status: Active  
+Status: Completed  
 Priority: P2  
 Owner: Platform Engineering  
 Created: 2025-11-14  
-Updated: 2025-11-14  
+Updated: 2025-11-15  
 Target: 2025-11-16  
 Epic: UI/UX Improvements
 
