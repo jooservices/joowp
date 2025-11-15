@@ -189,7 +189,30 @@ return ApiResponse::error(
 - **File:** `storage/logs/action.log`
 - **Retention:** 30 days
 - **Use:** Domain mutations (create, update, delete)
+- **Format:** Strict structure with MANDATORY fields
 
+**MANDATORY Fields:**
+```php
+[
+    'operation' => 'user.updated',  // MANDATORY: Operation name (domain.action format)
+    'actor' => [
+        'id' => 42,  // MANDATORY if actor provided
+        'type' => User::class,  // MANDATORY if actor provided
+    ] | null,  // MANDATORY (can be null for system actions)
+    'occurred_at' => '2025-01-01T12:00:00+00:00',  // MANDATORY: ISO 8601 timestamp (auto-generated)
+]
+```
+
+**OPTIONAL Fields:**
+```php
+[
+    'before' => [...],  // Optional: State before mutation
+    'after' => [...],  // Optional: State after mutation
+    'metadata' => [...],  // Optional: Additional context (IP, request ID, etc.)
+]
+```
+
+**Complete Example:**
 ```php
 use App\Logging\ActionLogger;
 
@@ -200,6 +223,21 @@ $logger->log(
     after: ['name' => 'New Name'],
     metadata: ['ip' => request()->ip()]
 );
+```
+
+**Resulting Log Entry:**
+```php
+Log::channel('action')->info('Domain action recorded', [
+    'operation' => 'user.updated',
+    'actor' => [
+        'id' => 123,
+        'type' => 'App\\Models\\User',
+    ],
+    'occurred_at' => '2025-01-15T10:30:45.123Z',
+    'before' => ['name' => 'Old Name'],
+    'after' => ['name' => 'New Name'],
+    'metadata' => ['ip' => '127.0.0.1'],
+]);
 ```
 
 ### General Log Channel
