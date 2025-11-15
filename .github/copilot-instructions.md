@@ -352,7 +352,7 @@ Envelope structure:
 ```
 
 ### Logging Patterns
-**Two dedicated log channels** (configured in `config/logging.php`):
+**Three dedicated log channels** (configured in `config/logging.php`):
 
 1. **Action Log** (`action` channel) - Domain mutations:
 ```php
@@ -369,11 +369,16 @@ $logger->log(
 - Stored in `storage/logs/action.log` (30 day retention)
 - Captures actor, timestamp, before/after state, metadata
 
-2. **External Log** (`external` channel) - Third-party API calls:
-- Used automatically by WordPress SDK for all requests
-- Logs method, URI, sanitized options (passwords/tokens masked)
+2. **General Log** (`external` channel, currently) - Application errors/info:
+- Used for controller errors, service errors, general warnings/info
+- Flexible format with timestamp, service, message, context
 - Stored in `storage/logs/external.log` (14 day retention)
-- See `Modules\Core\Services\WordPress\Sdk::logExternalDispatch()` for pattern
+- See controller error logging examples in error-handling guide
+
+3. **Third-Party Request Log** (`third-party-requests` channel, planned):
+- Will be used for all third-party API requests/responses
+- Standard format with complete request/response data
+- See [Third-Party Request Logging Plan](../docs/plans/technical/2025-01-15-third-party-request-logging.md)
 
 ### Frontend Patterns  
 - **Pages**: Vue SFCs in `resources/js/Pages/` using TypeScript

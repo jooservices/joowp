@@ -39,7 +39,7 @@ JOOservices Platform is built on strict type safety, comprehensive testing, and 
 
 ### Audit Logging
 - **Log all mutations** with actor, before/after, metadata
-- Action log (30d), External log (14d)
+- Action log (30d), General log (14d), Third-party request log (14d, planned)
 - **Pattern:** `$logger->log(operation, actor, before, after, metadata)`
 
 ### Third-Party Integration
@@ -453,7 +453,8 @@ Include request IP, user agent, and other relevant context.
 
 #### Log Channel Strategy:
 - **Action logs:** Domain business mutations with actor and state tracking
-- **External logs:** Third-party API calls with sanitized request/response data
+- **General logs:** Application errors, warnings, and info (not third-party requests)
+- **Third-party request logs:** Third-party API calls with complete request/response data (planned)
 
 #### Data Protection:
 - ✅ **MUST:** Mask sensitive data (passwords, tokens, secrets) in all logs
