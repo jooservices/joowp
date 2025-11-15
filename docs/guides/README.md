@@ -10,6 +10,7 @@ Feature-specific tutorials and complete code examples.
 
 ### Planning & Process
 - [**Writing Plans**](writing-plans.md) - How to write technical implementation plans
+- [**Directory Structure**](directory-structure.md) - Documentation directory organization and purpose
 
 ## Guide vs Plan
 
