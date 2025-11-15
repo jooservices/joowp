@@ -191,9 +191,9 @@ use Modules\Product\Http\Controllers\ProductController;
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/products', [ProductController::class, 'index']);
     Route::post('/products', [ProductController::class, 'store']);
-    Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::put('/products/{id}', [ProductController::class, 'update']);
-    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+    Route::get('/products/{uuid}', [ProductController::class, 'show']);
+    Route::put('/products/{uuid}', [ProductController::class, 'update']);
+    Route::delete('/products/{uuid}', [ProductController::class, 'destroy']);
 });
 ```
 
@@ -398,21 +398,38 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class Product extends Model
 {
+    protected $primaryKey = 'uuid';
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
+        'uuid',
         'name',
         'description',
         'price',
-        'category_id',
+        'category_uuid',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'category_id' => 'integer',
+        'uuid' => 'string',
+        'category_uuid' => 'string',
     ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        
+        static::creating(function (Product $product): void {
+            if (empty($product->uuid)) {
+                $product->uuid = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+    }
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class, 'category_uuid', 'uuid');
     }
 }
 ```
@@ -437,11 +454,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('uuid')->primary();
             $table->string('name');
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
-            $table->foreignId('category_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignUuid('category_uuid')->nullable()->constrained('categories', 'uuid')->nullOnDelete();
             $table->timestamps();
         });
     }
@@ -538,7 +555,7 @@ final class ProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'uuid' => $this->uuid,
             'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,

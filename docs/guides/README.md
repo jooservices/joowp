@@ -9,6 +9,7 @@ Feature-specific tutorials and complete code examples.
 - [**LM Studio SDK**](lm-studio-sdk.md) - Local AI model integration and usage
 
 ### Development Patterns
+- [**RESTful API Design**](restful-api-design.md) - Complete guide to RESTful API design with UUID identifiers, HTTP methods, status codes, pagination, filtering, and security
 - [**Laravel Components & Patterns**](laravel-components-patterns.md) - Complete guide to all Laravel components (FormRequest, Policy, Middleware, Resource, Event, Job, Command, etc.) with naming conventions and decision trees
 - [**Testing Patterns**](testing-patterns.md) - Unit tests, feature tests, and testing strategies
 - [**Error Handling**](error-handling.md) - Exception handling, error responses, and logging
