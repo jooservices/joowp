@@ -9,6 +9,7 @@ Feature-specific tutorials and complete code examples.
 - [**LM Studio SDK**](lm-studio-sdk.md) - Local AI model integration and usage
 
 ### Development Patterns
+- [**Laravel Components & Patterns**](laravel-components-patterns.md) - Complete guide to all Laravel components (FormRequest, Policy, Middleware, Resource, Event, Job, Command, etc.) with naming conventions and decision trees
 - [**Testing Patterns**](testing-patterns.md) - Unit tests, feature tests, and testing strategies
 - [**Error Handling**](error-handling.md) - Exception handling, error responses, and logging
 - [**Frontend Patterns**](frontend-patterns.md) - Vue 3, TypeScript, and Inertia.js patterns

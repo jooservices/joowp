@@ -16,6 +16,7 @@ Modular Laravel 12 + Vue 3 platform targeting PHP 8.4 with strict type safety an
 - Coverage: 80% overall, 95% Core services, 90% controllers, 100% FormRequests
 - New classes without tests = PR rejected
 - Coverage decrease = build failure
+- **All documentation must be in English only** (no Vietnamese or other languages)
 
 **Key architecture:**
 - **Modular design** via `nwidart/laravel-modules` - 1 domain = 1 module (singular name)
@@ -702,6 +703,7 @@ Feature: User Authentication
 - Using `git add .` or `git add -A`
 - Staging work-in-progress
 - Committing multiple tasks together
+- Writing documentation in Vietnamese or any non-English language
 
 ### ✅ REQUIRED:
 - Explicit human confirmation for EVERY commit
@@ -722,28 +724,36 @@ Feature: User Authentication
 
 ### Commit Message Format:
 
-`<type>: <description> (Task ID)`
+**Format:** `<type>(<scope>): <description>`
 
 **Types:** `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
 
+**Scope:** REQUIRED (module or component name)
+- Examples: `core`, `wordpress`, `lmstudio`, `app`, `config`, `plans`, `guides`, `standards`, `workflow`
+
 **AI Tool Metadata (REQUIRED for AI-generated code):**
 
-Use Git trailers + Co-authored-by to track AI contributions:
+All AI-generated commits MUST include metadata block:
 
 ```bash
-git commit -m "feat: description (Task ID)
+git commit -m "<type>(<scope>): <description>
 
-Implementation details...
+<optional body>
 
-Co-authored-by: Viet Vu <jooservices@gmail.com>
 Generated-By: <AI Model Name>
 Generated-By-Tool: <Tool Name>
 Model: <model-version-date>
-Reviewed-By: Viet Vu
-Task-ID: <PREFIX-N>
-Plan: docs/plans/...
-Coverage: XX%"
+Task-ID: <PREFIX-N> or N/A
+Plan: docs/plans/... or N/A
+Coverage: XX% or N/A or Documentation"
 ```
+
+**Metadata Rules:**
+- ✅ **MUST:** All 6 fields present (cannot omit)
+- ✅ **MUST:** Use `N/A` for Task-ID or Plan if not applicable (do not leave blank)
+- ✅ **MUST:** Use `Documentation` for Coverage if docs-only commit
+- ❌ **FORBIDDEN:** Omitting any metadata field
+- ❌ **FORBIDDEN:** Leaving Task-ID or Plan blank
 
 **Standardized Tool Values:**
 - `Cursor AI` - Primary IDE with Claude integration
@@ -769,15 +779,13 @@ composer lint && composer test  # ✅ PASS
 git add Modules/LMStudio/Services/Sdk.php tests/Unit/Services/SdkTest.php
 # AI asks: "Ready to commit? Task SDK-1: SDK scaffold. Files: Sdk.php, SdkTest.php. Quality: ✅"
 # Human: "commit"
-git commit -m "feat: scaffold LM Studio SDK with health check (Task SDK-1)
+git commit -m "feat(core): scaffold LM Studio SDK with health check
 
 Implement base SDK class with HTTP client and health endpoint
 
-Co-authored-by: Viet Vu <jooservices@gmail.com>
-Generated-By: Claude Sonnet 3.5
-Generated-By-Tool: Cursor AI
-Model: claude-sonnet-3.5-20241022
-Reviewed-By: Viet Vu
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
 Task-ID: SDK-1
 Plan: docs/plans/technical/2025-11-13-lm-studio-sdk.md
 Coverage: 95%"
@@ -787,16 +795,15 @@ composer lint && composer test  # ✅ PASS
 git add app/Http/Requests/LoginRequest.php tests/Unit/Requests/LoginRequestTest.php
 # AI asks again
 # Human: "commit"  
-git commit -m "feat: add LoginRequest with validation (Task AUTH-2)
+git commit -m "feat(app): add LoginRequest with validation
 
 Email + password validation with rate limiting rules
 
-Co-authored-by: Viet Vu <jooservices@gmail.com>
-Generated-By: GPT-4 Turbo
+Generated-By: GitHub Copilot
 Generated-By-Tool: GitHub Copilot
 Model: gpt-4-turbo-2024-04-09
-Reviewed-By: Viet Vu
 Task-ID: AUTH-2
+Plan: docs/plans/features/2025-11-14-user-authentication.md
 Coverage: 100%"
 ```
 

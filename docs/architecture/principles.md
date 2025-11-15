@@ -1154,6 +1154,14 @@ Maintain production branches free of TODO comments and temporary documentation.
 - ✅ **MUST:** Placeholder comments replaced with actual implementation details
 - ❌ **FORBIDDEN:** Any TODO, FIXME, or HACK comments in production
 
+#### Documentation Language Requirements:
+- ✅ **MUST:** All documentation files (`.md` files in `docs/`) written in English only
+- ✅ **MUST:** All code comments and PHPDoc annotations in English only
+- ✅ **MUST:** All inline documentation, examples, and explanations in English only
+- ❌ **FORBIDDEN:** Vietnamese or any other non-English language in documentation
+- ❌ **FORBIDDEN:** Mixed languages (English + Vietnamese) in same document
+- **Note:** Communication with team members can be in any language, but all written documentation must be English
+
 > **Implementation Details:** See [Development Guidelines](../development/guidelines.md#documentation-standards) for PHPDoc templates and inline comment best practices.
 
 ---

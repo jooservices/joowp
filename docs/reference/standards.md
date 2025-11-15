@@ -100,6 +100,100 @@ composer test:coverage-check  # Enforce coverage thresholds (CI gate)
 - ✅ **Correct:** `WordPress`, `Twitter`, `AI`, `Product`
 - ❌ **Wrong:** `Posts` (technical feature), `WordPressIntegration` (redundant)
 
+---
+
+## Naming Conventions
+
+### Quick Reference
+
+| Component | Pattern | Example |
+|-----------|---------|---------|
+| **Job** | `<Verb><Name>Job` | `ProcessLmStudioJob` |
+| **Event** | `<Name><PastParticiple>` | `LmStudioInferenceStreamed` |
+| **Interface/Contract** | `<Name>Contract` | `SdkContract` |
+| **Service** | `<Name>Service` | `CategoryService` |
+| **Repository** | `<Name>Repository` | `TokenRepository` |
+| **Controller** | `<Name>Controller` | `CategoryController` |
+| **FormRequest** | `<Action><Name>Request` | `StoreCategoryRequest` |
+| **Resource** | `<Name>Resource` | `CategoryResource` |
+| **Policy** | `<Name>Policy` | `CategoryPolicy` |
+| **Command** | `<Name>Command` | `LmStudioPingCommand` |
+| **Model** | `<Name>` (singular) | `LmStudioJob` |
+
+### Rules (PHP/PSR-12 Standards)
+- ✅ **MUST:** PascalCase for class names (e.g., `CategoryService`)
+- ✅ **MUST:** camelCase for method names (e.g., `createUser()`)
+- ✅ **MUST:** camelCase for variable names (e.g., `$userId`)
+- ✅ **MUST:** UPPER_SNAKE_CASE for constants (e.g., `MAX_RETRY_COUNT`)
+
+### Rules (Project-Specific)
+- ✅ **MUST:** Singular for Models, Services, Repositories
+- ✅ **MUST:** Descriptive verbs for Jobs (`Process`, `Send`, `Generate`)
+- ✅ **MUST:** Past tense for Events (`Streamed`, `Created`, `Updated`)
+- ❌ **FORBIDDEN:** Abbreviations (`LmSdk` → `LmStudioSdk`)
+- ❌ **FORBIDDEN:** Plural in class names (`CategoriesService` → `CategoryService`)
+
+> **Complete Guide:** See [Laravel Components & Patterns Guide](../guides/laravel-components-patterns.md#naming-conventions) for detailed examples and patterns.
+
+---
+
+## Job Data Passing Policy
+
+### ✅ MUST: Pass ID/UUID, NOT Model Instances
+
+**Security and Data Integrity Rules:**
+
+1. ✅ **MUST:** Pass primitive types (string, int, array) to Job constructor
+2. ✅ **MUST:** Fetch Model in `handle()` method
+3. ✅ **MUST:** Handle missing data gracefully (return early, do not throw)
+4. ✅ **MUST:** Remove `SerializesModels` trait if not passing Model
+5. ❌ **FORBIDDEN:** Pass Model instances to Job constructor
+6. ❌ **FORBIDDEN:** Pass sensitive data (passwords, tokens) to Job
+
+### Job Parameter Naming
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Single ID | `$<name>Id` | `$userId`, `$orderId` |
+| UUID | `$<name>Uuid` | `$jobUuid`, `$orderUuid` |
+| Multiple IDs | `$<name>Ids` | `$categoryIds`, `$productIds` |
+
+### Example
+
+```php
+// ✅ GOOD: Pass UUID
+final class ProcessLmStudioJob implements ShouldQueue
+{
+    public function __construct(private readonly string $jobUuid) {}
+    
+    public function handle(): void
+    {
+        $job = LmStudioJob::where('uuid', $this->jobUuid)->first();
+        if ($job === null) {
+            \Log::warning('Job not found', ['uuid' => $this->jobUuid]);
+            return;  // Graceful handling
+        }
+        // Process...
+    }
+}
+
+// ❌ BAD: Pass Model instance
+final class ProcessLmStudioJob implements ShouldQueue
+{
+    use SerializesModels;  // ❌ Not needed
+    
+    public function __construct(private readonly LmStudioJob $job) {}
+    
+    public function handle(): void
+    {
+        // ❌ ModelNotFoundException if deleted
+        $this->job->update([...]);
+    }
+}
+```
+
+> **Complete Guide:** See [Laravel Components & Patterns Guide](../guides/laravel-components-patterns.md#data-passing-policies) for detailed examples and security considerations.
+
 ### Module Creation
 ```bash
 php artisan module:make {DomainName}
@@ -399,6 +493,33 @@ try {
 
 ---
 
+## Documentation Language Standards
+
+### MANDATORY Requirements
+- ✅ **MUST:** All documentation files (`.md` files in `docs/`) written in English only
+- ✅ **MUST:** All code comments and PHPDoc annotations in English only
+- ✅ **MUST:** All inline documentation, examples, and explanations in English only
+- ✅ **MUST:** All commit messages in English (see [Git Standards](#git-standards))
+- ❌ **FORBIDDEN:** Vietnamese or any other non-English language in documentation
+- ❌ **FORBIDDEN:** Mixed languages (English + Vietnamese) in same document
+
+### Scope
+This policy applies to:
+- All `.md` files in `docs/` directory
+- All PHPDoc annotations (`@param`, `@return`, `@throws`, etc.)
+- All inline code comments
+- All commit messages
+- All README files
+- All code examples and explanations
+
+### Exception
+- **Communication:** Team members can communicate in any language (chat, discussions)
+- **Documentation:** All written documentation must be English only
+
+> **Complete Guide:** See [Documentation as Code Principle](../architecture/principles.md#21-documentation-as-code) for detailed requirements.
+
+---
+
 ## Service Layer Standards
 
 ### Flow Pattern
@@ -480,25 +601,64 @@ test(lmstudio): add inference service tests
 - **15-30 files:** Justify in commit message (e.g., new module setup)
 - **>30 files:** Consider splitting into multiple commits
 
-### Commit Message Metadata (Optional)
-For traceability, you may include metadata in commit messages:
+### Commit Message Metadata (REQUIRED for AI-generated code)
+
+**For AI-generated commits, metadata is REQUIRED:**
 
 ```
 <type>(<scope>): <description>
 
 <optional body>
 
-Co-authored-by: Name <email@example.com>
-Generated-By: Tool or Agent Name
-Task-ID: Task or Plan Reference
+Generated-By: <Tool or Agent Name>
+Generated-By-Tool: <Tool Name>
+Model: <model-version>
+Task-ID: <PREFIX-N> or N/A
+Plan: docs/plans/... or N/A
+Coverage: XX% or N/A or Documentation
 ```
 
-**Metadata Fields:**
-- `Co-authored-by`: Name and email of co-author(s)
-- `Generated-By`: Tool or agent responsible for the commit
-- `Task-ID`: Reference to the task or plan
+**REQUIRED Metadata Fields (for AI-generated code):**
+- ✅ **MUST:** `Generated-By` - Tool or agent responsible (e.g., "Cursor Pro", "ChatGPT Plus")
+- ✅ **MUST:** `Generated-By-Tool` - Tool name (e.g., "Cursor Pro", "GitHub Copilot")
+- ✅ **MUST:** `Model` - Model version (e.g., "Auto", "claude-sonnet-3.5-20241022", "gpt-4-turbo-2024-04-09")
+- ✅ **MUST:** `Task-ID` - Task reference (e.g., "SDK-1", "AUTH-2") or `N/A` if no task exists
+- ✅ **MUST:** `Plan` - Plan file path (e.g., "docs/plans/technical/2025-11-13-lm-studio-sdk.md") or `N/A` if no plan exists
+- ✅ **MUST:** `Coverage` - Test coverage percentage (e.g., "95%") or `N/A` if no code changes, or `Documentation` for docs-only commits
 
-**Note:** Metadata fields are optional unless specified by the team. See [Commit Message Metadata Plan](../plans/technical/2025-11-14-commit-message-metadata.md) for future enforcement requirements.
+**Rules:**
+- ✅ **MUST:** All fields present (cannot omit fields)
+- ✅ **MUST:** Use `N/A` for Task-ID or Plan if not applicable (do not leave blank)
+- ✅ **MUST:** Use `Documentation` for Coverage if commit only changes documentation
+- ❌ **FORBIDDEN:** Omitting metadata fields for AI-generated commits
+- ❌ **FORBIDDEN:** Leaving Task-ID or Plan blank (must use `N/A`)
+
+**Examples:**
+```
+feat(core): add HTTP client service
+
+Implement reusable HTTP client wrapper for Guzzle.
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: CORE-1
+Plan: docs/plans/technical/2025-11-14-core-http-client.md
+Coverage: 95%
+```
+
+```
+docs(guides): add Laravel components patterns guide
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: N/A
+Plan: N/A
+Coverage: Documentation
+```
+
+**Note:** For human commits, metadata is optional but recommended. See [Commit Message Metadata Plan](../plans/technical/2025-11-14-commit-message-metadata.md) for enforcement timeline.
 
 ### Decision Rule
 "Could this commit be reverted independently without breaking anything?"

@@ -356,13 +356,17 @@ None
 ### Link Plans to Code
 Reference plan in commit messages:
 ```bash
-git commit -m "feat: add post scheduling service
+git commit -m "feat(wordpress): add post scheduling service
 
 Implements scheduled post creation and queue job
 for automated publishing at specified times.
 
-Plan: docs/features/wordpress/post-scheduling.md
-Task: 'Create ScheduledPostService with queue integration'"
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: WP-5
+Plan: docs/plans/features/2025-11-14-post-scheduling.md
+Coverage: 90%"
 ```
 
 ### Link Plans to Pull Requests

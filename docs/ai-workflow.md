@@ -210,7 +210,14 @@ Feature: User Authentication
 
 5. **Execute commit (only after approval)**
    ```bash
-   git commit -m "feat: add User model with validation (Task A1)"
+   git commit -m "feat(app): add User model with validation
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: AUTH-1
+Plan: docs/plans/features/2025-11-14-user-authentication.md
+Coverage: 85%"
    ```
 
 6. **Repeat for next task**
@@ -231,7 +238,14 @@ AI: "Implementation complete. Ready to commit? Task A1 complete: User model with
      Quality gates: ✅ All passed"
 [AI WAITS for human response]
 Human: "commit" (or "yes", "ok", etc. - any approval indication)
-AI: git commit -m "feat: add User model with validation (Task A1)"
+AI: git commit -m "feat(app): add User model with validation
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: AUTH-1
+Plan: docs/plans/features/2025-11-14-user-authentication.md
+Coverage: 85%"
 ```
 
 ❌ **WRONG:**
@@ -341,12 +355,19 @@ git add app/Models/User.php \
 #### 5. Reference in Commit Message
 
 ```bash
-git commit -m "feat: add User model with validation (Task A1)
+git commit -m "feat(app): add User model with validation
 
 - Implement User model with strict types
 - Add validation rules (email, password)
 - Write comprehensive unit tests
 - Update plan: mark Task A1 complete
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: AUTH-1
+Plan: docs/plans/features/2025-11-14-user-authentication.md
+Coverage: 85%
 
 Refs: docs/plans/technical/2025-11-12-user-auth.md"
 ```
@@ -380,12 +401,19 @@ AI: "Ready to commit? Task A1 complete: User model with validation
 [Human: "commit"]
 
 # 5. Commit with plan reference
-AI: git commit -m "feat: add User model with validation (Task A1)
+AI: git commit -m "feat(app): add User model with validation
 
 - Implement User model with strict types
 - Add validation rules
 - Write unit tests
-- Update plan: mark Task A1 complete"
+- Update plan: mark Task A1 complete
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: AUTH-1
+Plan: docs/plans/features/2025-11-14-user-authentication.md
+Coverage: 85%"
 ```
 
 ### Plan Update Checklist:

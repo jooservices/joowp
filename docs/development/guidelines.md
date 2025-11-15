@@ -137,7 +137,14 @@ Feature: User Authentication
 
 **5. Execute commit (only after approval)**
    ```bash
-   git commit -m "feat: add User model with validation (Task A1)"
+   git commit -m "feat(app): add User model with validation
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: AUTH-1
+Plan: docs/plans/features/2025-11-14-user-authentication.md
+Coverage: 85%"
    ```
 
 **6. Repeat for next task**
@@ -158,7 +165,14 @@ AI: "Implementation complete. Ready to commit? Task A2 complete: UserService wit
      Quality gates: ✅ All passed"
 [AI WAITS for human response]
 Human: "commit" (or "yes", "ok", etc. - any approval indication)
-AI: git commit -m "feat: add UserService with validation (Task A2)"
+AI: git commit -m "feat(app): add UserService with validation
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: AUTH-2
+Plan: docs/plans/features/2025-11-14-user-authentication.md
+Coverage: 90%"
 ```
 
 ❌ **WRONG:**
@@ -203,12 +217,32 @@ Format: `<type>(<scope>): <description>`
 
 **Examples:**
 ```bash
-feat(core): add HTTP client service (Task A1)
-feat(wordpress): implement CategoryRepository with CRUD (Task A2)
-feat(lmstudio): add inference service with streaming (Task A3)
-test(core): add HTTP client service tests (Task A1.1)
-fix(wordpress): resolve category parent validation (Task B1)
-docs(plans): update LM Studio SDK plan status (Task C1)
+feat(core): add HTTP client service
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: CORE-1
+Plan: docs/plans/technical/2025-11-14-core-http-client.md
+Coverage: 95%
+
+feat(wordpress): implement CategoryRepository with CRUD
+
+Generated-By: ChatGPT Plus
+Generated-By-Tool: ChatGPT Plus
+Model: gpt-4o
+Task-ID: WP-2
+Plan: docs/plans/features/2025-11-14-categories-management.md
+Coverage: 90%
+
+docs(guides): add Laravel components patterns guide
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: N/A
+Plan: N/A
+Coverage: Documentation
 ```
 
 #### Enforcement:
@@ -263,7 +297,14 @@ npm run build
 
 # 6. Commit specific files only
 git add app/Services/UserService.php tests/Unit/Services/UserServiceTest.php
-git commit -m "feat: add user service with validation"
+git commit -m "feat(app): add user service with validation
+
+Generated-By: Cursor Pro
+Generated-By-Tool: Cursor Pro
+Model: Auto
+Task-ID: N/A
+Plan: N/A
+Coverage: 85%"
 ```
 
 ### Fixing Quality Pipeline Issues
@@ -1132,6 +1173,168 @@ try {
     }
 }
 ```
+
+---
+
+## Event vs Job Decision Guide
+
+### When to Use Event
+
+**Use Event when:**
+
+1. **Need to notify multiple listeners**
+   ```php
+   // Event fires, multiple listeners react
+   event(new UserCreated($userId));
+   
+   // In EventServiceProvider:
+   UserCreated::class => [
+       SendWelcomeEmailListener::class,
+       CreateProfileListener::class,
+       LogActivityListener::class,
+   ],
+   ```
+
+2. **Need real-time notification (broadcasting)**
+   ```php
+   final class LmStudioInferenceStreamed implements ShouldBroadcastNow
+   {
+       // Broadcasts to frontend in real-time
+       public function broadcastOn(): Channel
+       {
+           return new Channel('lmstudio.inference.' . $this->jobId);
+       }
+   }
+   ```
+
+3. **Need to decouple components**
+   ```php
+   // Service A doesn't need to know Service B exists
+   event(new OrderShipped($orderId));
+   // Multiple listeners can react without Service A knowing
+   ```
+
+4. **Need synchronous processing**
+   ```php
+   // Events fire synchronously by default
+   event(new OrderShipped($orderId));
+   // All listeners execute immediately
+   ```
+
+### When to Use Job
+
+**Use Job when:**
+
+1. **Need async processing (background)**
+   ```php
+   // Long-running task
+   ProcessLmStudioJob::dispatch($jobUuid);
+   // Runs in background, doesn't block request
+   ```
+
+2. **Need retry on failure**
+   ```php
+   // Queue system handles retries automatically
+   SendEmailJob::dispatch($userId)
+       ->onQueue('emails')
+       ->retry(3);
+   ```
+
+3. **Need delay/schedule**
+   ```php
+   SendEmailJob::dispatch($userId)
+       ->delay(now()->addHours(1));
+   ```
+
+4. **Need to handle heavy computation**
+   ```php
+   GenerateReportJob::dispatch($reportId);
+   // Heavy computation doesn't block user request
+   ```
+
+### Decision Matrix
+
+| Scenario | Use Event | Use Job | Use Both |
+|----------|----------|---------|----------|
+| Notify multiple listeners | ✅ | ❌ | ✅ (Event → Job) |
+| Real-time broadcasting | ✅ | ❌ | ✅ (Event → Job) |
+| Background processing | ❌ | ✅ | ✅ (Event → Job) |
+| Retry on failure | ❌ | ✅ | ✅ (Event → Job) |
+| Decouple components | ✅ | ❌ | ✅ (Event → Job) |
+| Long-running task | ❌ | ✅ | ✅ (Event → Job) |
+
+### Common Pattern: Event → Job
+
+```php
+// Event fires synchronously
+final class UserCreated
+{
+    public function __construct(public readonly int $userId) {}
+}
+
+// Job processes asynchronously
+final class SendWelcomeEmailJob implements ShouldQueue
+{
+    public function __construct(private readonly int $userId) {}
+    
+    public function handle(): void
+    {
+        $user = User::find($this->userId);
+        if ($user === null) {
+            return;  // Graceful handling
+        }
+        // Send email...
+    }
+}
+
+// In EventServiceProvider:
+protected $listen = [
+    UserCreated::class => [
+        SendWelcomeEmailJob::class,  // Event listener dispatches Job
+    ],
+];
+```
+
+### Job Data Passing Policy
+
+**✅ MUST: Pass ID/UUID, NOT Model Instances**
+
+```php
+// ✅ GOOD: Pass UUID
+ProcessLmStudioJob::dispatch($job->uuid);
+
+// ❌ BAD: Pass Model instance
+ProcessLmStudioJob::dispatch($job);  // Security risk, stale data
+```
+
+**Why?**
+- **Security:** Avoid exposing sensitive data in queue payloads
+- **Data Integrity:** Always fetch fresh data when job runs
+- **Missing Data:** Handle gracefully if model deleted
+
+**Example:**
+```php
+final class ProcessLmStudioJob implements ShouldQueue
+{
+    public function __construct(private readonly string $jobUuid) {}
+    
+    public function handle(): void
+    {
+        $job = LmStudioJob::where('uuid', $this->jobUuid)->first();
+        
+        // ✅ Handle missing data gracefully
+        if ($job === null) {
+            \Log::warning('Job not found', ['uuid' => $this->jobUuid]);
+            return;  // Don't throw, just return
+        }
+        
+        // ✅ Use fresh data
+        $job->update([...]);
+    }
+}
+```
+
+> **Complete Guide:** See [Laravel Components & Patterns Guide](../guides/laravel-components-patterns.md#event-vs-job-decision-tree) for detailed decision tree and examples.
 
 ---
 
