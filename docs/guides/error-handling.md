@@ -332,6 +332,90 @@ public function models(Request $request): JsonResponse
 
 ---
 
+## Log Types: General Log vs Third-Party Request Log
+
+### General Log
+
+**Purpose:** Log general errors, warnings, and info (not third-party API requests)
+
+**Channel:** `external` (currently) or `general` (future)
+
+**Format:** Flexible, includes timestamp, service, message, context
+
+**Use Cases:**
+- Controller error logging
+- Service error logging
+- Application warnings/info
+- Try-catch error logging (not third-party requests)
+
+**Example:**
+```php
+// Controller error logging
+Log::channel('external')->warning('LM Studio API error in controller', [
+    'user_id' => auth()->id(),
+    'endpoint' => $request->path(),
+    'method' => $request->method(),
+    'exception' => $exception->getMessage(),
+    'context' => $exception->getContext(),
+]);
+
+// Service error logging
+Log::channel('external')->error('Service error', [
+    'service' => 'product',
+    'operation' => 'create',
+    'error' => $e->getMessage(),
+]);
+```
+
+### Third-Party Request Log
+
+**Purpose:** Log all third-party API requests/responses with complete information
+
+**Channel:** `third-party-requests` (to be implemented)
+
+**Format:** Strict structure with MANDATORY fields
+
+**Use Cases:**
+- WordPress API requests
+- LM Studio API requests
+- Twitter API requests
+- Any third-party API
+
+**MANDATORY Fields:**
+```php
+[
+    'timestamp' => '2025-01-15T10:30:45.123Z',  // ISO 8601
+    'service' => 'lmstudio|wordpress|twitter|...',
+    'method' => 'GET|POST|PUT|DELETE|PATCH',
+    'endpoint' => '/v1/models',
+    'base_url' => 'http://localhost:1234',
+    'status_code' => 200,
+    'duration_ms' => 125,
+    'success' => true|false,
+    'request' => [
+        'headers' => [...],  // Sanitized
+        'query_params' => [...],
+        'payload' => [...],  // Full request body
+        'content_type' => 'application/json',
+    ],
+    'response' => [
+        'headers' => [...],
+        'body' => [...],  // Full response body
+        'content_type' => 'application/json',
+        'size_bytes' => 2048,
+    ],
+    'error' => [...],  // If applicable
+    'metadata' => [
+        'user_id' => 123,
+        'request_id' => 'uuid-here',
+    ],
+]
+```
+
+**Note:** Third-party request logging will be implemented in a separate plan. See [Third-Party Request Logging Plan](../plans/technical/2025-01-15-third-party-request-logging.md) for details.
+
+---
+
 ## Frontend Error Handling
 
 ### Axios Error Handling

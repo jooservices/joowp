@@ -202,15 +202,75 @@ $logger->log(
 );
 ```
 
-### External Log Channel
-- **File:** `storage/logs/external.log`
+### General Log Channel
+- **File:** `storage/logs/external.log` (or `general.log` in the future)
 - **Retention:** 14 days
-- **Use:** Third-party API calls (automatic in WordPress SDK)
+- **Use:** General errors, warnings, and info (not third-party requests)
+- **Format:** Flexible, includes timestamp, service, message, context
+
+```php
+// Controller error logging
+Log::channel('external')->warning('LM Studio API error in controller', [
+    'user_id' => auth()->id(),
+    'endpoint' => $request->path(),
+    'method' => $request->method(),
+    'exception' => $exception->getMessage(),
+    'context' => $exception->getContext(),
+]);
+
+// Service error logging
+Log::channel('external')->error('Service error', [
+    'service' => 'product',
+    'operation' => 'create',
+    'error' => $e->getMessage(),
+]);
+```
+
+### Third-Party Request Log Channel
+- **File:** `storage/logs/third-party-requests.log` (to be implemented)
+- **Retention:** 14 days (configurable)
+- **Use:** All third-party API requests/responses with complete information
+- **Format:** Strict structure with MANDATORY fields
+
+**MANDATORY Fields:**
+```php
+[
+    'timestamp' => '2025-01-15T10:30:45.123Z',  // ISO 8601
+    'service' => 'lmstudio|wordpress|twitter|...',
+    'method' => 'GET|POST|PUT|DELETE|PATCH',
+    'endpoint' => '/v1/models',  // Full endpoint path
+    'base_url' => 'http://localhost:1234',
+    'status_code' => 200,
+    'duration_ms' => 125,
+    'success' => true|false,
+    'request' => [
+        'headers' => [...],  // Sanitized
+        'query_params' => [...],
+        'payload' => [...],  // Full request body
+        'content_type' => 'application/json',
+    ],
+    'response' => [
+        'headers' => [...],
+        'body' => [...],  // Full response body
+        'content_type' => 'application/json',
+        'size_bytes' => 2048,
+    ],
+    'error' => [...],  // If applicable
+    'metadata' => [
+        'user_id' => 123,
+        'request_id' => 'uuid-here',
+    ],
+]
+```
+
+**Note:** Third-party request logging will be implemented in a separate plan. Currently, SDKs are logging to the `external` channel with inconsistent formats.
 
 ### Requirements
 - ✅ **MUST:** Log all domain mutations using ActionLogger
 - ✅ **MUST:** Include actor, before/after state, metadata
 - ✅ **MUST:** Mask sensitive data (passwords, tokens) in logs
+- ✅ **MUST:** Use General Log for general errors/info
+- ⚠️ **PLANNED:** Use Third-Party Request Log for all third-party API requests (standard format)
 
 ---
 
