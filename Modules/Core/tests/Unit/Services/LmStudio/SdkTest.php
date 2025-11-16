@@ -413,4 +413,84 @@ final class SdkTest extends TestCase
 
         $this->assertTrue(true, 'ActionLogger expectation verified.');
     }
+
+    public function test_health_check_handles_offline_scenario(): void
+    {
+        Http::fake([
+            '*/health' => function () {
+                throw new \Illuminate\Http\Client\ConnectionException('Connection refused');
+            },
+        ]);
+
+        $this->expectException(ConnectionException::class);
+        $this->expectExceptionMessage('Health check failed');
+
+        $this->sdk->healthCheck();
+    }
+
+    public function test_list_models_handles_offline_scenario(): void
+    {
+        Http::fake([
+            '*/v1/models' => function () {
+                throw new \Illuminate\Http\Client\ConnectionException('Connection refused');
+            },
+        ]);
+
+        $this->expectException(ConnectionException::class);
+        $this->expectExceptionMessage('Failed to list models');
+
+        $this->sdk->listModels();
+    }
+
+    public function test_create_chat_completion_handles_timeout(): void
+    {
+        Http::fake([
+            '*/v1/chat/completions' => function () {
+                throw new \Illuminate\Http\Client\RequestException(
+                    new \GuzzleHttp\Exception\ConnectException(
+                        'Connection timeout',
+                        new \GuzzleHttp\Psr7\Request('POST', '/v1/chat/completions')
+                    )
+                );
+            },
+        ]);
+
+        $request = new ChatCompletionRequest(
+            model: 'mistral',
+            messages: [
+                new ChatMessage(ChatRole::User, 'Hello'),
+            ],
+            stream: false,
+        );
+
+        $this->expectException(ConnectionException::class);
+
+        $this->sdk->createChatCompletion($request);
+    }
+
+    public function test_health_check_retries_on_failure(): void
+    {
+        $attempts = 0;
+        Http::fake([
+            '*/health' => function () use (&$attempts) {
+                $attempts++;
+                if ($attempts < 2) {
+                    return Http::response('Error', 500);
+                }
+
+                return Http::response([
+                    'status' => 'ok',
+                    'lmstudio_version' => '0.2.21',
+                    'api_version' => 'v1',
+                    'models_loaded' => 0,
+                    'uptime_ms' => 1000,
+                ], 200);
+            },
+        ]);
+
+        $status = $this->sdk->healthCheck();
+
+        $this->assertEquals('ok', $status->status);
+        $this->assertEquals(2, $attempts, 'Should retry once before succeeding');
+    }
 }
