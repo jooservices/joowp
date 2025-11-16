@@ -307,6 +307,7 @@ Brief summary of changes.
 - [ ] All PHP files have `declare(strict_types=1)`
 - [ ] Classes are `final` (unless inheritance required)
 - [ ] Audit logging added for mutations
+- [ ] **Mock usage policy followed** - Real implementations for internal dependencies, mocks only for external SDKs (see `docs/guides/mock-usage-policy.md`)
 
 ## Related Issues
 Closes #123
@@ -324,6 +325,7 @@ Closes #123
 - Review within 48 hours
 - Check adherence to principles
 - Verify test coverage
+- **Check mock usage** - Ensure tests use real implementations for internal dependencies (repositories, services, loggers), mocks only for external SDKs
 - Ensure CI passes
 - Approve only if all gates pass
 
