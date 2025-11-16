@@ -15,8 +15,23 @@
     <source>
         <include>
             <directory>app</directory>
+            <directory>Modules</directory>
         </include>
+        <exclude>
+            <directory>app/Providers</directory>
+            <directory>Modules/*/app/Providers</directory>
+            <directory>database/migrations</directory>
+            <directory>Modules/*/database/migrations</directory>
+            <directory>database/seeders</directory>
+            <directory>Modules/*/database/seeders</directory>
+        </exclude>
     </source>
+    <coverage>
+        <report>
+            <html outputDirectory="storage/coverage"/>
+            <text outputFile="php://stdout"/>
+        </report>
+    </coverage>
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="base64:SVuUI3imRMAXrzh3aYnWAmUGbgtHSn4nxqFPvoop44M="/>

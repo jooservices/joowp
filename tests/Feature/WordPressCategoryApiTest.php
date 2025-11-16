@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Logging\ActionLogger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Log;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
@@ -24,7 +25,8 @@ final class WordPressCategoryApiTest extends TestCase
             ->andReturn([['id' => 1, 'name' => 'News']]);
 
         $this->app->instance(SdkContract::class, $sdk);
-        $this->app->instance(ActionLogger::class, Mockery::spy(ActionLogger::class));
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->zeroOrMoreTimes();
 
         $response = $this->getJson('/api/v1/wordpress/categories?search=news');
 
@@ -45,11 +47,9 @@ final class WordPressCategoryApiTest extends TestCase
             ])
             ->andReturn(['id' => 10, 'name' => 'News']);
 
-        $logger = Mockery::mock(ActionLogger::class);
-        $logger->shouldReceive('log');
-
         $this->app->instance(SdkContract::class, $sdk);
-        $this->app->instance(ActionLogger::class, $logger);
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->once();
 
         $response = $this->postJson('/api/v1/wordpress/categories', [
             'name' => 'News',
