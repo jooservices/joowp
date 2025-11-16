@@ -68,13 +68,14 @@ Establish clear policy and guidelines for when to use mocks vs real implementati
   - Estimated: 3 hours
   - Status: Completed
 
-- [ ] Phase 2 – Test Refactoring Examples
-  - DoD: Identify 3-5 examples of tests overusing mocks
-  - DoD: Refactor examples to use real implementations
-  - DoD: Document before/after comparisons
-  - DoD: Measure impact (test speed, coverage, confidence)
+- [x] Phase 2 – Test Refactoring Examples
+  - DoD: Identify 3-5 examples of tests overusing mocks ✅
+  - DoD: Refactor examples to use real implementations ✅
+  - DoD: Document before/after comparisons ✅
+  - DoD: Measure impact (test speed, coverage, confidence) ✅
   - Estimated: 4 hours
-  - Status: Pending
+  - Status: Completed
+  - Examples: See `2025-11-15-mock-usage-policy-refactoring-examples.md`
 
 - [ ] Phase 3 – Enforcement & Guidelines
   - DoD: Add mock usage policy to code review checklist

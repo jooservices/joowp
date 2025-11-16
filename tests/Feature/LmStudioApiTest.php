@@ -23,11 +23,10 @@ final class LmStudioApiTest extends TestCase
 
         config(['features.lmstudio.enabled' => true]);
 
+        // Mock external SDK (required for all tests)
+        // ChatInferenceService will be resolved with real implementation
         $sdk = Mockery::mock(SdkContract::class)->shouldIgnoreMissing();
         $this->app->instance(SdkContract::class, $sdk);
-
-        $service = Mockery::mock(ChatInferenceService::class)->shouldIgnoreMissing();
-        $this->app->instance(ChatInferenceService::class, $service);
     }
 
     public function test_it_lists_models(): void
@@ -55,20 +54,35 @@ final class LmStudioApiTest extends TestCase
 
     public function test_it_starts_inference_job(): void
     {
+        // Arrange: Mock external SDK, use real ChatInferenceService
         $sdk = Mockery::mock(SdkContract::class);
         $sdk->shouldReceive('listModels')->zeroOrMoreTimes();
+        
+        // Mock SDK's createChatCompletion method (external dependency)
+        $sdk->shouldReceive('createChatCompletion')
+            ->once()
+            ->andReturn(
+                \Modules\Core\Services\LmStudio\DTO\Chat\ChatCompletionResponse::fromArray([
+                    'id' => 'chat-123',
+                    'model' => 'mistral',
+                    'created' => 1731614400,
+                    'choices' => [
+                        [
+                            'index' => 0,
+                            'message' => [
+                                'role' => 'assistant',
+                                'content' => 'Hello! How can I help you?',
+                            ],
+                            'finish_reason' => 'stop',
+                        ],
+                    ],
+                ])
+            );
+        
         $this->app->instance(SdkContract::class, $sdk);
 
-        $service = Mockery::mock(ChatInferenceService::class);
-        $service->shouldReceive('start')
-            ->once()
-            ->andReturn([
-                'job_id' => 'job-123',
-                'model' => 'mistral',
-                'created' => 1731614400,
-            ]);
-
-        $this->app->instance(ChatInferenceService::class, $service);
+        // Use Event::fake() to verify events are dispatched
+        \Illuminate\Support\Facades\Event::fake();
 
         $payload = [
             'model' => 'mistral',
@@ -77,11 +91,26 @@ final class LmStudioApiTest extends TestCase
             ],
         ];
 
-        $this->postJson('/api/v1/ai/lmstudio/infer', $payload)
-            ->assertStatus(202)
+        // Act
+        $response = $this->postJson('/api/v1/ai/lmstudio/infer', $payload);
+
+        // Assert
+        $response->assertStatus(202)
             ->assertJsonPath('status', 202)
-            ->assertJsonPath('data.job_id', 'job-123')
-            ->assertJsonPath('code', 'lmstudio.infer.accepted');
+            ->assertJsonPath('code', 'lmstudio.infer.accepted')
+            ->assertJsonStructure([
+                'data' => [
+                    'job_id',
+                    'model',
+                    'created',
+                ],
+            ])
+            ->assertJsonPath('data.model', 'mistral');
+
+        // Verify events were dispatched by real ChatInferenceService
+        \Illuminate\Support\Facades\Event::assertDispatched(
+            \Modules\Core\Events\LmStudioInferenceStreamed::class
+        );
     }
 
     public function test_it_rejects_when_feature_disabled(): void
