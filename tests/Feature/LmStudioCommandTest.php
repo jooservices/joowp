@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Logging\ActionLogger;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Mockery;
 use Modules\Core\Services\LmStudio\Contracts\SdkContract;
@@ -31,9 +32,8 @@ final class LmStudioCommandTest extends TestCase
             ->andReturn(new HealthStatus('ok', '0.2.21', 'v1', 3, 1000, []));
         $this->app->instance(SdkContract::class, $sdk);
 
-        $logger = Mockery::mock(ActionLogger::class);
-        $logger->shouldReceive('log')->once();
-        $this->app->instance(ActionLogger::class, $logger);
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->once();
 
         $this->artisan('lmstudio:ping')
             ->expectsOutput('LM Studio health check succeeded:')
@@ -49,9 +49,8 @@ final class LmStudioCommandTest extends TestCase
         $sdk->shouldReceive('healthCheck')->once()->andReturn($payload);
         $this->app->instance(SdkContract::class, $sdk);
 
-        $logger = Mockery::mock(ActionLogger::class);
-        $logger->shouldReceive('log')->once();
-        $this->app->instance(ActionLogger::class, $logger);
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->once();
 
         $expected = json_encode($payload->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
@@ -74,9 +73,8 @@ final class LmStudioCommandTest extends TestCase
             ]);
         $this->app->instance(SdkContract::class, $sdk);
 
-        $logger = Mockery::mock(ActionLogger::class);
-        $logger->shouldReceive('log')->once();
-        $this->app->instance(ActionLogger::class, $logger);
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->once();
 
         Storage::fake('local');
 
@@ -99,9 +97,8 @@ final class LmStudioCommandTest extends TestCase
         $sdk->shouldReceive('listModels')->once()->andThrow(new \RuntimeException('boom'));
         $this->app->instance(SdkContract::class, $sdk);
 
-        $logger = Mockery::mock(ActionLogger::class);
-        $logger->shouldReceive('log')->once();
-        $this->app->instance(ActionLogger::class, $logger);
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->once();
 
         $this->artisan('lmstudio:models-sync')
             ->expectsOutput('Failed to sync models: boom')

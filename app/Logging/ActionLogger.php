@@ -8,7 +8,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
-class ActionLogger
+final class ActionLogger
 {
     /**
      * @param  array<int|string, mixed>  $before

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Logging\ActionLogger;
+use Illuminate\Support\Facades\Log;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
@@ -18,7 +19,7 @@ final class WordPressCategoryServiceTest extends TestCase
     public function test_it_lists_categories_with_filters(): void
     {
         $sdk = Mockery::mock(SdkContract::class);
-        $logger = Mockery::spy(ActionLogger::class);
+        $logger = new ActionLogger();
 
         $sdk->shouldReceive('categories')
             ->once()
@@ -46,7 +47,7 @@ final class WordPressCategoryServiceTest extends TestCase
     public function test_it_logs_when_creating_categories(): void
     {
         $sdk = Mockery::mock(SdkContract::class);
-        $logger = Mockery::mock(ActionLogger::class);
+        $logger = new ActionLogger();
 
         $payload = [
             'name' => 'News',
@@ -61,9 +62,18 @@ final class WordPressCategoryServiceTest extends TestCase
             ->with($payload)
             ->andReturn($response);
 
-        $logger->shouldReceive('log')
+        Log::shouldReceive('channel')
             ->once()
-            ->with('wordpress.category.created', null, [], $response, ['source' => 'wordpress']);
+            ->with('action')
+            ->andReturnSelf();
+
+        Log::shouldReceive('info')
+            ->once()
+            ->with('Domain action recorded', Mockery::on(function (array $context): bool {
+                return $context['operation'] === 'wordpress.category.created'
+                    && $context['after'] === ['id' => 99, 'name' => 'News']
+                    && $context['metadata']['source'] === 'wordpress';
+            }));
 
         $service = new CategoryService($sdk, $logger);
 
