@@ -62,7 +62,7 @@ function parsePlan(markdown) {
     const trimmed = line.trim();
 
     // Epic = "# Plan – XXXX"
-    if (trimmed.startsWith('# ')) {
+    if (trimmed.startsWith('# Plan –')) {
       epic = {
         summary: trimmed.replace('# Plan –', '').trim(),
         description: ''
@@ -91,7 +91,10 @@ function parsePlan(markdown) {
           .replace('* ', '')
           .trim();
 
-        currentStory.subtasks.push(clean);
+        // Only add non-empty subtasks
+        if (clean) {
+          currentStory.subtasks.push(clean);
+        }
       }
       continue;
     }
@@ -114,6 +117,11 @@ function parsePlan(markdown) {
 async function pushToJira(planFile) {
   const markdown = fs.readFileSync(planFile, 'utf8');
   const { epic, stories } = parsePlan(markdown);
+
+  if (!epic) {
+    console.error('❌ Error: Plan file must contain a line starting with "# Plan –" to create an Epic.');
+    process.exit(1);
+  }
 
   console.log(`➡ Creating Epic: ${epic.summary}`);
 
@@ -143,6 +151,11 @@ async function pushToJira(planFile) {
 
     // Sub-tasks
     for (const sub of story.subtasks) {
+      // Skip empty subtasks (defensive check)
+      if (!sub || !sub.trim()) {
+        continue;
+      }
+
       console.log(`     ➡ Creating Sub-task: ${sub}`);
 
       await createIssue({
@@ -168,4 +181,14 @@ if (!file) {
   process.exit(1);
 }
 
-pushToJira(path.resolve(file));
+(async () => {
+  try {
+    await pushToJira(path.resolve(file));
+  } catch (err) {
+    console.error('❌ Error:', err.message);
+    if (err.response) {
+      console.error('Jira API Error:', err.response.status, err.response.data);
+    }
+    process.exit(1);
+  }
+})();
