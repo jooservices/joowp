@@ -20,6 +20,10 @@ Modular Laravel 12 platform targeting PHP 8.4 with a Vue 3 + Inertia + Pinia fro
 git clone https://github.com/JOOservices/joowp.git
 cd joowp
 
+# 1a. Initialize Git submodules (required for documentation)
+# The ai-workflow/ directory is a Git submodule containing reusable documentation
+git submodule update --init --recursive
+
 # 2. Install dependencies
 composer install
 npm install
@@ -113,20 +117,22 @@ npm run build  # Production build
 
 ## Documentation
 
-### Core Guides
-- [Engineering Principles](docs/principles.md) - Non-negotiable requirements
-- [Code Quality Workflow](docs/code-quality.md) - Quality pipeline details
+### Master Documentation
+For architecture principles, development guidelines, and implementation guides, see the **master documentation**:
+- [Master Documentation Hub](ai-workflow/README.md) - Complete documentation index
+- [Engineering Principles](ai-workflow/architecture/principles.md) - Non-negotiable requirements
+- [Development Guidelines](ai-workflow/development/guidelines.md) - Step-by-step workflows
+- [Code Quality Standards](ai-workflow/reference/standards.md) - Quick lookup for rules and configs
+- [AI Workflow](ai-workflow/ai-workflow.md) - AI development workflow
+
+### Project-Specific Documentation
+- [Project Documentation](docs/README.md) - Project-specific docs (plans, decisions, retrospectives)
+- [Implementation Plans](docs/plans/README.md) - Feature and technical plans
+- [Architecture Decisions](docs/decisions/README.md) - Project ADRs
+- [Retrospectives](docs/retrospectives/README.md) - Post-mortems and lessons learned
+
+### Contributing
 - [Contributing Guide](CONTRIBUTING.md) - Development workflow
-- [AI Coding Instructions](.github/copilot-instructions.md) - AI assistant guidelines
-
-### Feature Guides
-- [Home Screen Guide](docs/guides/home-screen.md)
-- [Core WordPress SDK](docs/guides/core-wordpress-sdk.md)
-- [Study Case: Inertia Progress Regression](docs/guides/study-case-inertia-progress.md)
-
-### Implementation Plans
-- [Plans Directory](docs/plans/README.md)
-- [Code Compliance Plan](docs/plans/2025-11-12-code-compliance.md)
 
 ## Key Features
 

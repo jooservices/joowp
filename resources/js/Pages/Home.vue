@@ -19,7 +19,7 @@
                         </button>
                         <a
                             class="btn btn-outline-light btn-lg px-4"
-                            href="docs/principles.md"
+                            href="ai-workflow/architecture/principles.md"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
@@ -85,7 +85,7 @@
                     <div class="d-flex gap-3">
                         <a
                             class="btn btn-primary px-4"
-                            href="docs/guides/core-wordpress-sdk.md"
+                            href="ai-workflow/guides/restful-api-design.md"
                             target="_blank"
                             rel="noopener noreferrer"
                         >
@@ -211,7 +211,7 @@
                         <h4 class="h6 text-white text-uppercase mb-3">Platform Links</h4>
                         <ul class="list-unstyled footer-links mb-0">
                             <li>
-                                <a href="docs/guides/core-wordpress-sdk.md" target="_blank" rel="noopener noreferrer">
+                                <a href="ai-workflow/guides/restful-api-design.md" target="_blank" rel="noopener noreferrer">
                                     Core WordPress SDK Guide
                                 </a>
                             </li>

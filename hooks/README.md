@@ -28,7 +28,7 @@ chmod +x .git/hooks/commit-msg
 7. **TypeScript** - Type checking (if .ts or .vue files staged)
 
 ### Commit-msg Hook (`commit-msg`)
-8. **Commit Message Metadata** - Validates metadata block for AI-generated commits (Generated-By, Generated-By-Tool, Model, Task-ID, Plan, Coverage). See `docs/reference/standards.md#commit-message-metadata` for format requirements.
+8. **Commit Message Metadata** - Validates metadata block for AI-generated commits (Generated-By, Generated-By-Tool, Model, Task-ID, Plan, Coverage). See `ai-workflow/reference/standards.md#commit-message-metadata` for format requirements.
 
 ## Quality Gates
 
@@ -52,7 +52,7 @@ git commit --no-verify -m "message"
 
 **If you need help:**
 - Use helper script: `./scripts/git-commit-template.sh`
-- See format: `docs/reference/standards.md#commit-message-metadata`
+- See format: `ai-workflow/reference/standards.md#commit-message-metadata`
 
 ## Performance
 

@@ -15,7 +15,7 @@ Define and enforce a standardized commit message metadata block (agent attributi
 
 ## Dependencies
 - `docs/ai-workflow.md`
-- `docs/architecture/principles.md` (commit discipline section)
+- `ai-workflow/architecture/principles.md` (commit discipline section)
 - Existing pre-commit hook infrastructure
 
 ## Objectives

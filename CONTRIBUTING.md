@@ -28,6 +28,10 @@ Thank you for considering contributing to the JOOservices Platform! This documen
 git clone https://github.com/YOUR_USERNAME/joowp.git
 cd joowp
 
+# 1a. Initialize Git submodules (required for documentation)
+# The ai-workflow/ directory is a Git submodule containing reusable documentation
+git submodule update --init --recursive
+
 # 2. Install PHP dependencies
 composer install
 
@@ -236,7 +240,7 @@ git commit --no-verify -m "message"
 
 **If you need help:**
 - Use helper script: `./scripts/git-commit-template.sh`
-- See format: `docs/reference/standards.md#commit-message-metadata`
+- See format: `ai-workflow/reference/standards.md#commit-message-metadata`
 
 ## Common Tasks
 
@@ -264,7 +268,7 @@ See [AI Coding Instructions](.github/copilot-instructions.md#creating-a-new-api-
 
 Always proxy through Laravel - never call WordPress from frontend.
 
-See [WordPress SDK Guide](docs/guides/core-wordpress-sdk.md) for integration patterns.
+See [WordPress SDK Guide](ai-workflow/guides/restful-api-design.md) for integration patterns, or check project-specific guides in `docs/` if available.
 
 ## Pull Request Guidelines
 
@@ -343,9 +347,10 @@ By contributing, you agree that your contributions will be licensed under the sa
 
 ## Additional Resources
 
-- [Engineering Principles](docs/principles.md)
-- [Code Quality Workflow](docs/code-quality.md)
-- [WordPress SDK Guide](docs/guides/core-wordpress-sdk.md)
+- [Engineering Principles](ai-workflow/architecture/principles.md)
+- [Development Guidelines](ai-workflow/development/guidelines.md)
+- [Code Quality Standards](ai-workflow/reference/standards.md)
+- [WordPress SDK Guide](ai-workflow/guides/restful-api-design.md) - See master docs for REST API patterns
 - [Implementation Plans](docs/plans/)
 
 Thank you for contributing to JOOservices Platform! 🚀

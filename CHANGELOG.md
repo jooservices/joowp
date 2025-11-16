@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- **Commit Message Metadata Enforcement** - All AI-generated commits now require standardized metadata block (Generated-By, Generated-By-Tool, Model, Task-ID, Plan, Coverage). `commit-msg` hook validates metadata format before commit completes. See `docs/reference/standards.md#commit-message-metadata` for format requirements and `hooks/commit-msg.sample` for validation logic.
+- **Commit Message Metadata Enforcement** - All AI-generated commits now require standardized metadata block (Generated-By, Generated-By-Tool, Model, Task-ID, Plan, Coverage). `commit-msg` hook validates metadata format before commit completes. See `ai-workflow/reference/standards.md#commit-message-metadata` for format requirements and `hooks/commit-msg.sample` for validation logic.
 
 ## [0.0.1-beta] - 2025-11-12
 

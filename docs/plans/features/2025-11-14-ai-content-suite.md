@@ -27,7 +27,7 @@ Updated: 2025-11-14
   - [ ] Summary export modal (copy, download).
 - [ ] Log all AI interactions (prompt, model, tokens/time, user) to `action` channel for audit compliance.
 - [ ] Create unit + feature tests for the AI endpoints and front-end flows (mocking AI responses).
-- [ ] Update `docs/guides/core-wordpress-sdk.md` or dedicated content guide with AI workflow usage.
+- [ ] Update `ai-workflow/guides/core-wordpress-sdk.md` or dedicated content guide with AI workflow usage.
 - [ ] Coordinate with DevOps to ensure local model availability and resource monitoring.
 
 ## Notes

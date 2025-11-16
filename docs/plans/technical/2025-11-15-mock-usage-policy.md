@@ -14,8 +14,8 @@ Establish clear policy and guidelines for when to use mocks vs real implementati
 **Scope:** Documentation updates, test refactoring examples, and enforcement guidelines. No breaking changes to existing tests.
 
 ## Dependencies
-- `docs/guides/testing-patterns.md` - Existing testing guide
-- `docs/architecture/principles.md` - Testing principles
+- `ai-workflow/guides/testing-patterns.md` - Existing testing guide
+- `ai-workflow/architecture/principles.md` - Testing principles
 - Existing test suite for examples and refactoring
 
 ## Objectives
@@ -60,9 +60,9 @@ Establish clear policy and guidelines for when to use mocks vs real implementati
   - Status: In Progress
 
 - [ ] Phase 1 – Documentation Updates
-  - DoD: Update `docs/guides/testing-patterns.md` with mock usage policy
+  - DoD: Update `ai-workflow/guides/testing-patterns.md` with mock usage policy
   - DoD: Add examples showing real implementation usage for repositories/services
-  - DoD: Update `docs/development/guidelines.md` with mock usage guidelines
+  - DoD: Update `ai-workflow/development/guidelines.md` with mock usage guidelines
   - DoD: Create decision tree/guide for developers
   - Estimated: 3 hours
   - Status: Pending
@@ -185,9 +185,9 @@ Should I mock this dependency?
 | Developers confused | Low | Low | Clear examples and decision tree |
 
 ## Related Plans
-- `docs/guides/testing-patterns.md` - Testing patterns guide
-- `docs/development/guidelines.md` - Development guidelines
-- `docs/architecture/principles.md` - Testing principles
+- `ai-workflow/guides/testing-patterns.md` - Testing patterns guide
+- `ai-workflow/development/guidelines.md` - Development guidelines
+- `ai-workflow/architecture/principles.md` - Testing principles
 
 ## Notes
 - This is a policy/guideline change, not a breaking change
