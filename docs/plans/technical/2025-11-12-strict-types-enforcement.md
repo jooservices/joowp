@@ -84,7 +84,7 @@ Add mandatory `declare(strict_types=1)` to all PHP files missing this requiremen
 
 ## Related Plans
 - `docs/technical/code-compliance.md` - Overall code quality improvement strategy
-- `docs/architecture/principles.md#type-safety` - PHP 8.4 Strict Compliance principle (#2)
+- `ai-workflow/architecture/principles.md#type-safety` - PHP 8.4 Strict Compliance principle (#2)
 - Phase 2: Final class enforcement and readonly property adoption
 
 ## Notes

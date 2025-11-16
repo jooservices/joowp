@@ -38,6 +38,7 @@ All new services and form requests must include unit coverage; API workflows req
 
 ## Documentation
 
-- Taxonomy plan: `docs/plans/2025-11-11-categories-management.md`
-- WordPress SDK guide: `docs/guides/core-wordpress-sdk.md`
-- Home screen guide: `docs/guides/home-screen.md`
+- Taxonomy plan: `docs/plans/technical/` (check for category-related plans)
+- WordPress SDK: See `ai-workflow/guides/restful-api-design.md` for REST API patterns
+- Master documentation: `ai-workflow/README.md`
+- Project-specific docs: `docs/README.md`

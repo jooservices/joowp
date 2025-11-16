@@ -120,7 +120,7 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
 - [x] Phase 3 – Testing & Documentation
   - DoD: PHPUnit unit + feature tests cover happy path, offline fallback, timeout errors. ✅
   - DoD: Contract mocks simulate LM Studio responses for deterministic tests. ✅
-  - DoD: Documentation added under `docs/guides/lm-studio-sdk.md` (setup guide, troubleshooting, security considerations). ✅
+  - DoD: Documentation added under `ai-workflow/guides/lm-studio-sdk.md` (setup guide, troubleshooting, security considerations). ✅
   - DoD: Release checklist validated (quality pipeline, coverage, manual demo). ✅
   - Estimated: 6 hours
   - Status: Completed (2025-11-15)

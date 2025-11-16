@@ -1,0 +1,4 @@
+[submodule "ai-workflow"]
+	path = ai-workflow
+	url = https://github.com/jooservices/laravel-ai-workflow-template
+	branch = main

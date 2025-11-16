@@ -105,7 +105,7 @@ Extract WordPress-specific functionality from Core module into dedicated WordPre
 | Documentation drift | Low | Medium | Update docs as part of migration tasks |
 
 ## Related Plans
-- `docs/architecture/principles.md#modular-architecture` - Domain-driven modularity principle (#5)
+- `ai-workflow/architecture/principles.md#modular-architecture` - Domain-driven modularity principle (#5)
 - Future: AI module extraction following same pattern
 - Future: Product module creation
 
