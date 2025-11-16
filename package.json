@@ -15,19 +15,20 @@
         "@popperjs/core": "^2.11.8",
         "axios": "^1.11.0",
         "bootstrap": "^5.3.3",
+        "dotenv": "^17.2.3",
         "pinia": "^2.2.6",
         "vue": "^3.5.13"
     },
     "devDependencies": {
         "@types/node": "^22.8.1",
         "@vitejs/plugin-vue": "^6.0.0",
+        "@vitest/coverage-v8": "^1.6.0",
         "concurrently": "^9.0.1",
+        "jsdom": "^25.0.1",
         "laravel-vite-plugin": "^2.0.0",
         "typescript": "^5.6.3",
         "vite": "^7.0.7",
-        "vue-tsc": "^2.1.4",
         "vitest": "^1.6.0",
-        "@vitest/coverage-v8": "^1.6.0",
-        "jsdom": "^25.0.1"
+        "vue-tsc": "^2.1.4"
     }
 }
