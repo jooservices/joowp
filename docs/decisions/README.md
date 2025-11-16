@@ -8,6 +8,7 @@ An Architecture Decision Record captures important architectural decisions along
 
 ## Active ADRs
 
+- [**2025-11-14: Commit Message Metadata Enforcement**](2025-11-14-commit-message-metadata.md) - Standardized metadata block for AI-generated commits
 - [**2025-11-13: LM Studio API Selection**](2025-11-13-lm-studio-api.md) - Why we chose LM Studio over alternatives
 
 ## ADR Format

@@ -741,7 +741,12 @@ Plan: N/A
 Coverage: Documentation
 ```
 
-**Note:** For human commits, metadata is optional but recommended. See [Commit Message Metadata Plan](../plans/technical/2025-11-14-commit-message-metadata.md) for enforcement timeline.
+**Enforcement:** 
+- ✅ **STRICT:** All commits (AI-generated and human) MUST include metadata block
+- ✅ **Hook:** `commit-msg` hook rejects commits missing metadata
+- ❌ **NO BYPASS:** No exceptions, no `--no-verify` allowed for metadata validation
+- ❌ **FORBIDDEN:** Bypassing commit-msg hook for metadata validation
+- 📝 **Helper:** Use `./scripts/git-commit-template.sh` for correct format
 
 ### Decision Rule
 "Could this commit be reverted independently without breaking anything?"

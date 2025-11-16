@@ -1,0 +1,119 @@
+#!/bin/sh
+# Commit-msg hook - Validate commit message metadata
+# See docs/reference/standards.md for metadata format requirements
+
+COMMIT_MSG_FILE=$1
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Read commit message
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Check if commit message contains metadata block
+# If no metadata found, REJECT commit (STRICT - NO BYPASS)
+if ! echo "$COMMIT_MSG" | grep -q "Generated-By:"; then
+    echo "${RED}❌ ERROR: Commit message missing required metadata block${NC}"
+    echo ""
+    echo "${RED}Metadata is REQUIRED for ALL commits (AI-generated and human).${NC}"
+    echo "${RED}NO BYPASS ALLOWED.${NC}"
+    echo ""
+    echo "${YELLOW}Required format:${NC}"
+    echo "Generated-By: <Tool or Agent Name>"
+    echo "Generated-By-Tool: <Tool Name>"
+    echo "Model: <model-version> or N/A"
+    echo "Task-ID: <PREFIX-N> or N/A"
+    echo "Plan: docs/plans/... or N/A"
+    echo "Coverage: XX% or N/A or Documentation"
+    echo ""
+    echo "See: docs/reference/standards.md#commit-message-metadata"
+    echo "Helper script: ./scripts/git-commit-template.sh"
+    echo ""
+    exit 1
+fi
+
+# Metadata block found - validate all required fields
+MISSING_FIELDS=""
+INVALID_FORMAT=""
+
+# Check Generated-By
+if ! echo "$COMMIT_MSG" | grep -q "^Generated-By:"; then
+    MISSING_FIELDS="${MISSING_FIELDS}  - Generated-By\n"
+fi
+
+# Check Generated-By-Tool
+if ! echo "$COMMIT_MSG" | grep -q "^Generated-By-Tool:"; then
+    MISSING_FIELDS="${MISSING_FIELDS}  - Generated-By-Tool\n"
+fi
+
+# Check Model
+if ! echo "$COMMIT_MSG" | grep -q "^Model:"; then
+    MISSING_FIELDS="${MISSING_FIELDS}  - Model\n"
+fi
+
+# Check Task-ID (must be present, can be "N/A")
+if ! echo "$COMMIT_MSG" | grep -q "^Task-ID:"; then
+    MISSING_FIELDS="${MISSING_FIELDS}  - Task-ID\n"
+else
+    # Validate Task-ID format (must not be blank)
+    TASK_ID=$(echo "$COMMIT_MSG" | grep "^Task-ID:" | sed 's/^Task-ID: *//' | tr -d '\r')
+    if [ -z "$TASK_ID" ] || [ "$TASK_ID" = "" ]; then
+        INVALID_FORMAT="${INVALID_FORMAT}  - Task-ID cannot be blank (use 'N/A' if not applicable)\n"
+    fi
+fi
+
+# Check Plan (must be present, can be "N/A")
+if ! echo "$COMMIT_MSG" | grep -q "^Plan:"; then
+    MISSING_FIELDS="${MISSING_FIELDS}  - Plan\n"
+else
+    # Validate Plan format (must not be blank)
+    PLAN=$(echo "$COMMIT_MSG" | grep "^Plan:" | sed 's/^Plan: *//' | tr -d '\r')
+    if [ -z "$PLAN" ] || [ "$PLAN" = "" ]; then
+        INVALID_FORMAT="${INVALID_FORMAT}  - Plan cannot be blank (use 'N/A' if not applicable)\n"
+    fi
+fi
+
+# Check Coverage (must be present)
+if ! echo "$COMMIT_MSG" | grep -q "^Coverage:"; then
+    MISSING_FIELDS="${MISSING_FIELDS}  - Coverage\n"
+fi
+
+# Report errors
+if [ -n "$MISSING_FIELDS" ] || [ -n "$INVALID_FORMAT" ]; then
+    echo "${RED}❌ ERROR: Commit message metadata validation failed${NC}"
+    echo ""
+    
+    if [ -n "$MISSING_FIELDS" ]; then
+        echo "${RED}Missing required fields:${NC}"
+        echo -e "$MISSING_FIELDS"
+    fi
+    
+    if [ -n "$INVALID_FORMAT" ]; then
+        echo "${RED}Invalid format:${NC}"
+        echo -e "$INVALID_FORMAT"
+    fi
+    
+    echo ""
+    echo "${YELLOW}Required format:${NC}"
+    echo "Generated-By: <Tool or Agent Name>"
+    echo "Generated-By-Tool: <Tool Name>"
+    echo "Model: <model-version>"
+    echo "Task-ID: <PREFIX-N> or N/A"
+    echo "Plan: docs/plans/... or N/A"
+    echo "Coverage: XX% or N/A or Documentation"
+    echo ""
+    echo "See: docs/reference/standards.md#commit-message-metadata"
+    echo "Helper script: ./scripts/git-commit-template.sh"
+    echo ""
+    echo "${RED}NO BYPASS ALLOWED - Fix commit message and try again.${NC}"
+    echo ""
+    exit 1
+fi
+
+# All checks passed
+echo "${GREEN}✅ Commit message metadata validated${NC}"
+exit 0
+

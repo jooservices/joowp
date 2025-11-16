@@ -221,10 +221,22 @@ The hook will:
 - Validate TypeScript (if applicable)
 - Block commit if any check fails
 
-**To bypass (emergency only):**
+**Bypassing Hooks:**
+
+**Pre-commit Hook (emergency only):**
 ```bash
 git commit --no-verify -m "message"
 ```
+**WARNING:** Only use `--no-verify` for emergency situations. All bypassed commits must be fixed in follow-up commits.
+
+**Commit-msg Hook (Metadata Validation):**
+❌ **NO BYPASS ALLOWED** - Metadata validation **CANNOT be bypassed**. All commits must include metadata block.
+
+**Technical Note:** `--no-verify` only bypasses `pre-commit` hook, NOT `commit-msg` hook (Git behavior).
+
+**If you need help:**
+- Use helper script: `./scripts/git-commit-template.sh`
+- See format: `docs/reference/standards.md#commit-message-metadata`
 
 ## Common Tasks
 

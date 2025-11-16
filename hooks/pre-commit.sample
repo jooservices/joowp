@@ -123,6 +123,10 @@ if [ -n "$STAGED_TS_FILES" ]; then
     echo ""
 fi
 
+# 8. Commit message metadata validation (handled by commit-msg hook)
+# Note: Metadata validation is performed by commit-msg hook
+# See hooks/commit-msg.sample for validation logic
+
 # Final verdict
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 if [ "$CHECKS_PASSED" = true ]; then

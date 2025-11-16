@@ -1,0 +1,11 @@
+<type>(<scope>): <description>
+
+<optional body>
+
+Generated-By: <Tool or Agent Name>
+Generated-By-Tool: <Tool Name>
+Model: <model-version>
+Task-ID: <PREFIX-N> or N/A
+Plan: docs/plans/... or N/A
+Coverage: XX% or N/A or Documentation
+
