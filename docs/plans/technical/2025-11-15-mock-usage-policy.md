@@ -14,8 +14,9 @@ Establish clear policy and guidelines for when to use mocks vs real implementati
 **Scope:** Documentation updates, test refactoring examples, and enforcement guidelines. No breaking changes to existing tests.
 
 ## Dependencies
-- `ai-workflow/guides/testing-patterns.md` - Existing testing guide
-- `ai-workflow/architecture/principles.md` - Testing principles
+- `docs/guides/mock-usage-policy.md` - Project-specific mock usage policy (this guide)
+- `ai-workflow/guides/testing-patterns.md` - General testing patterns
+- `ai-workflow/reference/standards.md` - Base mocking standards
 - Existing test suite for examples and refactoring
 
 ## Objectives
@@ -60,10 +61,10 @@ Establish clear policy and guidelines for when to use mocks vs real implementati
   - Status: Completed
 
 - [x] Phase 1 – Documentation Updates
-  - DoD: Update `ai-workflow/guides/testing-patterns.md` with mock usage policy ✅
+  - DoD: Create `docs/guides/mock-usage-policy.md` with project-specific policy ✅
   - DoD: Add examples showing real implementation usage for repositories/services ✅
-  - DoD: Update `ai-workflow/development/guidelines.md` with mock usage guidelines ✅
   - DoD: Create decision tree/guide for developers ✅
+  - DoD: Document comparison with ai-workflow standards ✅
   - Estimated: 3 hours
   - Status: Completed
 
