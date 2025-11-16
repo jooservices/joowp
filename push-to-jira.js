@@ -85,10 +85,12 @@ function parsePlan(markdown) {
     if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
       if (currentStory) {
         const clean = trimmed
-          .replace('- [x] ', '')
-          .replace('- [ ] ', '')
-          .replace('- ', '')
-          .replace('* ', '')
+          .replaceAll('- [x] ', '')
+          .replaceAll('- [ ] ', '')
+          .replaceAll('* [x] ', '')
+          .replaceAll('* [ ] ', '')
+          .replaceAll('- ', '')
+          .replaceAll('* ', '')
           .trim();
 
         // Only add non-empty subtasks
