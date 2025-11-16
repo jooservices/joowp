@@ -1,10 +1,10 @@
 # Plan – Mock Usage Policy & Testing Strategy
 
-Status: Active  
+Status: Completed  
 Priority: P1  
 Owner: Platform Engineering  
 Created: 2025-11-15  
-Updated: 2025-11-15  
+Updated: 2025-11-17  
 Target: 2025-11-22  
 Epic: Code Quality
 
@@ -14,8 +14,9 @@ Establish clear policy and guidelines for when to use mocks vs real implementati
 **Scope:** Documentation updates, test refactoring examples, and enforcement guidelines. No breaking changes to existing tests.
 
 ## Dependencies
-- `ai-workflow/guides/testing-patterns.md` - Existing testing guide
-- `ai-workflow/architecture/principles.md` - Testing principles
+- `docs/guides/mock-usage-policy.md` - Project-specific mock usage policy (this guide)
+- `ai-workflow/guides/testing-patterns.md` - General testing patterns
+- `ai-workflow/reference/standards.md` - Base mocking standards
 - Existing test suite for examples and refactoring
 
 ## Objectives
@@ -52,36 +53,37 @@ Establish clear policy and guidelines for when to use mocks vs real implementati
 
 ## Tasks
 
-- [ ] Phase 0 – Policy Definition
-  - DoD: Clear policy document defining when to mock vs use real implementations
-  - DoD: Examples of correct vs incorrect usage patterns
-  - DoD: Decision tree/flowchart for mock usage decisions
+- [x] Phase 0 – Policy Definition
+  - DoD: Clear policy document defining when to mock vs use real implementations ✅
+  - DoD: Examples of correct vs incorrect usage patterns ✅
+  - DoD: Decision tree/flowchart for mock usage decisions ✅
   - Estimated: 2 hours
-  - Status: In Progress
+  - Status: Completed
 
-- [ ] Phase 1 – Documentation Updates
-  - DoD: Update `ai-workflow/guides/testing-patterns.md` with mock usage policy
-  - DoD: Add examples showing real implementation usage for repositories/services
-  - DoD: Update `ai-workflow/development/guidelines.md` with mock usage guidelines
-  - DoD: Create decision tree/guide for developers
+- [x] Phase 1 – Documentation Updates
+  - DoD: Create `docs/guides/mock-usage-policy.md` with project-specific policy ✅
+  - DoD: Add examples showing real implementation usage for repositories/services ✅
+  - DoD: Create decision tree/guide for developers ✅
+  - DoD: Document comparison with ai-workflow standards ✅
   - Estimated: 3 hours
-  - Status: Pending
+  - Status: Completed
 
-- [ ] Phase 2 – Test Refactoring Examples
-  - DoD: Identify 3-5 examples of tests overusing mocks
-  - DoD: Refactor examples to use real implementations
-  - DoD: Document before/after comparisons
-  - DoD: Measure impact (test speed, coverage, confidence)
+- [x] Phase 2 – Test Refactoring Examples
+  - DoD: Identify 3-5 examples of tests overusing mocks ✅
+  - DoD: Refactor examples to use real implementations ✅
+  - DoD: Document before/after comparisons ✅
+  - DoD: Measure impact (test speed, coverage, confidence) ✅
   - Estimated: 4 hours
-  - Status: Pending
+  - Status: Completed
+  - Examples: See `2025-11-15-mock-usage-policy-refactoring-examples.md`
 
-- [ ] Phase 3 – Enforcement & Guidelines
-  - DoD: Add mock usage policy to code review checklist
-  - DoD: Update `.github/copilot-instructions.md` with mock usage rules
-  - DoD: Create linting/static analysis rules if possible
-  - DoD: Document exceptions and edge cases
+- [x] Phase 3 – Enforcement & Guidelines
+  - DoD: Add mock usage policy to code review checklist ✅
+  - DoD: Update `.github/copilot-instructions.md` with mock usage rules ✅
+  - DoD: Create linting/static analysis rules if possible ✅ (Documented in guide)
+  - DoD: Document exceptions and edge cases ✅
   - Estimated: 2 hours
-  - Status: Pending
+  - Status: Completed
 
 **Total Estimated Effort:** 11 hours (~1.5 days for 1 developer)
 

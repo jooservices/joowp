@@ -282,6 +282,62 @@ Run individually: `composer lint:pint`, `composer lint:phpcs`, `composer analyze
 - **Audit logging** required for all mutations using `App\Logging\ActionLogger`
 - Run full test suite before every commit: `composer test:coverage-check && npm run typecheck`
 
+### Mock Usage Policy (CRITICAL)
+**Core Principle:** Use real implementations by default. Mock only when necessary.
+
+**✅ ALWAYS use real implementations for:**
+- **Repositories** - Use real database with `RefreshDatabase` trait
+- **Services** - Use real service implementations
+- **Internal dependencies** - Any class within `App\` or `Modules\`
+- **Models** - Use factories and real database interactions
+- **FormRequests** - Use real validation logic
+- **Loggers** - Use real logger instances (mock Log facade if needed to verify calls)
+
+**✅ ONLY mock for:**
+- **3rd Party APIs/SDKs** - External services (WordPress SDK, LM Studio SDK, payment gateways)
+- **Live services** - Services requiring network access, authentication, or rate limits
+- **Expensive operations** - Slow or resource-intensive operations
+- **Laravel Facades** - Mock when you need to verify calls (Log, Cache, Queue)
+
+**Decision Tree:**
+```
+Is it a 3rd party API/SDK? → ✅ YES, Mock
+Does it require network access? → ✅ YES, Mock
+Is it expensive/slow? → ✅ YES, Mock
+Is it a Repository? → ❌ NO, Use Real (with RefreshDatabase)
+Is it a Service? → ❌ NO, Use Real
+Is it internal to application? → ❌ NO, Use Real
+```
+
+**Examples:**
+```php
+// ❌ BAD: Mocking repository
+$repository = Mockery::mock(UserRepositoryContract::class);
+
+// ✅ GOOD: Use real repository
+use Illuminate\Foundation\Testing\RefreshDatabase;
+final class UserServiceTest extends TestCase
+{
+    use RefreshDatabase;
+    
+    public function test_create_saves_user(): void
+    {
+        $repository = new UserRepository();
+        $logger = new ActionLogger();
+        $service = new UserService($repository, $logger);
+        
+        $result = $service->create(['name' => 'John']);
+        $this->assertDatabaseHas('users', ['name' => 'John']);
+    }
+}
+
+// ✅ GOOD: Mock external SDK
+$sdk = Mockery::mock(WordPressSdkContract::class);
+$sdk->shouldReceive('posts')->once()->andReturn([...]);
+```
+
+**See:** `docs/guides/mock-usage-policy.md` for complete policy and examples.
+
 **Example - Unit test structure:**
 ```php
 <?php
