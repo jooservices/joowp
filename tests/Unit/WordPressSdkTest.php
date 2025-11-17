@@ -125,6 +125,210 @@ class WordPressSdkTest extends TestCase
         $this->assertSame('abcdef123456', $result['token']);
     }
 
+    #[Test]
+    public function it_fetches_categories(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode([['id' => 1, 'name' => 'News']], JSON_THROW_ON_ERROR)
+        );
+
+        $client = $this->mockClient('GET', 'wp/v2/categories', ['query' => ['per_page' => 10]], $response);
+
+        $this->expectExternalLogs(2);
+
+        $sdk = $this->makeSdk($client);
+
+        $categories = $sdk->categories(['per_page' => 10]);
+
+        $this->assertSame(1, $categories[0]['id']);
+        $this->assertSame('News', $categories[0]['name']);
+    }
+
+    #[Test]
+    public function it_fetches_single_category(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode(['id' => 1, 'name' => 'News', 'slug' => 'news'], JSON_THROW_ON_ERROR)
+        );
+
+        $client = $this->mockClient('GET', 'wp/v2/categories/1', ['query' => []], $response);
+
+        $this->expectExternalLogs(2);
+
+        $sdk = $this->makeSdk($client);
+
+        $category = $sdk->category(1);
+
+        $this->assertSame(1, $category['id']);
+        $this->assertSame('News', $category['name']);
+        $this->assertSame('news', $category['slug']);
+    }
+
+    #[Test]
+    public function it_creates_category(): void
+    {
+        $response = new Response(
+            201,
+            ['Content-Type' => 'application/json'],
+            json_encode(['id' => 10, 'name' => 'Technology'], JSON_THROW_ON_ERROR)
+        );
+
+        $payload = ['name' => 'Technology', 'slug' => 'technology'];
+
+        $client = $this->mockClient('POST', 'wp/v2/categories', ['json' => $payload], $response);
+
+        $this->expectExternalLogs(2);
+
+        $sdk = $this->makeSdk($client);
+
+        $category = $sdk->createCategory($payload);
+
+        $this->assertSame(10, $category['id']);
+        $this->assertSame('Technology', $category['name']);
+    }
+
+    #[Test]
+    public function it_updates_category(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode(['id' => 10, 'name' => 'Tech', 'slug' => 'tech'], JSON_THROW_ON_ERROR)
+        );
+
+        $payload = ['name' => 'Tech'];
+
+        $client = $this->mockClient('POST', 'wp/v2/categories/10', ['json' => $payload], $response);
+
+        $this->expectExternalLogs(2);
+
+        $sdk = $this->makeSdk($client);
+
+        $category = $sdk->updateCategory(10, $payload);
+
+        $this->assertSame(10, $category['id']);
+        $this->assertSame('Tech', $category['name']);
+    }
+
+    #[Test]
+    public function it_deletes_category(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode(['deleted' => true, 'previous' => ['id' => 10]], JSON_THROW_ON_ERROR)
+        );
+
+        $client = $this->mockClient('DELETE', 'wp/v2/categories/10', ['query' => ['force' => true]], $response);
+
+        $this->expectExternalLogs(2);
+
+        $sdk = $this->makeSdk($client);
+
+        $result = $sdk->deleteCategory(10, ['force' => true]);
+
+        $this->assertTrue($result['deleted']);
+    }
+
+    #[Test]
+    public function it_fetches_tags(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode([['id' => 1, 'name' => 'PHP']], JSON_THROW_ON_ERROR)
+        );
+
+        $client = $this->mockClient('GET', 'wp/v2/tags', ['query' => []], $response);
+
+        $this->expectExternalLogs(2);
+
+        $sdk = $this->makeSdk($client);
+
+        $tags = $sdk->tags();
+
+        $this->assertSame(1, $tags[0]['id']);
+        $this->assertSame('PHP', $tags[0]['name']);
+    }
+
+    #[Test]
+    public function it_fetches_media(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode([['id' => 1, 'title' => ['rendered' => 'Image']]], JSON_THROW_ON_ERROR)
+        );
+
+        $client = $this->mockClient('GET', 'wp/v2/media', ['query' => []], $response);
+
+        $this->expectExternalLogs(2);
+
+        $sdk = $this->makeSdk($client);
+
+        $media = $sdk->media();
+
+        $this->assertSame(1, $media[0]['id']);
+    }
+
+    #[Test]
+    public function it_fetches_users(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode([['id' => 1, 'name' => 'Admin']], JSON_THROW_ON_ERROR)
+        );
+
+        $client = $this->mockClient('GET', 'wp/v2/users', ['query' => []], $response);
+
+        $this->expectExternalLogs(2);
+
+        $sdk = $this->makeSdk($client);
+
+        $users = $sdk->users();
+
+        $this->assertSame(1, $users[0]['id']);
+        $this->assertSame('Admin', $users[0]['name']);
+    }
+
+    #[Test]
+    public function it_handles_invalid_json_response(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            'invalid json'
+        );
+
+        $client = Mockery::mock(ClientInterface::class);
+        $client
+            ->shouldReceive('request')
+            ->once()
+            ->with('GET', 'wp/v2/posts', ['query' => []])
+            ->andReturn($response);
+
+        // Log dispatch only (invalid JSON exception is thrown but not logged as failure)
+        Log::shouldReceive('channel')
+            ->once()
+            ->with('external')
+            ->andReturnSelf();
+
+        Log::shouldReceive('info')
+            ->once()
+            ->with('Dispatching WordPress API request', Mockery::any());
+
+        $sdk = $this->makeSdk($client);
+
+        $this->expectException(WordPressRequestException::class);
+
+        $sdk->posts();
+    }
+
     private function mockClient(string $method, string $uri, array $options, ResponseInterface $response): ClientInterface&MockInterface
     {
         $client = Mockery::mock(ClientInterface::class);

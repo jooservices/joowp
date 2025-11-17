@@ -301,12 +301,23 @@ Run individually: `composer lint:pint`, `composer lint:phpcs`, `composer analyze
 
 **Decision Tree:**
 ```
-Is it a 3rd party API/SDK? → ✅ YES, Mock
-Does it require network access? → ✅ YES, Mock
-Is it expensive/slow? → ✅ YES, Mock
-Is it a Repository? → ❌ NO, Use Real (with RefreshDatabase)
-Is it a Service? → ❌ NO, Use Real
-Is it internal to application? → ❌ NO, Use Real
+Should I mock this dependency?
+│
+├─ Is it a 3rd party API/SDK? → ✅ YES → Mock
+│
+├─ Does it require network access? → ✅ YES → Mock
+│
+├─ Is it expensive/slow? → ✅ YES → Mock
+│
+├─ Is it unavailable in test environment? → ✅ YES → Mock
+│
+├─ Is it a Repository? → ✅ YES → Use Real (with RefreshDatabase)
+│
+├─ Is it a Service? → ✅ YES → Use Real
+│
+├─ Is it a Model? → ✅ YES → Use Real (with factories)
+│
+└─ Is it internal to application? → ✅ YES → Use Real
 ```
 
 **Examples:**

@@ -57,7 +57,7 @@ final class LmStudioApiTest extends TestCase
         // Arrange: Mock external SDK, use real ChatInferenceService
         $sdk = Mockery::mock(SdkContract::class);
         $sdk->shouldReceive('listModels')->zeroOrMoreTimes();
-        
+
         // Mock SDK's createChatCompletion method (external dependency)
         $sdk->shouldReceive('createChatCompletion')
             ->once()
@@ -78,7 +78,7 @@ final class LmStudioApiTest extends TestCase
                     ],
                 ])
             );
-        
+
         $this->app->instance(SdkContract::class, $sdk);
 
         // Use Event::fake() to verify events are dispatched
