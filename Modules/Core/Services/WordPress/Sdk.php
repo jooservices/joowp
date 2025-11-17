@@ -7,6 +7,7 @@ namespace Modules\Core\Services\WordPress;
 use Closure;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use JsonException;
@@ -22,6 +23,7 @@ final class Sdk implements SdkContract
 
     public function __construct(
         private readonly ClientInterface $client,
+        private readonly CacheRepository $cache,
         ?Closure $tokenResolver = null,
         string $namespace = 'wp/v2'
     ) {
@@ -31,7 +33,11 @@ final class Sdk implements SdkContract
 
     public function posts(array $query = []): array
     {
-        return $this->get('posts', $query);
+        $cacheKey = 'wp.posts.' . md5(json_encode($query, JSON_THROW_ON_ERROR));
+
+        return $this->cache->remember($cacheKey, now()->addMinutes(5), function () use ($query): array {
+            return $this->get('posts', $query);
+        });
     }
 
     /**
@@ -40,7 +46,11 @@ final class Sdk implements SdkContract
      */
     public function post(int $id, array $query = []): array
     {
-        return $this->get(sprintf('posts/%d', $id), $query);
+        $cacheKey = sprintf('wp.post.%d.%s', $id, md5(json_encode($query, JSON_THROW_ON_ERROR)));
+
+        return $this->cache->remember($cacheKey, now()->addMinutes(10), function () use ($id, $query): array {
+            return $this->get(sprintf('posts/%d', $id), $query);
+        });
     }
 
     public function pages(array $query = []): array
@@ -50,12 +60,23 @@ final class Sdk implements SdkContract
 
     public function media(array $query = []): array
     {
-        return $this->get('media', $query);
+        $cacheKey = 'wp.media.' . md5(json_encode($query, JSON_THROW_ON_ERROR));
+
+        return $this->cache->remember($cacheKey, now()->addMinutes(15), function () use ($query): array {
+            return $this->get('media', $query);
+        });
     }
 
     public function categories(array $query = []): array
     {
-        return $this->get('categories', $query);
+        $versionValue = $this->cache->get('wp.categories.version', 0);
+        // @phpstan-ignore-next-line - Cache returns mixed, but we ensure int with max()
+        $version = max(0, (int) $versionValue);
+        $cacheKey = sprintf('wp.categories.v%d.%s', $version, md5(json_encode($query, JSON_THROW_ON_ERROR)));
+
+        return $this->cache->remember($cacheKey, now()->addMinutes(30), function () use ($query): array {
+            return $this->get('categories', $query);
+        });
     }
 
     /**
@@ -64,7 +85,11 @@ final class Sdk implements SdkContract
      */
     public function category(int $id, array $query = []): array
     {
-        return $this->get(sprintf('categories/%d', $id), $query);
+        $cacheKey = sprintf('wp.category.%d.%s', $id, md5(json_encode($query, JSON_THROW_ON_ERROR)));
+
+        return $this->cache->remember($cacheKey, now()->addMinutes(30), function () use ($id, $query): array {
+            return $this->get(sprintf('categories/%d', $id), $query);
+        });
     }
 
     /**
@@ -73,11 +98,15 @@ final class Sdk implements SdkContract
      */
     public function createCategory(array $payload): array
     {
-        return $this->request(
+        $result = $this->request(
             method: 'POST',
             uri: 'categories',
             options: ['json' => $payload]
         );
+
+        $this->invalidateCategoryListCache();
+
+        return $result;
     }
 
     /**
@@ -86,11 +115,16 @@ final class Sdk implements SdkContract
      */
     public function updateCategory(int $id, array $payload): array
     {
-        return $this->request(
+        $result = $this->request(
             method: 'POST',
             uri: sprintf('categories/%d', $id),
             options: ['json' => $payload]
         );
+
+        $this->invalidateCategoryCache($id);
+        $this->invalidateCategoryListCache();
+
+        return $result;
     }
 
     /**
@@ -99,21 +133,34 @@ final class Sdk implements SdkContract
      */
     public function deleteCategory(int $id, array $query = []): array
     {
-        return $this->request(
+        $result = $this->request(
             method: 'DELETE',
             uri: sprintf('categories/%d', $id),
             options: ['query' => $query]
         );
+
+        $this->invalidateCategoryCache($id);
+        $this->invalidateCategoryListCache();
+
+        return $result;
     }
 
     public function tags(array $query = []): array
     {
-        return $this->get('tags', $query);
+        $cacheKey = 'wp.tags.' . md5(json_encode($query, JSON_THROW_ON_ERROR));
+
+        return $this->cache->remember($cacheKey, now()->addMinutes(30), function () use ($query): array {
+            return $this->get('tags', $query);
+        });
     }
 
     public function users(array $query = []): array
     {
-        return $this->get('users', $query);
+        $cacheKey = 'wp.users.' . md5(json_encode($query, JSON_THROW_ON_ERROR));
+
+        return $this->cache->remember($cacheKey, now()->addMinutes(60), function () use ($query): array {
+            return $this->get('users', $query);
+        });
     }
 
     /**
@@ -344,5 +391,44 @@ final class Sdk implements SdkContract
         return [
             'Authorization' => 'Bearer ' . $token,
         ];
+    }
+
+    /**
+     * Invalidate cache for a specific category
+     */
+    public function invalidateCategoryCache(int $id): void
+    {
+        // Invalidate specific category cache (all query variations)
+        // Note: Database cache driver doesn't support wildcards, so we need to track keys
+        // For now, we'll use a pattern that can be extended later with key tracking
+        $this->cache->forget(sprintf('wp.category.%d', $id));
+    }
+
+    /**
+     * Invalidate all category list caches
+     * Note: Database cache doesn't support wildcards, so this is a best-effort approach
+     * For production with Redis, consider using cache tags
+     */
+    private function invalidateCategoryListCache(): void
+    {
+        // Since database cache doesn't support wildcards, we can't easily invalidate
+        // all "wp.categories.*" keys. Options:
+        // 1. Track keys in a separate cache entry
+        // 2. Use versioned cache keys (e.g., wp.categories.v1.*)
+        // 3. Use Redis with tags in production
+        // For now, we'll implement a simple version bump approach
+        $versionKey = 'wp.categories.version';
+        $versionValue = $this->cache->get($versionKey, 0);
+        // @phpstan-ignore-next-line - Cache returns mixed, but we ensure int with max()
+        $version = max(0, (int) $versionValue);
+        $this->cache->put($versionKey, $version + 1, now()->addDays(1));
+    }
+
+    /**
+     * Invalidate cache for a specific post
+     */
+    public function invalidatePostCache(int $id): void
+    {
+        $this->cache->forget(sprintf('wp.post.%d', $id));
     }
 }

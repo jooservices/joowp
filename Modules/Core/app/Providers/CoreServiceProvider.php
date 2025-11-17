@@ -201,8 +201,12 @@ final class CoreServiceProvider extends ServiceProvider
                 ->latest('updated_at')
                 ->value('token');
 
+            /** @var \Illuminate\Contracts\Cache\Repository $cache */
+            $cache = $app->make(\Illuminate\Contracts\Cache\Repository::class);
+
             return new Sdk(
                 client: $client,
+                cache: $cache,
                 tokenResolver: $tokenResolver,
                 namespace: $config['namespace'] ?? 'wp/v2'
             );
