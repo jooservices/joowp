@@ -1,0 +1,16 @@
+
+Deprecated: PHPMD\Rule\CleanCode\BooleanArgumentFlag::isBooleanValue(): Implicitly marking parameter $value as nullable is deprecated, the explicit nullable type must be used instead in /Users/vietvu/Sites/JOOservices/joowp/vendor/phpmd/phpmd/src/main/php/PHPMD/Rule/CleanCode/BooleanArgumentFlag.php on line 77
+
+Deprecated: PHPMD\Report::__construct(): Implicitly marking parameter $baselineValidator as nullable is deprecated, the explicit nullable type must be used instead in /Users/vietvu/Sites/JOOservices/joowp/vendor/phpmd/phpmd/src/main/php/PHPMD/Report.php on line 61
+
+Deprecated: PDepend\Source\Language\PHP\PHPBuilder::buildEnum(): Implicitly marking parameter $type as nullable is deprecated, the explicit nullable type must be used instead in /Users/vietvu/Sites/JOOservices/joowp/vendor/pdepend/pdepend/src/main/php/PDepend/Source/Language/PHP/PHPBuilder.php on line 2592
+
+Deprecated: PDepend\Source\Language\PHP\PHPBuilder::buildEnumCase(): Implicitly marking parameter $value as nullable is deprecated, the explicit nullable type must be used instead in /Users/vietvu/Sites/JOOservices/joowp/vendor/pdepend/pdepend/src/main/php/PDepend/Source/Language/PHP/PHPBuilder.php on line 2612
+
+Deprecated: PDepend\Source\Language\PHP\AbstractPHPParser::setNodePositionsAndReturn(): Implicitly marking parameter $tokens as nullable is deprecated, the explicit nullable type must be used instead in /Users/vietvu/Sites/JOOservices/joowp/vendor/pdepend/pdepend/src/main/php/PDepend/Source/Language/PHP/AbstractPHPParser.php on line 2388
+
+Deprecated: PDepend\Source\Language\PHP\AbstractPHPParser::throwUnexpectedTokenException(): Implicitly marking parameter $token as nullable is deprecated, the explicit nullable type must be used instead in /Users/vietvu/Sites/JOOservices/joowp/vendor/pdepend/pdepend/src/main/php/PDepend/Source/Language/PHP/AbstractPHPParser.php on line 8073
+
+Deprecated: PDepend\Source\AST\ASTArtifactList\CollectionArtifactFilter::setFilter(): Implicitly marking parameter $filter as nullable is deprecated, the explicit nullable type must be used instead in /Users/vietvu/Sites/JOOservices/joowp/vendor/pdepend/pdepend/src/main/php/PDepend/Source/AST/ASTArtifactList/CollectionArtifactFilter.php on line 103
+
+Deprecated: PDepend\Metrics\Analyzer\CouplingAnalyzer::calculateCoupling(): Implicitly marking parameter $coupledType as nullable is deprecated, the explicit nullable type must be used instead in /Users/vietvu/Sites/JOOservices/joowp/vendor/pdepend/pdepend/src/main/php/PDepend/Metrics/Analyzer/CouplingAnalyzer.php on line 378
