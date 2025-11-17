@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Logging\ActionLogger;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Mockery;

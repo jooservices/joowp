@@ -75,4 +75,148 @@ class ActionLoggerTest extends TestCase
         Carbon::setTestNow();
         Mockery::close();
     }
+
+    public function test_it_logs_with_complex_metadata(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2025-01-03T14:30:00Z'));
+
+        Log::shouldReceive('channel')
+            ->once()
+            ->with('action')
+            ->andReturnSelf();
+
+        Log::shouldReceive('info')
+            ->once()
+            ->withArgs(function (string $message, array $context): bool {
+                $this->assertSame('Domain action recorded', $message);
+                $this->assertSame('wordpress.category.created', $context['operation']);
+                $this->assertSame(['source' => 'wordpress', 'category_id' => 99], $context['metadata']);
+
+                return true;
+            });
+
+        $logger = new ActionLogger();
+        $logger->log(
+            'wordpress.category.created',
+            new StubUser(1),
+            [],
+            ['id' => 99, 'name' => 'News'],
+            ['source' => 'wordpress', 'category_id' => 99]
+        );
+
+        Carbon::setTestNow();
+        Mockery::close();
+    }
+
+    public function test_it_logs_with_empty_before_and_after(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2025-01-04T09:00:00Z'));
+
+        Log::shouldReceive('channel')
+            ->once()
+            ->with('action')
+            ->andReturnSelf();
+
+        Log::shouldReceive('info')
+            ->once()
+            ->withArgs(function (string $message, array $context): bool {
+                $this->assertSame('Domain action recorded', $message);
+                $this->assertSame('system.cleanup', $context['operation']);
+                $this->assertSame([], $context['before']);
+                $this->assertSame([], $context['after']);
+
+                return true;
+            });
+
+        $logger = new ActionLogger();
+        $logger->log(
+            'system.cleanup',
+            null,
+            [],
+            []
+        );
+
+        Carbon::setTestNow();
+        Mockery::close();
+    }
+
+    public function test_it_logs_with_nested_metadata(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2025-01-05T16:45:00Z'));
+
+        Log::shouldReceive('channel')
+            ->once()
+            ->with('action')
+            ->andReturnSelf();
+
+        Log::shouldReceive('info')
+            ->once()
+            ->withArgs(function (string $message, array $context): bool {
+                $this->assertSame('Domain action recorded', $message);
+                $this->assertSame('api.request', $context['operation']);
+                $this->assertSame([
+                    'request' => [
+                        'method' => 'POST',
+                        'endpoint' => '/api/v1/posts',
+                    ],
+                    'response' => [
+                        'status' => 201,
+                    ],
+                ], $context['metadata']);
+
+                return true;
+            });
+
+        $logger = new ActionLogger();
+        $logger->log(
+            'api.request',
+            new StubUser(5),
+            [],
+            [],
+            [
+                'request' => [
+                    'method' => 'POST',
+                    'endpoint' => '/api/v1/posts',
+                ],
+                'response' => [
+                    'status' => 201,
+                ],
+            ]
+        );
+
+        Carbon::setTestNow();
+        Mockery::close();
+    }
+
+    public function test_it_logs_with_null_metadata(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2025-01-06T11:20:00Z'));
+
+        Log::shouldReceive('channel')
+            ->once()
+            ->with('action')
+            ->andReturnSelf();
+
+        Log::shouldReceive('info')
+            ->once()
+            ->withArgs(function (string $message, array $context): bool {
+                $this->assertSame('Domain action recorded', $message);
+                $this->assertSame('task.completed', $context['operation']);
+                $this->assertSame([], $context['metadata']);
+
+                return true;
+            });
+
+        $logger = new ActionLogger();
+        $logger->log(
+            'task.completed',
+            null,
+            [],
+            [],
+            []
+        );
+
+        Carbon::setTestNow();
+        Mockery::close();
+    }
 }
