@@ -26,6 +26,12 @@ final class CacheClearWordPress extends Command
      */
     protected $description = 'Clear WordPress cache by prefix (default: wp.*)';
 
+    /**
+     * Create a new command instance
+     *
+     * @param  CacheRepository  $cache  The cache repository instance
+     * @param  CacheHelper  $cacheHelper  The cache helper service instance
+     */
     public function __construct(
         private readonly CacheRepository $cache,
         private readonly CacheHelper $cacheHelper
@@ -34,7 +40,12 @@ final class CacheClearWordPress extends Command
     }
 
     /**
-     * Execute the console command.
+     * Execute the console command
+     *
+     * Clears WordPress cache entries matching the specified prefix.
+     * Supports both specific prefix and clearing all WordPress cache (wp.*).
+     *
+     * @return int Command exit code (Command::SUCCESS)
      */
     public function handle(): int
     {
@@ -57,7 +68,13 @@ final class CacheClearWordPress extends Command
 
     /**
      * Clear cache entries by prefix
-     * Note: Database cache driver doesn't support wildcards, so we query the cache table directly
+     *
+     * Handles different cache drivers appropriately:
+     * - Database driver: Uses CacheHelper to query cache table directly
+     * - Other drivers: Flushes all cache if prefix is 'wp.' or --all option used
+     *
+     * @param  string  $prefix  Cache key prefix to clear
+     * @return int Number of cache entries cleared, or 1 if flushed all cache
      */
     private function clearCacheByPrefix(string $prefix): int
     {
@@ -84,7 +101,12 @@ final class CacheClearWordPress extends Command
 
     /**
      * Clear database cache by prefix
-     * Delegates to CacheHelper to handle infrastructure concerns
+     *
+     * Delegates to CacheHelper to handle infrastructure concerns.
+     * Handles exceptions gracefully and returns 0 on failure.
+     *
+     * @param  string  $prefix  Cache key prefix to clear
+     * @return int Number of cache entries cleared, or 0 on error
      */
     private function clearDatabaseCacheByPrefix(string $prefix): int
     {

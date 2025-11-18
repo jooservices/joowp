@@ -401,7 +401,11 @@ final class Sdk implements SdkContract
 
     /**
      * Invalidate cache for a specific category
-     * Clears all cached variations: wp.category.{id}.{queryHash}
+     *
+     * Clears all cached variations of a category including different query parameters.
+     * Cache key pattern: wp.category.{id}.{queryHash}
+     *
+     * @param  int  $id  The category ID to invalidate
      */
     public function invalidateCategoryCache(int $id): void
     {
@@ -431,10 +435,14 @@ final class Sdk implements SdkContract
 
     /**
      * Invalidate cache for a specific post
-     * Clears all cached variations: wp.post.{id}.{queryHash}
+     *
+     * Clears all cached variations of a post including different query parameters.
+     * Cache key pattern: wp.post.{id}.{queryHash}
      *
      * Note: This method should be called after post mutations (create/update/delete)
      * to ensure cache consistency.
+     *
+     * @param  int  $id  The post ID to invalidate
      */
     public function invalidatePostCache(int $id): void
     {
@@ -444,11 +452,13 @@ final class Sdk implements SdkContract
 
     /**
      * Invalidate posts list cache
-     * Clears all cached variations: wp.posts.{queryHash}
+     *
+     * Clears all cached variations of posts list by bumping the cache version.
+     * Uses version-based invalidation for database cache compatibility.
+     * Cache key pattern: wp.posts.v{version}.{queryHash}
      *
      * Note: This method should be called after post mutations (create/update/delete)
-     * to ensure posts list cache is invalidated. Uses version-based invalidation
-     * similar to categories for database cache compatibility.
+     * to ensure posts list cache is invalidated.
      */
     public function invalidatePostsListCache(): void
     {
@@ -463,7 +473,11 @@ final class Sdk implements SdkContract
 
     /**
      * Clear cache entries by prefix
-     * Delegates to CacheHelper to handle infrastructure concerns
+     *
+     * Delegates to CacheHelper to handle infrastructure concerns.
+     * This method separates business logic from infrastructure operations.
+     *
+     * @param  string  $prefix  Cache key prefix to clear
      */
     private function clearCacheByPrefix(string $prefix): void
     {

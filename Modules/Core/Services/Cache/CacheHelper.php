@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\DB;
  */
 final class CacheHelper
 {
+    /**
+     * Create a new CacheHelper instance
+     *
+     * @param  CacheRepository  $cache  The cache repository instance
+     */
     public function __construct(
         private readonly CacheRepository $cache
     ) {
@@ -21,11 +26,13 @@ final class CacheHelper
 
     /**
      * Clear cache entries by prefix
-     * Handles database cache driver by querying cache table directly
-     * Accounts for Laravel's configured cache key prefix
+     *
+     * Handles database cache driver by querying cache table directly.
+     * Accounts for Laravel's configured cache key prefix when querying.
+     * For non-database drivers, returns 0 as prefix-based clearing is not supported.
      *
      * @param  string  $prefix  Cache key prefix (e.g., 'wp.post.1.')
-     * @return int Number of cache entries cleared
+     * @return int Number of cache entries cleared (0 for non-database drivers)
      */
     public function clearByPrefix(string $prefix): int
     {
@@ -52,6 +59,8 @@ final class CacheHelper
 
     /**
      * Get cache table name from configuration
+     *
+     * @return string The cache table name, defaults to 'cache' if not configured or invalid
      */
     private function getCacheTableName(): string
     {
