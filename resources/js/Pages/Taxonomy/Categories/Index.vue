@@ -130,8 +130,7 @@
                                         </td>
                                         <td>{{ category.slug }}</td>
                                         <td>
-                                            <span v-if="category.parent === 0" class="badge text-bg-secondary rounded-pill">Root</span>
-                                            <span v-else class="badge text-bg-dark border border-secondary rounded-pill">
+                                            <span v-if="category.parent !== 0" class="badge text-bg-dark border border-secondary rounded-pill">
                                                 {{ resolveParentName(category.parent) }}
                                             </span>
                                         </td>
