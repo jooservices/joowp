@@ -142,11 +142,16 @@ This can lead to invalid category hierarchies and potential infinite loops in ca
   - DoD: Create new "Options" card below "Create category" form ✅
     - Card title: "Options"
     - Moved "Include trashed" checkbox from toolbar to this card
-    - Added "Per page" selector to this card
+    - Options card only contains "Include trashed" checkbox
+  - DoD: "Per page" selector in Categories card header (right side) ✅
+    - Position: Right side of "Categories" header, horizontal layout
+    - Layout: flex-row with justify-content-between
     - Per page options: 10, 20, 50, 100, Show all
     - "Show all" option removes pagination limit (omits per_page parameter)
-  - DoD: Remove "Include trashed" and "Per page" from toolbar ✅
+    - Styling: Small form-select (form-select-sm), consistent with toolbar design
+  - DoD: Clean up toolbar ✅
     - Toolbar now only has: Search input, Refresh button
+    - "Per page" moved to Categories header (right side)
   - Estimated: 2 hours
   - Status: Completed (2025-01-17)
 

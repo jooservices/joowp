@@ -21,7 +21,21 @@
             <div v-if="tokenStatus.remembered" class="col-12 col-xl-8">
                 <section class="card bg-dark border-0 shadow-sm h-100">
                     <div class="card-body">
-                        <h2 class="h5 text-white mb-3">Categories</h2>
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                            <h2 class="h5 text-white mb-0">Categories</h2>
+                            <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
+                                <label class="text-secondary small mb-0">Per page</label>
+                                <select
+                                    v-model="filters.perPage"
+                                    class="form-select form-select-sm bg-transparent text-white border-secondary-subtle"
+                                    :disabled="!tokenStatus.remembered"
+                                >
+                                    <option v-for="option in perPageOptions" :key="option" :value="option">
+                                        {{ option === 'all' ? 'Show all' : option }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="toolbar d-flex flex-column flex-md-row gap-3 align-items-md-center mb-4">
                             <div class="input-group search-group">
                                 <span class="input-group-text bg-transparent text-secondary border-secondary-subtle">
@@ -254,33 +268,18 @@
                 <section class="card bg-dark border-0 shadow-sm">
                     <div class="card-body">
                         <h2 class="h5 text-white mb-3">Options</h2>
-                        <div class="d-flex flex-column gap-3">
-                            <div class="form-check">
-                                <input
-                                    id="include-trashed-options"
-                                    v-model="includeTrashed"
-                                    type="checkbox"
-                                    class="form-check-input"
-                                    :disabled="!tokenStatus.remembered"
-                                    @change="handleIncludeTrashedChange"
-                                />
-                                <label for="include-trashed-options" class="form-check-label text-secondary small">
-                                    Include trashed categories
-                                </label>
-                            </div>
-                            <div>
-                                <label for="per-page-options" class="form-label text-secondary small mb-2">Per page</label>
-                                <select
-                                    id="per-page-options"
-                                    v-model="filters.perPage"
-                                    class="form-select bg-transparent border-secondary-subtle text-white"
-                                    :disabled="!tokenStatus.remembered"
-                                >
-                                    <option v-for="option in perPageOptions" :key="option" :value="option">
-                                        {{ option === 'all' ? 'Show all' : option }}
-                                    </option>
-                                </select>
-                            </div>
+                        <div class="form-check">
+                            <input
+                                id="include-trashed-options"
+                                v-model="includeTrashed"
+                                type="checkbox"
+                                class="form-check-input"
+                                :disabled="!tokenStatus.remembered"
+                                @change="handleIncludeTrashedChange"
+                            />
+                            <label for="include-trashed-options" class="form-check-label text-secondary small">
+                                Include trashed categories
+                            </label>
                         </div>
                     </div>
                 </section>
