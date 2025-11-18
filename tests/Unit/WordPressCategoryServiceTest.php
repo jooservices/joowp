@@ -243,4 +243,139 @@ final class WordPressCategoryServiceTest extends TestCase
 
         self::assertSame([['id' => 1, 'name' => 'News']], $result);
     }
+
+    public function test_it_returns_eligible_parents_excluding_self_and_descendants(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $logger = new ActionLogger();
+
+        // Category 1 (root) -> Category 2 (child of 1) -> Category 3 (child of 2)
+        $allCategories = [
+            ['id' => 1, 'name' => 'Tech', 'slug' => 'tech', 'parent' => 0],
+            ['id' => 2, 'name' => 'Programming', 'slug' => 'programming', 'parent' => 1],
+            ['id' => 3, 'name' => 'JavaScript', 'slug' => 'javascript', 'parent' => 2],
+            ['id' => 4, 'name' => 'Design', 'slug' => 'design', 'parent' => 0],
+        ];
+
+        $sdk->shouldReceive('categories')
+            ->once()
+            ->with([
+                'per_page' => 100,
+                'orderby' => 'name',
+                'order' => 'asc',
+            ])
+            ->andReturn($allCategories);
+
+        $service = new CategoryService($sdk, $logger);
+
+        // When editing category 2, exclude 2 and 3 (descendant), but include 1 and 4
+        $result = $service->eligibleParents(2);
+
+        self::assertCount(2, $result);
+        $ids = array_column($result, 'id');
+        self::assertContains(1, $ids); // Tech (root)
+        self::assertContains(4, $ids); // Design (root)
+        self::assertNotContains(2, $ids); // Programming (self)
+        self::assertNotContains(3, $ids); // JavaScript (descendant)
+    }
+
+    public function test_it_filters_trashed_categories_by_default(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $logger = new ActionLogger();
+
+        $allCategories = [
+            ['id' => 1, 'name' => 'Active', 'slug' => 'active', 'parent' => 0, 'status' => 'publish'],
+            ['id' => 2, 'name' => 'Trashed', 'slug' => 'trashed', 'parent' => 0, 'status' => 'trash'],
+        ];
+
+        $sdk->shouldReceive('categories')
+            ->once()
+            ->andReturn($allCategories);
+
+        $service = new CategoryService($sdk, $logger);
+
+        $result = $service->eligibleParents(null, false);
+
+        self::assertCount(1, $result);
+        self::assertSame(1, $result[0]['id']);
+    }
+
+    public function test_it_includes_trashed_categories_when_requested(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $logger = new ActionLogger();
+
+        $allCategories = [
+            ['id' => 1, 'name' => 'Active', 'slug' => 'active', 'parent' => 0, 'status' => 'publish'],
+            ['id' => 2, 'name' => 'Trashed', 'slug' => 'trashed', 'parent' => 0, 'status' => 'trash'],
+        ];
+
+        $sdk->shouldReceive('categories')
+            ->once()
+            ->andReturn($allCategories);
+
+        $service = new CategoryService($sdk, $logger);
+
+        $result = $service->eligibleParents(null, true);
+
+        self::assertCount(2, $result);
+        $ids = array_column($result, 'id');
+        self::assertContains(1, $ids);
+        self::assertContains(2, $ids);
+    }
+
+    public function test_it_calculates_depth_correctly(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $logger = new ActionLogger();
+
+        $allCategories = [
+            ['id' => 1, 'name' => 'Root', 'slug' => 'root', 'parent' => 0],
+            ['id' => 2, 'name' => 'Level 1', 'slug' => 'level-1', 'parent' => 1],
+            ['id' => 3, 'name' => 'Level 2', 'slug' => 'level-2', 'parent' => 2],
+        ];
+
+        $sdk->shouldReceive('categories')
+            ->once()
+            ->andReturn($allCategories);
+
+        $service = new CategoryService($sdk, $logger);
+
+        $result = $service->eligibleParents();
+
+        $depthMap = [];
+        foreach ($result as $item) {
+            $depthMap[$item['id']] = $item['depth'];
+        }
+
+        self::assertSame(0, $depthMap[1]); // Root
+        self::assertSame(1, $depthMap[2]); // Level 1
+        self::assertSame(2, $depthMap[3]); // Level 2
+    }
+
+    public function test_it_returns_empty_when_all_categories_excluded(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $logger = new ActionLogger();
+
+        // Single category tree
+        $allCategories = [
+            ['id' => 1, 'name' => 'Only', 'slug' => 'only', 'parent' => 0],
+            ['id' => 2, 'name' => 'Child', 'slug' => 'child', 'parent' => 1],
+        ];
+
+        $sdk->shouldReceive('categories')
+            ->once()
+            ->andReturn($allCategories);
+
+        $service = new CategoryService($sdk, $logger);
+
+        // Exclude root category (which excludes everything)
+        $result = $service->eligibleParents(1);
+
+        // Should only have "None" option (value 0) - but we return empty array
+        // Actually, we return eligible parents, so if all are excluded, result is empty
+        self::assertCount(0, $result);
+    }
 }

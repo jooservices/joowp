@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Modules\WordPress\Http\Requests\DeleteCategoryRequest;
 use Modules\WordPress\Http\Requests\IndexCategoriesRequest;
+use Modules\WordPress\Http\Requests\ParentCategoriesRequest;
 use Modules\WordPress\Http\Requests\StoreCategoryRequest;
 use Modules\WordPress\Http\Requests\UpdateCategoryRequest;
 use Modules\WordPress\Services\CategoryService;
@@ -78,6 +79,24 @@ final class CategoryController extends Controller
             code: 'wordpress.categories.deleted',
             message: 'Category deleted from WordPress.',
             data: $deleted
+        );
+    }
+
+    public function parents(ParentCategoriesRequest $request): JsonResponse
+    {
+        $filters = $request->validated();
+        $exclude = isset($filters['exclude']) && $filters['exclude'] > 0 ? (int) $filters['exclude'] : null;
+        $includeTrashed = (bool) ($filters['include_trashed'] ?? false);
+
+        $eligibleParents = $this->service->eligibleParents($exclude, $includeTrashed);
+
+        return ApiResponse::success(
+            code: 'wordpress.categories.parents',
+            message: 'Eligible parent categories retrieved successfully.',
+            data: [
+                'items' => $eligibleParents,
+                'hierarchy' => true,
+            ]
         );
     }
 }

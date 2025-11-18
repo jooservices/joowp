@@ -19,15 +19,13 @@
             </a>
         </header>
 
-        <div v-if="!tokenStatus.remembered" class="alert alert-warning border border-warning-subtle text-dark mb-4">
+        <div v-if="!tokenStatus.remembered" class="alert alert-danger border border-danger-subtle mb-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
-                    <strong class="me-2">No remembered WordPress token.</strong>
-                    Store a token on the home page before issuing mutations.
+                    <strong class="me-2">WordPress authentication required.</strong>
+                    Please login on home page first before using this feature.
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-dark" @click="refreshTokenStatus">
-                    Refresh status
-                </button>
+                <a href="/" class="btn btn-sm btn-outline-light">Go to Home</a>
             </div>
         </div>
 
@@ -61,7 +59,7 @@
                                 <button
                                     type="button"
                                     class="btn btn-tertiary btn-sm"
-                                    :disabled="isLoading"
+                                    :disabled="isLoading || !tokenStatus.remembered"
                                     @click="fetchCategories"
                                 >
                                     <span v-if="!isLoading" class="fa-solid fa-arrows-rotate"></span>
@@ -204,6 +202,7 @@
                                     type="text"
                                     class="form-control bg-transparent border-secondary-subtle text-white"
                                     placeholder="e.g. Product Releases"
+                                    :disabled="!tokenStatus.remembered"
                                     required
                                 />
                             </div>
@@ -215,6 +214,7 @@
                                     type="text"
                                     class="form-control bg-transparent border-secondary-subtle text-white"
                                     placeholder="product-releases"
+                                    :disabled="!tokenStatus.remembered"
                                 />
                             </div>
                             <div>
@@ -225,25 +225,46 @@
                                     class="form-control bg-transparent border-secondary-subtle text-white"
                                     rows="3"
                                     placeholder="Optional summary for editors and SEO."
+                                    :disabled="!tokenStatus.remembered"
                                 ></textarea>
                             </div>
                             <div>
                                 <label for="category-parent" class="form-label text-secondary small">Parent</label>
+                                <div class="form-check mb-2">
+                                    <input
+                                        id="include-trashed"
+                                        v-model="includeTrashed"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        :disabled="!tokenStatus.remembered"
+                                        @change="fetchParentOptions"
+                                    />
+                                    <label for="include-trashed" class="form-check-label text-secondary small">
+                                        Include trashed categories
+                                    </label>
+                                </div>
                                 <select
                                     id="category-parent"
                                     v-model.number="form.parent"
                                     class="form-select bg-transparent border-secondary-subtle text-white"
+                                    :disabled="!tokenStatus.remembered || isLoadingParents"
                                 >
+                                    <option v-if="parentOptions.length === 1 && parentOptions[0]?.value === 0 && editingCategory" value="0" disabled>
+                                        No valid parent categories available
+                                    </option>
                                     <option v-for="option in parentOptions" :key="option.value" :value="option.value"
                                         :disabled="editingCategory?.id === option.value"
-                                        :style="{ paddingLeft: `${option.depth * 0.85}rem` }"
+                                        :style="{ paddingLeft: `${option.depth * 0.85}rem`, color: option.isTrashed === true ? '#6c757d' : 'inherit' }"
                                     >
                                         {{ option.label }}
                                     </option>
                                 </select>
+                                <div v-if="parentOptions.length === 1 && parentOptions[0]?.value === 0 && editingCategory" class="form-text text-secondary small mt-1">
+                                    No valid parent categories available
+                                </div>
                             </div>
                             <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center gap-2" :disabled="isSubmitting">
+                                <button type="submit" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center gap-2" :disabled="isSubmitting || !tokenStatus.remembered">
                                     <span v-if="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                     <span v-else class="fa-solid" :class="editingCategory ? 'fa-floppy-disk' : 'fa-plus-circle'"></span>
                                     <span>{{ editingCategory ? 'Update category' : 'Create category' }}</span>
@@ -252,7 +273,7 @@
                                     v-if="editingCategory"
                                     type="button"
                                     class="btn btn-outline-light"
-                                    :disabled="isSubmitting"
+                                    :disabled="isSubmitting || !tokenStatus.remembered"
                                     @click="resetForm"
                                 >
                                     Cancel
@@ -301,6 +322,7 @@ interface ParentOption {
     value: number;
     label: string;
     depth: number;
+    isTrashed?: boolean;
 }
 
 interface CategoryRow extends Category {
@@ -318,8 +340,11 @@ type SortDirection = 'asc' | 'desc';
 const categories = ref<Category[]>([]);
 const isLoading = ref(false);
 const isSubmitting = ref(false);
+const isLoadingParents = ref(false);
 const editingCategory = ref<Category | null>(null);
 const tokenStatus = ref<TokenStatus>({ remembered: false, username: null });
+const includeTrashed = ref(false);
+const parentOptions = ref<ParentOption[]>([{ value: 0, label: 'None', depth: 0 }]);
 const alerts = ref<Array<{ id: string; variant: 'success' | 'danger'; message: string }>>([]);
 const perPageOptions = [10, 20, 40, 80];
 const sortState = reactive<{ column: SortColumn; direction: SortDirection }>({ column: 'hierarchy', direction: 'asc' });
@@ -403,58 +428,45 @@ const displayCategories = computed<CategoryRow[]>(() => {
         }))
         .sort(compareCategories);
 });
-const parentOptions = computed<ParentOption[]>(() => {
-    const options: ParentOption[] = [{ value: 0, label: 'None', depth: 0 }];
-    const children = new Map<number, number[]>();
+const fetchParentOptions = async (): Promise<void> => {
+    if (!tokenStatus.value.remembered) {
+        parentOptions.value = [{ value: 0, label: 'None', depth: 0 }];
+        return;
+    }
 
-    parentRegistry.forEach((node, id) => {
-        const parentId = node.parent > 0 ? node.parent : 0;
-        const bucket = children.get(parentId) ?? [];
-        bucket.push(id);
-        children.set(parentId, bucket);
-    });
+    isLoadingParents.value = true;
+    try {
+        const params: Record<string, unknown> = {
+            include_trashed: includeTrashed.value,
+        };
 
-    const sortByName = (ids: number[]): number[] =>
-        ids.sort((first, second) => {
-            const firstNode = parentRegistry.get(first);
-            const secondNode = parentRegistry.get(second);
-
-            const firstName = firstNode?.name ?? `Category #${first}`;
-            const secondName = secondNode?.name ?? `Category #${second}`;
-
-            return firstName.localeCompare(secondName);
-        });
-
-    const traverse = (parentId: number, depth: number): void => {
-        const childIds = children.get(parentId);
-        if (! childIds?.length) {
-            return;
+        if (editingCategory.value?.id) {
+            params.exclude = editingCategory.value.id;
         }
 
-        sortByName(childIds);
+        const response = await window.axios.get('/api/v1/wordpress/categories/parents', { params });
 
-        childIds.forEach((id) => {
-            const node = parentRegistry.get(id);
-            if (! node) {
-                return;
-            }
+        const items = response.data?.data?.items ?? [];
+        const options: ParentOption[] = [{ value: 0, label: 'None', depth: 0 }];
 
-            const prefix = depth > 0 ? `${'— '.repeat(depth)}` : '';
-
+        items.forEach((item: { id: number; name: string; depth: number; status?: string }) => {
+            const prefix = item.depth > 0 ? `${'— '.repeat(item.depth)}` : '';
             options.push({
-                value: id,
-                label: `${prefix}${node.name}`,
-                depth,
+                value: item.id,
+                label: `${prefix}${item.name}`,
+                depth: item.depth,
+                isTrashed: item.status === 'trash',
             });
-
-            traverse(id, depth + 1);
         });
-    };
 
-    traverse(0, 1);
-
-    return options;
-});
+        parentOptions.value = options;
+    } catch (error: unknown) {
+        pushAlert('danger', extractErrorMessage(error));
+        parentOptions.value = [{ value: 0, label: 'None', depth: 0 }];
+    } finally {
+        isLoadingParents.value = false;
+    }
+};
 
 const filters = reactive({
     search: '',
@@ -472,6 +484,12 @@ const form = reactive({
 let searchTimeout: number | undefined;
 
 const fetchCategories = async (): Promise<void> => {
+    if (!tokenStatus.value.remembered) {
+        categories.value = [];
+        parentRegistry.clear();
+        return;
+    }
+
     isLoading.value = true;
     try {
         const response = await window.axios.get('/api/v1/wordpress/categories', {
@@ -486,12 +504,19 @@ const fetchCategories = async (): Promise<void> => {
         syncParentRegistry(categories.value);
     } catch (error: unknown) {
         pushAlert('danger', extractErrorMessage(error));
+        categories.value = [];
+        parentRegistry.clear();
     } finally {
         isLoading.value = false;
     }
 };
 
 const submitCategory = async (): Promise<void> => {
+    if (!tokenStatus.value.remembered) {
+        pushAlert('danger', 'WordPress authentication required. Please login first.');
+        return;
+    }
+
     isSubmitting.value = true;
     const payload = {
         name: form.name,
@@ -509,7 +534,7 @@ const submitCategory = async (): Promise<void> => {
             pushAlert('success', 'Category created.');
         }
 
-        await fetchCategories();
+        await Promise.all([fetchCategories(), fetchParentOptions()]);
         resetForm();
     } catch (error: unknown) {
         pushAlert('danger', extractErrorMessage(error));
@@ -550,6 +575,7 @@ const selectForEdit = (category: Category): void => {
     form.parent = category.parent;
     ensureParentRegistered(category.id, category.parent, category.name);
     ensureParentRegistered(category.parent);
+    void fetchParentOptions();
 };
 
 const resetForm = (): void => {
@@ -558,6 +584,7 @@ const resetForm = (): void => {
     form.slug = '';
     form.description = '';
     form.parent = 0;
+    void fetchParentOptions();
 };
 
 const debouncedSearch = (): void => {
@@ -747,8 +774,24 @@ watch(
 );
 
 onMounted(async () => {
-    await Promise.all([refreshTokenStatus(), fetchCategories()]);
+    await refreshTokenStatus();
+    if (tokenStatus.value.remembered) {
+        await Promise.all([fetchCategories(), fetchParentOptions()]);
+    }
 });
+
+watch(
+    () => tokenStatus.value.remembered,
+    (remembered) => {
+        if (remembered) {
+            void Promise.all([fetchCategories(), fetchParentOptions()]);
+        } else {
+            categories.value = [];
+            parentRegistry.clear();
+            parentOptions.value = [{ value: 0, label: 'None', depth: 0 }];
+        }
+    }
+);
 </script>
 
 <style scoped>

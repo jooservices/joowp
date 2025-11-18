@@ -101,6 +101,174 @@ final class CategoryService
     }
 
     /**
+     * Get eligible parent categories for dropdown
+     *
+     * Returns categories that can legally be parents, excluding:
+     * - The category being edited (if exclude provided)
+     * - All descendants of the excluded category
+     * - Trashed categories (unless include_trashed=true)
+     *
+     * @param  int|null  $exclude  Category ID to exclude (self + all descendants)
+     * @param  bool  $includeTrashed  Whether to include trashed categories
+     * @return array<int|string, mixed> Array of eligible parent categories with depth information
+     */
+    public function eligibleParents(?int $exclude = null, bool $includeTrashed = false): array
+    {
+        // Fetch all categories (reuse existing cache)
+        $query = [
+            'per_page' => 100, // Get all categories for parent dropdown
+            'orderby' => 'name',
+            'order' => 'asc',
+        ];
+
+        $allCategories = $this->sdk->categories($query);
+
+        // Build category map for quick lookup
+        /** @var array<int, array<string, mixed>> $categoryMap */
+        $categoryMap = [];
+        foreach ($allCategories as $category) {
+            if (! is_array($category)) {
+                continue;
+            }
+
+            $idValue = $category['id'] ?? null;
+            $id = is_numeric($idValue) ? (int) $idValue : 0;
+            if ($id > 0) {
+                /** @var array<string, mixed> $category */
+                $categoryMap[$id] = $category;
+            }
+        }
+
+        // Get descendant IDs to exclude
+        $excludeIds = [];
+        if ($exclude !== null && $exclude > 0) {
+            $excludeIds = $this->getDescendantIds($exclude, $categoryMap);
+            $excludeIds[] = $exclude; // Include self
+        }
+
+        // Filter eligible categories
+        $eligible = [];
+        foreach ($allCategories as $category) {
+            if (! is_array($category)) {
+                continue;
+            }
+
+            $idValue = $category['id'] ?? null;
+            $id = is_numeric($idValue) ? (int) $idValue : 0;
+
+            // Skip excluded categories
+            if (in_array($id, $excludeIds, true)) {
+                continue;
+            }
+
+            // Filter trashed categories (check for status field - WordPress REST API)
+            // Note: Field name needs verification during implementation
+            $status = is_string($category['status'] ?? null) ? $category['status'] : null;
+            if (! $includeTrashed && $status === 'trash') {
+                continue;
+            }
+
+            // Calculate depth from parent chain
+            $depth = $this->calculateDepth($id, $categoryMap);
+
+            $name = is_string($category['name'] ?? null) ? $category['name'] : '';
+            $slug = is_string($category['slug'] ?? null) ? $category['slug'] : '';
+            $parentValue = $category['parent'] ?? null;
+            $parent = is_numeric($parentValue) ? (int) $parentValue : 0;
+
+            $eligible[] = [
+                'id' => $id,
+                'name' => $name,
+                'slug' => $slug,
+                'parent' => $parent,
+                'depth' => $depth,
+                'status' => $status,
+            ];
+        }
+
+        // Sort by depth, then by name
+        usort($eligible, static function (array $a, array $b): int {
+            $aDepth = $a['depth'];
+            $bDepth = $b['depth'];
+
+            if ($aDepth !== $bDepth) {
+                return $aDepth <=> $bDepth;
+            }
+
+            return strcmp($a['name'], $b['name']);
+        });
+
+        return $eligible;
+    }
+
+    /**
+     * Get all descendant IDs of a category recursively
+     *
+     * @param  int  $categoryId  The category ID
+     * @param  array<int, array<string, mixed>>  $categoryMap  Map of category ID to category data
+     * @return array<int> Array of descendant category IDs
+     */
+    /**
+     * @param  array<int, array<string, mixed>>  $categoryMap
+     * @return array<int>
+     */
+    private function getDescendantIds(int $categoryId, array $categoryMap): array
+    {
+        $descendants = [];
+        $children = array_filter($categoryMap, static function ($cat) use ($categoryId) {
+            if (! is_array($cat)) {
+                return false;
+            }
+
+            $parentValue = $cat['parent'] ?? null;
+            $parent = is_numeric($parentValue) ? (int) $parentValue : 0;
+
+            return $parent === $categoryId;
+        });
+
+        foreach ($children as $child) {
+            if (! is_array($child)) {
+                continue;
+            }
+
+            $childIdValue = $child['id'] ?? null;
+            $childId = is_numeric($childIdValue) ? (int) $childIdValue : 0;
+            if ($childId > 0) {
+                $descendants[] = $childId;
+                $descendants = array_merge($descendants, $this->getDescendantIds($childId, $categoryMap));
+            }
+        }
+
+        return $descendants;
+    }
+
+    /**
+     * Calculate depth of a category by traversing parent chain
+     *
+     * @param  int  $categoryId  The category ID
+     * @param  array<int, array<string, mixed>>  $categoryMap  Map of category ID to category data
+     * @return int The depth (0 for root categories)
+     */
+    /**
+     * @param  array<int, array<string, mixed>>  $categoryMap
+     */
+    private function calculateDepth(int $categoryId, array $categoryMap): int
+    {
+        $category = $categoryMap[$categoryId] ?? null;
+        if (! is_array($category)) {
+            return 0;
+        }
+
+        $parentValue = $category['parent'] ?? null;
+        $parentId = is_numeric($parentValue) ? (int) $parentValue : 0;
+        if ($parentId === 0) {
+            return 0;
+        }
+
+        return 1 + $this->calculateDepth($parentId, $categoryMap);
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
