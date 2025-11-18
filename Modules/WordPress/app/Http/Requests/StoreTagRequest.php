@@ -45,4 +45,3 @@ final class StoreTagRequest extends FormRequest
         return $validated;
     }
 }
-

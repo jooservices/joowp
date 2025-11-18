@@ -212,4 +212,3 @@ final class WordPressTagServiceTest extends TestCase
         self::assertCount(100, $result);
     }
 }
-

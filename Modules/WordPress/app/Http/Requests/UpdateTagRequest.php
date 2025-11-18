@@ -45,4 +45,3 @@ final class UpdateTagRequest extends FormRequest
         return $validated;
     }
 }
-

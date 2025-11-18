@@ -185,4 +185,3 @@ final class WordPressTagApiTest extends TestCase
         $response->assertStatus(422);
     }
 }
-

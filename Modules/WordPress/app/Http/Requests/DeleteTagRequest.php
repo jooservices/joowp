@@ -41,4 +41,3 @@ final class DeleteTagRequest extends FormRequest
         return $validated;
     }
 }
-

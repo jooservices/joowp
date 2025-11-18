@@ -45,4 +45,3 @@ final class IndexTagsRequest extends FormRequest
         return $validated;
     }
 }
-
