@@ -8,9 +8,12 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Mockery;
 use Mockery\MockInterface;
+use Modules\Core\Services\Cache\CacheHelper;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
 use Modules\Core\Services\WordPress\Sdk;
@@ -329,6 +332,120 @@ class WordPressSdkTest extends TestCase
         $sdk->posts();
     }
 
+    #[Test]
+    public function it_caches_posts_response(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode([['id' => 1, 'title' => ['rendered' => 'Cached']]], JSON_THROW_ON_ERROR)
+        );
+
+        $client = Mockery::mock(ClientInterface::class);
+        $client
+            ->shouldReceive('request')
+            ->once() // Should only be called once due to caching
+            ->with('GET', 'wp/v2/posts', ['query' => []])
+            ->andReturn($response);
+
+        $this->expectExternalLogs(2);
+
+        $cache = Cache::store('array');
+        $sdk = $this->makeSdk($client, $cache);
+
+        // First call - cache miss, should call API
+        $posts1 = $sdk->posts();
+        $this->assertSame(1, $posts1[0]['id']);
+
+        // Second call - cache hit, should NOT call API again
+        $posts2 = $sdk->posts();
+        $this->assertSame(1, $posts2[0]['id']);
+        $this->assertSame('Cached', $posts2[0]['title']['rendered']);
+    }
+
+    #[Test]
+    public function it_caches_categories_with_versioning(): void
+    {
+        $response = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode([['id' => 1, 'name' => 'News']], JSON_THROW_ON_ERROR)
+        );
+
+        $client = Mockery::mock(ClientInterface::class);
+        $client
+            ->shouldReceive('request')
+            ->once()
+            ->with('GET', 'wp/v2/categories', ['query' => []])
+            ->andReturn($response);
+
+        $this->expectExternalLogs(2);
+
+        $cache = Cache::store('array');
+        $sdk = $this->makeSdk($client, $cache);
+
+        $categories = $sdk->categories();
+        $this->assertSame(1, $categories[0]['id']);
+
+        // Verify cache key includes version (default version is 0)
+        $version = (int) $cache->get('wp.categories.version', 0);
+        $expectedKey = sprintf('wp.categories.v%d.%s', $version, md5(json_encode([], JSON_THROW_ON_ERROR)));
+        $this->assertNotNull($cache->get($expectedKey));
+    }
+
+    #[Test]
+    public function it_invalidates_category_cache_on_update(): void
+    {
+        $getResponse = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode(['id' => 10, 'name' => 'Tech'], JSON_THROW_ON_ERROR)
+        );
+
+        $updateResponse = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            json_encode(['id' => 10, 'name' => 'Updated Tech'], JSON_THROW_ON_ERROR)
+        );
+
+        $client = Mockery::mock(ClientInterface::class);
+        $client
+            ->shouldReceive('request')
+            ->once()
+            ->with('GET', 'wp/v2/categories/10', ['query' => []])
+            ->andReturn($getResponse);
+
+        $client
+            ->shouldReceive('request')
+            ->once()
+            ->with('POST', 'wp/v2/categories/10', ['json' => ['name' => 'Updated Tech']])
+            ->andReturn($updateResponse);
+
+        $this->expectExternalLogs(4);
+
+        $cache = Cache::store('array');
+        $sdk = $this->makeSdk($client, $cache);
+
+        // Fetch category (cached)
+        $category = $sdk->category(10);
+        $this->assertSame('Tech', $category['name']);
+
+        // Verify category was cached
+        $cacheKey = sprintf('wp.category.10.%s', md5(json_encode([], JSON_THROW_ON_ERROR)));
+        $this->assertNotNull($cache->get($cacheKey));
+
+        // Get initial version
+        $initialVersion = (int) $cache->get('wp.categories.version', 0);
+
+        // Update category (should invalidate cache and bump version)
+        $updated = $sdk->updateCategory(10, ['name' => 'Updated Tech']);
+        $this->assertSame('Updated Tech', $updated['name']);
+
+        // Verify version was bumped (invalidates all category list caches)
+        $newVersion = (int) $cache->get('wp.categories.version', 0);
+        $this->assertGreaterThan($initialVersion, $newVersion);
+    }
+
     private function mockClient(string $method, string $uri, array $options, ResponseInterface $response): ClientInterface&MockInterface
     {
         $client = Mockery::mock(ClientInterface::class);
@@ -342,9 +459,12 @@ class WordPressSdkTest extends TestCase
         return $client;
     }
 
-    private function makeSdk(ClientInterface $client): SdkContract
+    private function makeSdk(ClientInterface $client, ?CacheRepository $cache = null): SdkContract
     {
-        return new Sdk($client);
+        $cache = $cache ?? Cache::store('array');
+        $cacheHelper = new CacheHelper($cache);
+
+        return new Sdk($client, $cache, $cacheHelper);
     }
 
     private function expectExternalLogs(int $times): void
