@@ -134,17 +134,32 @@ final class CategoryService
      */
     public function eligibleParents(?int $exclude = null, bool $includeTrashed = false): array
     {
-        // Fetch all categories (reuse existing cache)
-        // Use high per_page to get all categories for parent dropdown
-        // WordPress REST API typically limits to 100, but we try 1000 first
-        // If needed, pagination can be implemented later
-        $query = [
-            'per_page' => 1000, // Get all categories for parent dropdown (FULL list)
-            'orderby' => 'name',
-            'order' => 'asc',
-        ];
+        // Fetch all categories with pagination
+        // WordPress REST API limits per_page to maximum 100
+        // We need to paginate to get all categories for parent dropdown
+        $allCategories = [];
+        $page = 1;
+        $perPage = 100; // WordPress REST API maximum per_page limit
 
-        $allCategories = $this->sdk->categories($query);
+        do {
+            $query = [
+                'per_page' => $perPage,
+                'page' => $page,
+                'orderby' => 'name',
+                'order' => 'asc',
+            ];
+
+            $pageCategories = $this->sdk->categories($query);
+            /** @var array<int|string, mixed> $pageCategories */
+            $pageCount = count($pageCategories);
+
+            if ($pageCount > 0) {
+                $allCategories = array_merge($allCategories, $pageCategories);
+            }
+
+            // Continue to next page if we got a full page (might be more)
+            $page++;
+        } while ($pageCount === $perPage);
 
         // Build category map for quick lookup
         /** @var array<int, array<string, mixed>> $categoryMap */

@@ -261,10 +261,12 @@ final class WordPressCategoryApiTest extends TestCase
             ['id' => 3, 'name' => 'Design', 'slug' => 'design', 'parent' => 0],
         ];
 
+        // Mock pagination: page 1 returns all categories (less than 100, so no page 2)
         $sdk->shouldReceive('categories')
             ->once()
             ->with([
-                'per_page' => 1000,
+                'per_page' => 100,
+                'page' => 1,
                 'orderby' => 'name',
                 'order' => 'asc',
             ])
