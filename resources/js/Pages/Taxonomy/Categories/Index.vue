@@ -47,7 +47,20 @@
                                     @input="debouncedSearch"
                                 />
                             </div>
-                            <div class="d-flex gap-2 align-items-center ms-md-auto">
+                            <div class="d-flex gap-2 align-items-center ms-md-auto flex-wrap">
+                                <div class="form-check">
+                                    <input
+                                        id="include-trashed-global"
+                                        v-model="includeTrashed"
+                                        type="checkbox"
+                                        class="form-check-input"
+                                        :disabled="!tokenStatus.remembered"
+                                        @change="handleIncludeTrashedChange"
+                                    />
+                                    <label for="include-trashed-global" class="form-check-label text-secondary small mb-0">
+                                        Include trashed
+                                    </label>
+                                </div>
                                 <label class="text-secondary small mb-0">Per page</label>
                                 <select
                                     v-model.number="filters.perPage"
@@ -232,19 +245,6 @@
                             </div>
                             <div>
                                 <label for="category-parent" class="form-label text-secondary small">Parent</label>
-                                <div class="form-check mb-2">
-                                    <input
-                                        id="include-trashed"
-                                        v-model="includeTrashed"
-                                        type="checkbox"
-                                        class="form-check-input"
-                                        :disabled="!tokenStatus.remembered"
-                                        @change="fetchParentOptions"
-                                    />
-                                    <label for="include-trashed" class="form-check-label text-secondary small">
-                                        Include trashed categories
-                                    </label>
-                                </div>
                                 <select
                                     id="category-parent"
                                     v-model.number="form.parent"
@@ -499,6 +499,7 @@ const fetchCategories = async (): Promise<void> => {
                 search: filters.search || undefined,
                 per_page: filters.perPage,
                 page: filters.page,
+                include_trashed: includeTrashed.value || undefined,
             },
         });
 
@@ -797,6 +798,13 @@ watch(
         }
     }
 );
+
+const handleIncludeTrashedChange = (): void => {
+    // When include_trashed changes, refresh both categories list and parent options
+    if (tokenStatus.value.remembered) {
+        void Promise.all([fetchCategories(), fetchParentOptions()]);
+    }
+};
 </script>
 
 <style scoped>

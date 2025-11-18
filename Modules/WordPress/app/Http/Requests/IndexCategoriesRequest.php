@@ -10,7 +10,8 @@ use Illuminate\Foundation\Http\FormRequest;
  * @phpstan-type IndexFilters array{
  *     search?: string|null,
  *     per_page?: int,
- *     page?: int
+ *     page?: int,
+ *     include_trashed?: bool|null
  * }
  */
 final class IndexCategoriesRequest extends FormRequest
@@ -29,7 +30,24 @@ final class IndexCategoriesRequest extends FormRequest
             'search' => ['sometimes', 'nullable', 'string', 'max:120'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'page' => ['sometimes', 'integer', 'min:1'],
+            'include_trashed' => ['sometimes', 'boolean', 'nullable'],
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Convert string "true"/"false" to boolean for query parameters
+        if ($this->has('include_trashed')) {
+            $value = $this->input('include_trashed');
+            if (is_string($value)) {
+                $this->merge([
+                    'include_trashed' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE),
+                ]);
+            }
+        }
     }
 
     /**

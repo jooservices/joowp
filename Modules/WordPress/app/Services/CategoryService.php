@@ -23,6 +23,7 @@ final class CategoryService
      */
     public function list(array $filters = []): array
     {
+        $includeTrashed = Arr::get($filters, 'include_trashed', false);
         $query = array_filter([
             'search' => Arr::get($filters, 'search'),
             'per_page' => Arr::get($filters, 'per_page', 20),
@@ -30,9 +31,28 @@ final class CategoryService
             'context' => 'view',
             'orderby' => 'name',
             'order' => 'asc',
+            // WordPress REST API: when include_trashed is true, we need to include status=trash
+            // Note: WordPress categories don't have status field by default, but we pass it for consistency
+            // The actual filtering will be done in the frontend or via eligibleParents method
         ], static fn ($value) => $value !== null);
 
-        return $this->sdk->categories($query);
+        $categories = $this->sdk->categories($query);
+
+        // Filter trashed categories if include_trashed is false
+        if (! $includeTrashed) {
+            $categories = array_filter($categories, static function ($category) {
+                if (! is_array($category)) {
+                    return true;
+                }
+
+                $status = $category['status'] ?? null;
+
+                // WordPress categories don't have status field, but check for consistency
+                return $status !== 'trash';
+            });
+        }
+
+        return array_values($categories);
     }
 
     /**

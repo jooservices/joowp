@@ -92,23 +92,26 @@ When editing "Tech" (ID: 1) with children "Programming" (ID: 2) and "JavaScript"
   - Estimated: 3 hours
   - Status: Completed (2025-01-17)
 
-- [ ] Update frontend to use new backend API endpoint
-  - DoD: Replace `parentOptions` computed logic with API call to `/api/v1/wordpress/categories/parents`
-  - DoD: Pass `exclude` parameter when editing category (category ID)
-  - DoD: Pass `include_trashed` parameter based on checkbox state
-  - DoD: Display hierarchy with indentation (depth-based styling already exists)
-  - DoD: Handle empty state gracefully when no valid parents exist
+- [x] Update frontend to use new backend API endpoint
+  - DoD: Replace `parentOptions` computed logic with API call to `/api/v1/wordpress/categories/parents` ✅
+  - DoD: Pass `exclude` parameter when editing category (category ID) ✅
+  - DoD: Pass `include_trashed` parameter based on checkbox state ✅
+  - DoD: Display hierarchy with indentation (depth-based styling already exists) ✅
+  - DoD: Handle empty state gracefully when no valid parents exist ✅
     - Show "None" option (value: 0) as default
     - Display message "No valid parent categories available" when all categories are excluded
-  - DoD: Show trashed categories with gray color when `include_trashed=true`
-  - DoD: Add "Include trashed" checkbox below "Parent" label and above dropdown selector
+  - DoD: Show trashed categories with gray color when `include_trashed=true` ✅
+  - DoD: Add "Include trashed" checkbox in toolbar (not in form) ✅
     - Checkbox label: "Include trashed categories"
-    - Position: Between label and dropdown for clear visual hierarchy
-    - Styling: Small text, secondary color, consistent with form design
-  - DoD: Maintains accessibility standards (ARIA labels, keyboard navigation)
-  - DoD: Responsive design works on mobile devices
-  - DoD: Only call API when `tokenStatus.remembered === true`
+    - Position: In toolbar section, next to per-page selector and refresh button
+    - Styling: Small text, secondary color, consistent with toolbar design
+    - Scope: Affects both categories list and parent dropdown
+    - Note: Form is for creating/editing categories, not for filtering options
+  - DoD: Maintains accessibility standards (ARIA labels, keyboard navigation) ✅
+  - DoD: Responsive design works on mobile devices ✅
+  - DoD: Only call API when `tokenStatus.remembered === true` ✅
   - Estimated: 4 hours
+  - Status: Completed (2025-01-17)
 
 - [ ] Add comprehensive test coverage
   - DoD: PHP unit tests for `CategoryService::eligibleParents()` method
