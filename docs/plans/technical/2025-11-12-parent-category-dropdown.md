@@ -72,21 +72,25 @@ When editing "Tech" (ID: 1) with children "Programming" (ID: 2) and "JavaScript"
 - [x] Fix authentication requirement enforcement (CRITICAL)
   - DoD: Block all features when WordPress token is not available ✅
   - DoD: Do NOT fetch categories from API when `tokenStatus.remembered === false` ✅
-  - DoD: Hide or disable all form inputs, buttons, and interactive elements when no token ✅
+  - DoD: **Completely hide both categories list AND create/update form when no token** ✅
+    - **Categories list table completely hidden** when `tokenStatus.remembered === false` ✅
+      - Added `v-if="tokenStatus.remembered"` to categories list container div
+      - Table, toolbar, pagination all hidden when not authenticated
     - **Create/Update category form completely hidden** when `tokenStatus.remembered === false` ✅
-    - Form inputs (name, slug, description, parent dropdown) disabled (if form visible)
-    - Submit button (Create/Update) disabled (if form visible)
-    - Delete button disabled
-    - Refresh button disabled
-    - Pagination buttons (Previous/Next) disabled
+      - Added `v-if="tokenStatus.remembered"` to form container div
+      - Form completely removed from DOM when not authenticated
   - DoD: Show clear error message requiring login before using features ✅
-    - Single alert message at top of page (no duplicate messages)
+    - **Single alert message at top of page** (no duplicate messages) ✅
     - Alert shows "WordPress authentication required. Please login on home page first."
     - Link to home page for token setup
+    - Only this alert is visible when not authenticated (no other UI elements)
   - DoD: Verify that cached data is not displayed when token is missing ✅
-  - DoD: Only allow read-only view or completely hide features until authenticated ✅
+    - Categories list hidden, so no cached data visible
+    - Form hidden, so no cached data visible
+  - DoD: Completely hide all features until authenticated ✅
+    - Categories list table is completely hidden (v-if="tokenStatus.remembered") ✅
     - Create/Update category form is completely hidden (v-if="tokenStatus.remembered") ✅
-    - Categories list table remains visible but all interactions disabled ✅
+    - Only authentication alert message is visible when not logged in ✅
   - DoD: Check token status before calling any WordPress API endpoints ✅
     - submitCategory() returns early if no token
     - confirmDelete() returns early if no token

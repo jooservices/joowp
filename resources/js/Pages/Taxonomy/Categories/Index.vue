@@ -30,7 +30,7 @@
         </div>
 
         <div class="row gy-4">
-            <div class="col-12 col-xl-8">
+            <div v-if="tokenStatus.remembered" class="col-12 col-xl-8">
                 <section class="card bg-dark border-0 shadow-sm h-100">
                     <div class="card-body">
                         <div class="toolbar d-flex flex-column flex-md-row gap-3 align-items-md-center mb-4">
