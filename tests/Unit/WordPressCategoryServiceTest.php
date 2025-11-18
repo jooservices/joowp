@@ -260,7 +260,7 @@ final class WordPressCategoryServiceTest extends TestCase
         $sdk->shouldReceive('categories')
             ->once()
             ->with([
-                'per_page' => 100,
+                'per_page' => 1000,
                 'orderby' => 'name',
                 'order' => 'asc',
             ])

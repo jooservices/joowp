@@ -264,7 +264,7 @@ final class WordPressCategoryApiTest extends TestCase
         $sdk->shouldReceive('categories')
             ->once()
             ->with([
-                'per_page' => 100,
+                'per_page' => 1000,
                 'orderby' => 'name',
                 'order' => 'asc',
             ])
@@ -273,6 +273,7 @@ final class WordPressCategoryApiTest extends TestCase
         $this->app->instance(SdkContract::class, $sdk);
         Log::shouldReceive('channel')->with('action')->andReturnSelf();
         Log::shouldReceive('info')->zeroOrMoreTimes();
+        Log::shouldReceive('error')->zeroOrMoreTimes();
 
         $response = $this->getJson('/api/v1/wordpress/categories/parents');
 

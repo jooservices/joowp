@@ -449,6 +449,7 @@ const fetchParentOptions = async (): Promise<void> => {
         const options: ParentOption[] = [{ value: 0, label: 'None', depth: 0 }];
 
         items.forEach((item: { id: number; name: string; depth: number; status?: string }) => {
+            // Format hierarchy label same as Categories list (with space after "— ")
             const prefix = item.depth > 0 ? `${'— '.repeat(item.depth)}` : '';
             options.push({
                 value: item.id,
