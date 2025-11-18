@@ -136,10 +136,15 @@ final class CategoryService
     {
         // Fetch all categories with pagination
         // WordPress REST API limits per_page to maximum 100
-        // We need to paginate to get all categories for parent dropdown
+        // If there are more than 100 categories, we need to paginate:
+        // - Call page 1 with per_page=100
+        // - If result count = 100, there might be more -> call page 2
+        // - Continue until result count < 100 (no more pages)
+        // - Append all results together
         $allCategories = [];
         $page = 1;
         $perPage = 100; // WordPress REST API maximum per_page limit
+        $maxPages = 1000; // Safety limit to prevent infinite loops (1000 pages = 100k categories)
 
         do {
             $query = [
@@ -154,12 +159,15 @@ final class CategoryService
             $pageCount = count($pageCategories);
 
             if ($pageCount > 0) {
+                // Append current page results to all categories
                 $allCategories = array_merge($allCategories, $pageCategories);
             }
 
             // Continue to next page if we got a full page (might be more)
+            // Stop if: pageCount < perPage (no more data) OR reached safety limit
+            $hasMore = $pageCount === $perPage;
             $page++;
-        } while ($pageCount === $perPage);
+        } while ($hasMore && $page <= $maxPages);
 
         // Build category map for quick lookup
         /** @var array<int, array<string, mixed>> $categoryMap */
