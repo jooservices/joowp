@@ -209,6 +209,7 @@
                                     class="form-control bg-transparent border-secondary-subtle text-white"
                                     placeholder="product-releases"
                                     :disabled="!tokenStatus.remembered"
+                                    @input="handleSlugInput"
                                 />
                             </div>
                             <div>
@@ -495,7 +496,31 @@ const form = reactive({
     parent: 0 as number | null,
 });
 
+// Track if slug was manually edited to prevent auto-generation override
+const slugManuallyEdited = ref(false);
+
 let searchTimeout: number | undefined;
+
+/**
+ * Generate URL-friendly slug from name
+ * - Convert to lowercase
+ * - Replace spaces and special characters with hyphens
+ * - Remove multiple consecutive hyphens
+ * - Trim hyphens from start and end
+ */
+const generateSlug = (name: string): string => {
+    if (!name) {
+        return '';
+    }
+
+    return name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove special characters except word chars, spaces, hyphens
+        .replace(/[\s_]+/g, '-') // Replace spaces and underscores with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+};
 
 const fetchCategories = async (): Promise<void> => {
     if (!tokenStatus.value.remembered) {
@@ -597,6 +622,7 @@ const selectForEdit = (category: Category): void => {
     form.slug = category.slug;
     form.description = category.description;
     form.parent = category.parent;
+    slugManuallyEdited.value = !!category.slug; // If category has slug, consider it manually set
     ensureParentRegistered(category.id, category.parent, category.name);
     ensureParentRegistered(category.parent);
     void fetchParentOptions();
@@ -608,8 +634,27 @@ const resetForm = (): void => {
     form.slug = '';
     form.description = '';
     form.parent = 0;
+    slugManuallyEdited.value = false;
     void fetchParentOptions();
 };
+
+// Track manual slug edits
+const handleSlugInput = (): void => {
+    // If user clears slug, allow auto-generation again
+    if (!form.slug || form.slug.trim() === '') {
+        slugManuallyEdited.value = false;
+    } else {
+        slugManuallyEdited.value = true;
+    }
+};
+
+// Auto-generate slug from name when name changes and slug is empty
+watch(() => form.name, (newName) => {
+    // Only auto-generate if slug is empty and was not manually edited
+    if (!slugManuallyEdited.value && (!form.slug || form.slug.trim() === '')) {
+        form.slug = generateSlug(newName);
+    }
+});
 
 const debouncedSearch = (): void => {
     window.clearTimeout(searchTimeout);
