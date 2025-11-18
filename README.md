@@ -80,6 +80,26 @@ npm run build  # Production build
 3. Include unit tests for new code (no exceptions)
 4. Use `final` classes with `declare(strict_types=1)` at top of **EVERY** PHP file
 5. Pass TypeScript validation: `npm run typecheck`
+6. **Include commit message metadata** (REQUIRED for AI-generated commits, recommended for all commits)
+
+### Commit Message Metadata
+
+All commits (especially AI-generated) must include a metadata block at the end of the commit message:
+
+```
+Generated-By: <Tool or Agent Name>
+Generated-By-Tool: <Tool Name>
+Model: <model-version> or N/A
+Task-ID: <PREFIX-N> or N/A
+Plan: docs/plans/... or N/A
+Coverage: XX% or N/A or Documentation
+```
+
+**Enforcement:** The `commit-msg` Git hook validates metadata format and **blocks commits** missing required fields. This cannot be bypassed.
+
+**Helper:** Use `./scripts/git-commit-template.sh` to generate properly formatted commit messages.
+
+**See:** [Commit Message Standards](ai-workflow/reference/standards.md#commit-message-metadata) for complete format requirements.
 
 **Coverage Requirements (Enforced by CI/CD):**
 - Overall project: 80% minimum (build fails if below)

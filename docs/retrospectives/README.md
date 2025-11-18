@@ -9,6 +9,7 @@ A retrospective documents what went wrong, how it was fixed, and what we learned
 ## Existing Retrospectives
 
 - [**Inertia Progress Regression**](inertia-progress-regression.md) - SPA bootstrap failure caused by incorrect helper usage
+- [**Commit Message Metadata Enforcement**](2025-01-22-commit-message-metadata-enforcement.md) - Post-implementation review of mandatory commit metadata requirements
 
 ## Retrospective Template
 
