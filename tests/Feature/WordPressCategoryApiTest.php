@@ -251,4 +251,133 @@ final class WordPressCategoryApiTest extends TestCase
         $getResponse2 = $this->getJson('/api/v1/wordpress/categories');
         $getResponse2->assertOk()->assertJsonPath('data.items.0.name', 'Updated News');
     }
+
+    public function test_it_returns_eligible_parent_categories(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $allCategories = [
+            ['id' => 1, 'name' => 'Tech', 'slug' => 'tech', 'parent' => 0],
+            ['id' => 2, 'name' => 'Programming', 'slug' => 'programming', 'parent' => 1],
+            ['id' => 3, 'name' => 'Design', 'slug' => 'design', 'parent' => 0],
+        ];
+
+        // Mock pagination: page 1 returns all categories (less than 100, so no page 2)
+        $sdk->shouldReceive('categories')
+            ->once()
+            ->with([
+                'per_page' => 100,
+                'page' => 1,
+                'orderby' => 'name',
+                'order' => 'asc',
+            ])
+            ->andReturn($allCategories);
+
+        $this->app->instance(SdkContract::class, $sdk);
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->zeroOrMoreTimes();
+        Log::shouldReceive('error')->zeroOrMoreTimes();
+
+        $response = $this->getJson('/api/v1/wordpress/categories/parents');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('code', 'wordpress.categories.parents')
+            ->assertJsonPath('data.hierarchy', true)
+            ->assertJsonCount(3, 'data.items');
+    }
+
+    public function test_it_excludes_category_and_descendants_when_editing(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $allCategories = [
+            ['id' => 1, 'name' => 'Tech', 'slug' => 'tech', 'parent' => 0],
+            ['id' => 2, 'name' => 'Programming', 'slug' => 'programming', 'parent' => 1],
+            ['id' => 3, 'name' => 'JavaScript', 'slug' => 'javascript', 'parent' => 2],
+            ['id' => 4, 'name' => 'Design', 'slug' => 'design', 'parent' => 0],
+        ];
+
+        $sdk->shouldReceive('categories')
+            ->once()
+            ->andReturn($allCategories);
+
+        $this->app->instance(SdkContract::class, $sdk);
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->zeroOrMoreTimes();
+
+        // When editing category 2, exclude 2 and 3 (descendant)
+        $response = $this->getJson('/api/v1/wordpress/categories/parents?exclude=2');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('code', 'wordpress.categories.parents');
+
+        $items = $response->json('data.items');
+        $ids = array_column($items, 'id');
+
+        self::assertContains(1, $ids); // Tech (root)
+        self::assertContains(4, $ids); // Design (root)
+        self::assertNotContains(2, $ids); // Programming (self)
+        self::assertNotContains(3, $ids); // JavaScript (descendant)
+    }
+
+    public function test_it_filters_trashed_categories_by_default(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $allCategories = [
+            ['id' => 1, 'name' => 'Active', 'slug' => 'active', 'parent' => 0, 'status' => 'publish'],
+            ['id' => 2, 'name' => 'Trashed', 'slug' => 'trashed', 'parent' => 0, 'status' => 'trash'],
+        ];
+
+        $sdk->shouldReceive('categories')
+            ->once()
+            ->andReturn($allCategories);
+
+        $this->app->instance(SdkContract::class, $sdk);
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->zeroOrMoreTimes();
+
+        $response = $this->getJson('/api/v1/wordpress/categories/parents');
+
+        $response->assertOk();
+        $items = $response->json('data.items');
+        self::assertCount(1, $items);
+        self::assertSame(1, $items[0]['id']);
+    }
+
+    public function test_it_includes_trashed_categories_when_requested(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $allCategories = [
+            ['id' => 1, 'name' => 'Active', 'slug' => 'active', 'parent' => 0, 'status' => 'publish'],
+            ['id' => 2, 'name' => 'Trashed', 'slug' => 'trashed', 'parent' => 0, 'status' => 'trash'],
+        ];
+
+        $sdk->shouldReceive('categories')
+            ->once()
+            ->andReturn($allCategories);
+
+        $this->app->instance(SdkContract::class, $sdk);
+        Log::shouldReceive('channel')->with('action')->andReturnSelf();
+        Log::shouldReceive('info')->zeroOrMoreTimes();
+
+        $response = $this->getJson('/api/v1/wordpress/categories/parents?include_trashed=true');
+
+        $response->assertOk();
+        $items = $response->json('data.items');
+        self::assertCount(2, $items);
+        $ids = array_column($items, 'id');
+        self::assertContains(1, $ids);
+        self::assertContains(2, $ids);
+    }
+
+    public function test_it_validates_parent_categories_request(): void
+    {
+        $sdk = Mockery::mock(SdkContract::class);
+        $this->app->instance(SdkContract::class, $sdk);
+
+        // Invalid exclude (must be integer >= 1)
+        $response = $this->getJson('/api/v1/wordpress/categories/parents?exclude=invalid');
+
+        $response->assertStatus(422);
+    }
 }

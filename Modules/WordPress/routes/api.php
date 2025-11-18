@@ -13,6 +13,7 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('wordpress')->name('core.wordpress.')->group(function () {
         Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
+        Route::get('categories/parents', [CategoryController::class, 'parents'])->name('categories.parents');
         Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
         Route::post('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');

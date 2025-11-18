@@ -1,40 +1,41 @@
 <template>
     <div class="categories-page container-fluid py-5 text-white">
-        <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-5 gap-3">
-            <div>
-                <p class="text-uppercase text-secondary mb-2 small">Taxonomy Suite</p>
-                <h1 class="display-6 mb-2">Categories Management</h1>
-                <p class="text-secondary mb-0">
-                    Search, audit, and mutate WordPress categories without leaving JOOwp. Every action streams through the WordPress SDK,
-                    ActionLogger, and remember-token workflow defined in the 2025-11-11 plan.
-                </p>
-            </div>
-            <a
-                class="btn btn-outline-light btn-sm"
-                href="/docs/plans/2025-11-11-categories-management.md"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                View Plan
-            </a>
+        <header class="mb-5">
+            <h1 class="display-6 mb-2">Categories Management</h1>
+            <p class="text-secondary mb-0 small">
+                Manage WordPress categories, organize content with hierarchical taxonomy
+            </p>
         </header>
 
-        <div v-if="!tokenStatus.remembered" class="alert alert-warning border border-warning-subtle text-dark mb-4">
+        <div v-if="!tokenStatus.remembered" class="alert alert-danger border border-danger-subtle mb-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
-                    <strong class="me-2">No remembered WordPress token.</strong>
-                    Store a token on the home page before issuing mutations.
+                    <strong class="me-2">WordPress authentication required.</strong>
+                    Please login on home page first before using this feature.
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-dark" @click="refreshTokenStatus">
-                    Refresh status
-                </button>
+                <a href="/" class="btn btn-sm btn-outline-light">Go to Home</a>
             </div>
         </div>
 
         <div class="row gy-4">
-            <div class="col-12 col-xl-8">
+            <div v-if="tokenStatus.remembered" class="col-12 col-xl-8">
                 <section class="card bg-dark border-0 shadow-sm h-100">
                     <div class="card-body">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                            <h2 class="h5 text-white mb-0">Categories</h2>
+                            <div class="d-flex gap-2 align-items-center mt-2 mt-md-0 flex-nowrap">
+                                <label class="text-secondary small mb-0 text-nowrap">Per page</label>
+                                <select
+                                    v-model="filters.perPage"
+                                    class="form-select form-select-sm bg-transparent text-white border-secondary-subtle"
+                                    :disabled="!tokenStatus.remembered"
+                                >
+                                    <option v-for="option in perPageOptions" :key="option" :value="option">
+                                        {{ option === 'all' ? 'Show all' : option }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="toolbar d-flex flex-column flex-md-row gap-3 align-items-md-center mb-4">
                             <div class="input-group search-group">
                                 <span class="input-group-text bg-transparent text-secondary border-secondary-subtle">
@@ -45,23 +46,15 @@
                                     type="search"
                                     class="form-control bg-transparent border-secondary-subtle text-white"
                                     placeholder="Search categories"
+                                    :disabled="!tokenStatus.remembered"
                                     @input="debouncedSearch"
                                 />
                             </div>
                             <div class="d-flex gap-2 align-items-center ms-md-auto">
-                                <label class="text-secondary small mb-0">Per page</label>
-                                <select
-                                    v-model.number="filters.perPage"
-                                    class="form-select form-select-sm bg-transparent text-white border-secondary-subtle"
-                                >
-                                    <option v-for="option in perPageOptions" :key="option" :value="option">
-                                        {{ option }}
-                                    </option>
-                                </select>
                                 <button
                                     type="button"
                                     class="btn btn-tertiary btn-sm"
-                                    :disabled="isLoading"
+                                    :disabled="isLoading || !tokenStatus.remembered"
                                     @click="fetchCategories"
                                 >
                                     <span v-if="!isLoading" class="fa-solid fa-arrows-rotate"></span>
@@ -127,7 +120,7 @@
                                         @click="selectForEdit(category)"
                                     >
                                         <td>
-                                            <span class="badge bg-secondary-subtle text-uppercase text-dark fw-semibold">#{{ category.id }}</span>
+                                            <span class="fw-semibold">{{ category.id }}</span>
                                         </td>
                                         <td>
                                             <div class="fw-semibold hierarchy-label">
@@ -137,8 +130,7 @@
                                         </td>
                                         <td>{{ category.slug }}</td>
                                         <td>
-                                            <span v-if="category.parent === 0" class="badge text-bg-secondary rounded-pill">Root</span>
-                                            <span v-else class="badge text-bg-dark border border-secondary rounded-pill">
+                                            <span v-if="category.parent !== 0" class="badge text-bg-dark border border-secondary rounded-pill">
                                                 {{ resolveParentName(category.parent) }}
                                             </span>
                                         </td>
@@ -149,7 +141,7 @@
                                             <button
                                                 type="button"
                                                 class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center gap-2 px-3"
-                                                :disabled="isSubmitting"
+                                                :disabled="isSubmitting || !tokenStatus.remembered"
                                                 @click.stop="confirmDelete(category)"
                                             >
                                                 <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
@@ -164,7 +156,7 @@
                             <button
                                 type="button"
                                 class="btn btn-outline-light btn-sm"
-                                :disabled="filters.page === 1 || isLoading"
+                                :disabled="filters.page === 1 || isLoading || !tokenStatus.remembered"
                                 @click="changePage(-1)"
                             >
                                 Previous
@@ -175,7 +167,7 @@
                             <button
                                 type="button"
                                 class="btn btn-outline-light btn-sm"
-                                :disabled="categories.length < filters.perPage || isLoading"
+                                :disabled="(filters.perPage !== 'all' && typeof filters.perPage === 'number' && categories.length < filters.perPage) || isLoading || !tokenStatus.remembered"
                                 @click="changePage(1)"
                             >
                                 Next
@@ -185,7 +177,7 @@
                 </section>
             </div>
 
-            <div class="col-12 col-xl-4">
+            <div v-if="tokenStatus.remembered" class="col-12 col-xl-4">
                 <section class="card bg-dark border-0 shadow-sm sticky-form">
                     <div class="card-body">
                         <h2 class="h5 text-white mb-3">
@@ -204,6 +196,7 @@
                                     type="text"
                                     class="form-control bg-transparent border-secondary-subtle text-white"
                                     placeholder="e.g. Product Releases"
+                                    :disabled="!tokenStatus.remembered"
                                     required
                                 />
                             </div>
@@ -215,17 +208,22 @@
                                     type="text"
                                     class="form-control bg-transparent border-secondary-subtle text-white"
                                     placeholder="product-releases"
+                                    :disabled="!tokenStatus.remembered"
+                                    @input="handleSlugInput"
                                 />
                             </div>
                             <div>
                                 <label for="category-description" class="form-label text-secondary small">Description</label>
-                                <textarea
+                                <QuillEditor
                                     id="category-description"
-                                    v-model="form.description"
-                                    class="form-control bg-transparent border-secondary-subtle text-white"
-                                    rows="3"
+                                    v-model:content="form.description"
+                                    content-type="html"
+                                    :toolbar="descriptionToolbar"
+                                    theme="snow"
+                                    :disabled="!tokenStatus.remembered"
                                     placeholder="Optional summary for editors and SEO."
-                                ></textarea>
+                                    class="quill-editor-dark"
+                                />
                             </div>
                             <div>
                                 <label for="category-parent" class="form-label text-secondary small">Parent</label>
@@ -233,17 +231,24 @@
                                     id="category-parent"
                                     v-model.number="form.parent"
                                     class="form-select bg-transparent border-secondary-subtle text-white"
+                                    :disabled="!tokenStatus.remembered || isLoadingParents"
                                 >
+                                    <option v-if="parentOptions.length === 1 && parentOptions[0]?.value === 0 && editingCategory" value="0" disabled>
+                                        No valid parent categories available
+                                    </option>
                                     <option v-for="option in parentOptions" :key="option.value" :value="option.value"
                                         :disabled="editingCategory?.id === option.value"
-                                        :style="{ paddingLeft: `${option.depth * 0.85}rem` }"
+                                        :style="{ paddingLeft: `${option.depth * 0.85}rem`, color: option.isTrashed === true ? '#6c757d' : 'inherit' }"
                                     >
                                         {{ option.label }}
                                     </option>
                                 </select>
+                                <div v-if="parentOptions.length === 1 && parentOptions[0]?.value === 0 && editingCategory" class="form-text text-secondary small mt-1">
+                                    No valid parent categories available
+                                </div>
                             </div>
                             <div class="d-flex gap-2">
-                                <button type="submit" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center gap-2" :disabled="isSubmitting">
+                                <button type="submit" class="btn btn-primary flex-fill d-flex align-items-center justify-content-center gap-2" :disabled="isSubmitting || !tokenStatus.remembered">
                                     <span v-if="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                     <span v-else class="fa-solid" :class="editingCategory ? 'fa-floppy-disk' : 'fa-plus-circle'"></span>
                                     <span>{{ editingCategory ? 'Update category' : 'Create category' }}</span>
@@ -252,13 +257,32 @@
                                     v-if="editingCategory"
                                     type="button"
                                     class="btn btn-outline-light"
-                                    :disabled="isSubmitting"
+                                    :disabled="isSubmitting || !tokenStatus.remembered"
                                     @click="resetForm"
                                 >
                                     Cancel
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </section>
+
+                <section class="card bg-dark border-0 shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h5 text-white mb-3">Options</h2>
+                        <div class="form-check">
+                            <input
+                                id="include-trashed-options"
+                                v-model="includeTrashed"
+                                type="checkbox"
+                                class="form-check-input"
+                                :disabled="!tokenStatus.remembered"
+                                @change="handleIncludeTrashedChange"
+                            />
+                            <label for="include-trashed-options" class="form-check-label text-secondary small">
+                                Include trashed categories
+                            </label>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -280,6 +304,8 @@
 <script setup lang="ts">
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 defineOptions({ layout: AppLayout });
 
@@ -301,6 +327,7 @@ interface ParentOption {
     value: number;
     label: string;
     depth: number;
+    isTrashed?: boolean;
 }
 
 interface CategoryRow extends Category {
@@ -318,12 +345,22 @@ type SortDirection = 'asc' | 'desc';
 const categories = ref<Category[]>([]);
 const isLoading = ref(false);
 const isSubmitting = ref(false);
+const isLoadingParents = ref(false);
 const editingCategory = ref<Category | null>(null);
 const tokenStatus = ref<TokenStatus>({ remembered: false, username: null });
+const includeTrashed = ref(false);
+const parentOptions = ref<ParentOption[]>([{ value: 0, label: 'None', depth: 0 }]);
 const alerts = ref<Array<{ id: string; variant: 'success' | 'danger'; message: string }>>([]);
-const perPageOptions = [10, 20, 40, 80];
 const sortState = reactive<{ column: SortColumn; direction: SortDirection }>({ column: 'hierarchy', direction: 'asc' });
 const parentRegistry = reactive(new Map<number, ParentNode>());
+
+// Quill editor toolbar configuration (minimal: Bold, Italic, Link, Lists)
+const descriptionToolbar = [
+    ['bold', 'italic'],
+    ['link'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+];
+
 const parentNameMap = computed(() => {
     const map = new Map<number, string>([[0, 'Root']]);
 
@@ -403,64 +440,54 @@ const displayCategories = computed<CategoryRow[]>(() => {
         }))
         .sort(compareCategories);
 });
-const parentOptions = computed<ParentOption[]>(() => {
-    const options: ParentOption[] = [{ value: 0, label: 'None', depth: 0 }];
-    const children = new Map<number, number[]>();
+const fetchParentOptions = async (): Promise<void> => {
+    if (!tokenStatus.value.remembered) {
+        parentOptions.value = [{ value: 0, label: 'None', depth: 0 }];
+        return;
+    }
 
-    parentRegistry.forEach((node, id) => {
-        const parentId = node.parent > 0 ? node.parent : 0;
-        const bucket = children.get(parentId) ?? [];
-        bucket.push(id);
-        children.set(parentId, bucket);
-    });
+    isLoadingParents.value = true;
+    try {
+        const params: Record<string, unknown> = {
+            include_trashed: includeTrashed.value,
+        };
 
-    const sortByName = (ids: number[]): number[] =>
-        ids.sort((first, second) => {
-            const firstNode = parentRegistry.get(first);
-            const secondNode = parentRegistry.get(second);
-
-            const firstName = firstNode?.name ?? `Category #${first}`;
-            const secondName = secondNode?.name ?? `Category #${second}`;
-
-            return firstName.localeCompare(secondName);
-        });
-
-    const traverse = (parentId: number, depth: number): void => {
-        const childIds = children.get(parentId);
-        if (! childIds?.length) {
-            return;
+        if (editingCategory.value?.id) {
+            params.exclude = editingCategory.value.id;
         }
 
-        sortByName(childIds);
+        const response = await window.axios.get('/api/v1/wordpress/categories/parents', { params });
 
-        childIds.forEach((id) => {
-            const node = parentRegistry.get(id);
-            if (! node) {
-                return;
-            }
+        const items = response.data?.data?.items ?? [];
+        const options: ParentOption[] = [{ value: 0, label: 'None', depth: 0 }];
 
-            const prefix = depth > 0 ? `${'— '.repeat(depth)}` : '';
-
+        items.forEach((item: { id: number; name: string; depth: number; status?: string }) => {
+            // Format hierarchy label same as Categories list (with space after "— ")
+            const prefix = item.depth > 0 ? `${'— '.repeat(item.depth)}` : '';
             options.push({
-                value: id,
-                label: `${prefix}${node.name}`,
-                depth,
+                value: item.id,
+                label: `${prefix}${item.name}`,
+                depth: item.depth,
+                isTrashed: item.status === 'trash',
             });
-
-            traverse(id, depth + 1);
         });
-    };
 
-    traverse(0, 1);
-
-    return options;
-});
+        parentOptions.value = options;
+    } catch (error: unknown) {
+        pushAlert('danger', extractErrorMessage(error));
+        parentOptions.value = [{ value: 0, label: 'None', depth: 0 }];
+    } finally {
+        isLoadingParents.value = false;
+    }
+};
 
 const filters = reactive({
     search: '',
-    perPage: 10,
+    perPage: 10 as number | 'all',
     page: 1,
 });
+
+const perPageOptions = [10, 20, 50, 100, 'all'] as const;
 
 const form = reactive({
     name: '',
@@ -469,29 +496,72 @@ const form = reactive({
     parent: 0 as number | null,
 });
 
+// Track if slug was manually edited to prevent auto-generation override
+const slugManuallyEdited = ref(false);
+
 let searchTimeout: number | undefined;
 
+/**
+ * Generate URL-friendly slug from name
+ * - Convert to lowercase
+ * - Replace spaces and special characters with hyphens
+ * - Remove multiple consecutive hyphens
+ * - Trim hyphens from start and end
+ */
+const generateSlug = (name: string): string => {
+    if (!name) {
+        return '';
+    }
+
+    return name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove special characters except word chars, spaces, hyphens
+        .replace(/[\s_]+/g, '-') // Replace spaces and underscores with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+};
+
 const fetchCategories = async (): Promise<void> => {
+    if (!tokenStatus.value.remembered) {
+        categories.value = [];
+        parentRegistry.clear();
+        return;
+    }
+
     isLoading.value = true;
     try {
+        const params: Record<string, string | number | boolean | undefined> = {
+            search: filters.search || undefined,
+            page: filters.page,
+            include_trashed: includeTrashed.value || undefined,
+        };
+
+        // Only include per_page if not "all"
+        if (filters.perPage !== 'all') {
+            params.per_page = filters.perPage;
+        }
+
         const response = await window.axios.get('/api/v1/wordpress/categories', {
-            params: {
-                search: filters.search || undefined,
-                per_page: filters.perPage,
-                page: filters.page,
-            },
+            params,
         });
 
         categories.value = response.data?.data?.items ?? [];
         syncParentRegistry(categories.value);
     } catch (error: unknown) {
         pushAlert('danger', extractErrorMessage(error));
+        categories.value = [];
+        parentRegistry.clear();
     } finally {
         isLoading.value = false;
     }
 };
 
 const submitCategory = async (): Promise<void> => {
+    if (!tokenStatus.value.remembered) {
+        return; // Alert already shown at top of page
+    }
+
     isSubmitting.value = true;
     const payload = {
         name: form.name,
@@ -509,7 +579,7 @@ const submitCategory = async (): Promise<void> => {
             pushAlert('success', 'Category created.');
         }
 
-        await fetchCategories();
+        await Promise.all([fetchCategories(), fetchParentOptions()]);
         resetForm();
     } catch (error: unknown) {
         pushAlert('danger', extractErrorMessage(error));
@@ -519,7 +589,11 @@ const submitCategory = async (): Promise<void> => {
 };
 
 const confirmDelete = async (category: Category): Promise<void> => {
-    if (! window.confirm(`Delete “${category.name}”? This bypasses the trash and is irreversible.`)) {
+    if (!tokenStatus.value.remembered) {
+        return; // Alert already shown at top of page
+    }
+
+    if (! window.confirm(`Delete "${category.name}"? This bypasses the trash and is irreversible.`)) {
         return;
     }
 
@@ -548,8 +622,10 @@ const selectForEdit = (category: Category): void => {
     form.slug = category.slug;
     form.description = category.description;
     form.parent = category.parent;
+    slugManuallyEdited.value = !!category.slug; // If category has slug, consider it manually set
     ensureParentRegistered(category.id, category.parent, category.name);
     ensureParentRegistered(category.parent);
+    void fetchParentOptions();
 };
 
 const resetForm = (): void => {
@@ -558,7 +634,27 @@ const resetForm = (): void => {
     form.slug = '';
     form.description = '';
     form.parent = 0;
+    slugManuallyEdited.value = false;
+    void fetchParentOptions();
 };
+
+// Track manual slug edits
+const handleSlugInput = (): void => {
+    // If user clears slug, allow auto-generation again
+    if (!form.slug || form.slug.trim() === '') {
+        slugManuallyEdited.value = false;
+    } else {
+        slugManuallyEdited.value = true;
+    }
+};
+
+// Auto-generate slug from name when name changes and slug is empty
+watch(() => form.name, (newName) => {
+    // Only auto-generate if slug is empty and was not manually edited
+    if (!slugManuallyEdited.value && (!form.slug || form.slug.trim() === '')) {
+        form.slug = generateSlug(newName);
+    }
+});
 
 const debouncedSearch = (): void => {
     window.clearTimeout(searchTimeout);
@@ -747,14 +843,90 @@ watch(
 );
 
 onMounted(async () => {
-    await Promise.all([refreshTokenStatus(), fetchCategories()]);
+    await refreshTokenStatus();
+    if (tokenStatus.value.remembered) {
+        await Promise.all([fetchCategories(), fetchParentOptions()]);
+    }
 });
+
+watch(
+    () => tokenStatus.value.remembered,
+    (remembered) => {
+        if (remembered) {
+            void Promise.all([fetchCategories(), fetchParentOptions()]);
+        } else {
+            categories.value = [];
+            parentRegistry.clear();
+            parentOptions.value = [{ value: 0, label: 'None', depth: 0 }];
+        }
+    }
+);
+
+const handleIncludeTrashedChange = (): void => {
+    // When include_trashed changes, refresh both categories list and parent options
+    if (tokenStatus.value.remembered) {
+        filters.page = 1; // Reset to first page when filter changes
+        void Promise.all([fetchCategories(), fetchParentOptions()]);
+    }
+};
 </script>
 
 <style scoped>
 .categories-page {
     min-height: calc(100vh - 6rem);
     background: linear-gradient(180deg, #1a2234 0%, #101726 55%, #0d1421 100%);
+}
+
+/* Quill Editor Dark Theme Styles */
+:deep(.quill-editor-dark .ql-toolbar) {
+    background: rgba(39, 53, 76, 0.8);
+    border-color: rgba(78, 99, 135, 0.5);
+    border-radius: 0.375rem 0.375rem 0 0;
+}
+
+:deep(.quill-editor-dark .ql-toolbar .ql-stroke) {
+    stroke: rgba(159, 174, 203, 0.8);
+}
+
+:deep(.quill-editor-dark .ql-toolbar .ql-fill) {
+    fill: rgba(159, 174, 203, 0.8);
+}
+
+:deep(.quill-editor-dark .ql-toolbar button:hover .ql-stroke),
+:deep(.quill-editor-dark .ql-toolbar button.ql-active .ql-stroke) {
+    stroke: rgba(240, 245, 252, 0.96);
+}
+
+:deep(.quill-editor-dark .ql-toolbar button:hover .ql-fill),
+:deep(.quill-editor-dark .ql-toolbar button.ql-active .ql-fill) {
+    fill: rgba(240, 245, 252, 0.96);
+}
+
+:deep(.quill-editor-dark .ql-container) {
+    background: transparent;
+    border-color: rgba(78, 99, 135, 0.5);
+    border-radius: 0 0 0.375rem 0.375rem;
+    color: rgba(240, 245, 252, 0.96);
+    font-family: inherit;
+}
+
+:deep(.quill-editor-dark .ql-editor) {
+    color: rgba(240, 245, 252, 0.96);
+    min-height: 100px;
+}
+
+:deep(.quill-editor-dark .ql-editor.ql-blank::before) {
+    color: rgba(159, 174, 203, 0.6);
+    font-style: normal;
+}
+
+:deep(.quill-editor-dark .ql-editor a) {
+    color: #0d6efd;
+}
+
+:deep(.quill-editor-dark .ql-editor.ql-disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .categories-page .card {

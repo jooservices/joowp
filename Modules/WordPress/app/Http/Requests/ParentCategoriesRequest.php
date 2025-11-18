@@ -7,14 +7,12 @@ namespace Modules\WordPress\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * @phpstan-type IndexFilters array{
- *     search?: string|null,
- *     per_page?: int,
- *     page?: int,
- *     include_trashed?: bool|null
+ * @phpstan-type ParentFilters array{
+ *     exclude?: int|null,
+ *     include_trashed?: bool
  * }
  */
-final class IndexCategoriesRequest extends FormRequest
+final class ParentCategoriesRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -27,9 +25,7 @@ final class IndexCategoriesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'search' => ['sometimes', 'nullable', 'string', 'max:120'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
-            'page' => ['sometimes', 'integer', 'min:1'],
+            'exclude' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'include_trashed' => ['sometimes', 'boolean', 'nullable'],
         ];
     }
@@ -53,11 +49,11 @@ final class IndexCategoriesRequest extends FormRequest
     /**
      * @param  string|null  $key
      * @param  mixed  $default
-     * @return IndexFilters
+     * @return ParentFilters
      */
     public function validated($key = null, $default = null): array
     {
-        /** @var IndexFilters $validated */
+        /** @var ParentFilters $validated */
         $validated = parent::validated($key, $default);
 
         return $validated;
