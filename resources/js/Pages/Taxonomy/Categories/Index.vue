@@ -120,7 +120,7 @@
                                         @click="selectForEdit(category)"
                                     >
                                         <td>
-                                            <span class="badge bg-secondary-subtle text-uppercase text-dark fw-semibold">#{{ category.id }}</span>
+                                            <span class="fw-semibold">{{ category.id }}</span>
                                         </td>
                                         <td>
                                             <div class="fw-semibold hierarchy-label">
