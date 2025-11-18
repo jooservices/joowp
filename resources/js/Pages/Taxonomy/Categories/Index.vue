@@ -213,14 +213,16 @@
                             </div>
                             <div>
                                 <label for="category-description" class="form-label text-secondary small">Description</label>
-                                <textarea
+                                <QuillEditor
                                     id="category-description"
-                                    v-model="form.description"
-                                    class="form-control bg-transparent border-secondary-subtle text-white"
-                                    rows="3"
-                                    placeholder="Optional summary for editors and SEO."
+                                    v-model:content="form.description"
+                                    content-type="html"
+                                    :toolbar="descriptionToolbar"
+                                    theme="snow"
                                     :disabled="!tokenStatus.remembered"
-                                ></textarea>
+                                    placeholder="Optional summary for editors and SEO."
+                                    class="quill-editor-dark"
+                                />
                             </div>
                             <div>
                                 <label for="category-parent" class="form-label text-secondary small">Parent</label>
@@ -301,6 +303,8 @@
 <script setup lang="ts">
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { QuillEditor } from '@vueup/vue-quill';
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 defineOptions({ layout: AppLayout });
 
@@ -348,6 +352,14 @@ const parentOptions = ref<ParentOption[]>([{ value: 0, label: 'None', depth: 0 }
 const alerts = ref<Array<{ id: string; variant: 'success' | 'danger'; message: string }>>([]);
 const sortState = reactive<{ column: SortColumn; direction: SortDirection }>({ column: 'hierarchy', direction: 'asc' });
 const parentRegistry = reactive(new Map<number, ParentNode>());
+
+// Quill editor toolbar configuration (minimal: Bold, Italic, Link, Lists)
+const descriptionToolbar = [
+    ['bold', 'italic'],
+    ['link'],
+    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+];
+
 const parentNameMap = computed(() => {
     const map = new Map<number, string>([[0, 'Root']]);
 
@@ -818,6 +830,58 @@ const handleIncludeTrashedChange = (): void => {
 .categories-page {
     min-height: calc(100vh - 6rem);
     background: linear-gradient(180deg, #1a2234 0%, #101726 55%, #0d1421 100%);
+}
+
+/* Quill Editor Dark Theme Styles */
+:deep(.quill-editor-dark .ql-toolbar) {
+    background: rgba(39, 53, 76, 0.8);
+    border-color: rgba(78, 99, 135, 0.5);
+    border-radius: 0.375rem 0.375rem 0 0;
+}
+
+:deep(.quill-editor-dark .ql-toolbar .ql-stroke) {
+    stroke: rgba(159, 174, 203, 0.8);
+}
+
+:deep(.quill-editor-dark .ql-toolbar .ql-fill) {
+    fill: rgba(159, 174, 203, 0.8);
+}
+
+:deep(.quill-editor-dark .ql-toolbar button:hover .ql-stroke),
+:deep(.quill-editor-dark .ql-toolbar button.ql-active .ql-stroke) {
+    stroke: rgba(240, 245, 252, 0.96);
+}
+
+:deep(.quill-editor-dark .ql-toolbar button:hover .ql-fill),
+:deep(.quill-editor-dark .ql-toolbar button.ql-active .ql-fill) {
+    fill: rgba(240, 245, 252, 0.96);
+}
+
+:deep(.quill-editor-dark .ql-container) {
+    background: transparent;
+    border-color: rgba(78, 99, 135, 0.5);
+    border-radius: 0 0 0.375rem 0.375rem;
+    color: rgba(240, 245, 252, 0.96);
+    font-family: inherit;
+}
+
+:deep(.quill-editor-dark .ql-editor) {
+    color: rgba(240, 245, 252, 0.96);
+    min-height: 100px;
+}
+
+:deep(.quill-editor-dark .ql-editor.ql-blank::before) {
+    color: rgba(159, 174, 203, 0.6);
+    font-style: normal;
+}
+
+:deep(.quill-editor-dark .ql-editor a) {
+    color: #0d6efd;
+}
+
+:deep(.quill-editor-dark .ql-editor.ql-disabled) {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .categories-page .card {
