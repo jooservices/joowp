@@ -1,22 +1,10 @@
 <template>
     <div class="categories-page container-fluid py-5 text-white">
-        <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-5 gap-3">
-            <div>
-                <p class="text-uppercase text-secondary mb-2 small">Taxonomy Suite</p>
-                <h1 class="display-6 mb-2">Categories Management</h1>
-                <p class="text-secondary mb-0">
-                    Search, audit, and mutate WordPress categories without leaving JOOwp. Every action streams through the WordPress SDK,
-                    ActionLogger, and remember-token workflow defined in the 2025-11-11 plan.
-                </p>
-            </div>
-            <a
-                class="btn btn-outline-light btn-sm"
-                href="/docs/plans/2025-11-11-categories-management.md"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                View Plan
-            </a>
+        <header class="mb-5">
+            <h1 class="display-6 mb-2">Categories Management</h1>
+            <p class="text-secondary mb-0 small">
+                Manage WordPress categories, organize content with hierarchical taxonomy
+            </p>
         </header>
 
         <div v-if="!tokenStatus.remembered" class="alert alert-danger border border-danger-subtle mb-4">
@@ -33,6 +21,7 @@
             <div v-if="tokenStatus.remembered" class="col-12 col-xl-8">
                 <section class="card bg-dark border-0 shadow-sm h-100">
                     <div class="card-body">
+                        <h2 class="h5 text-white mb-3">Categories</h2>
                         <div class="toolbar d-flex flex-column flex-md-row gap-3 align-items-md-center mb-4">
                             <div class="input-group search-group">
                                 <span class="input-group-text bg-transparent text-secondary border-secondary-subtle">
@@ -47,30 +36,7 @@
                                     @input="debouncedSearch"
                                 />
                             </div>
-                            <div class="d-flex gap-2 align-items-center ms-md-auto flex-wrap">
-                                <div class="form-check">
-                                    <input
-                                        id="include-trashed-global"
-                                        v-model="includeTrashed"
-                                        type="checkbox"
-                                        class="form-check-input"
-                                        :disabled="!tokenStatus.remembered"
-                                        @change="handleIncludeTrashedChange"
-                                    />
-                                    <label for="include-trashed-global" class="form-check-label text-secondary small mb-0">
-                                        Include trashed
-                                    </label>
-                                </div>
-                                <label class="text-secondary small mb-0">Per page</label>
-                                <select
-                                    v-model.number="filters.perPage"
-                                    class="form-select form-select-sm bg-transparent text-white border-secondary-subtle"
-                                    :disabled="!tokenStatus.remembered"
-                                >
-                                    <option v-for="option in perPageOptions" :key="option" :value="option">
-                                        {{ option }}
-                                    </option>
-                                </select>
+                            <div class="d-flex gap-2 align-items-center ms-md-auto">
                                 <button
                                     type="button"
                                     class="btn btn-tertiary btn-sm"
@@ -188,7 +154,7 @@
                             <button
                                 type="button"
                                 class="btn btn-outline-light btn-sm"
-                                :disabled="categories.length < filters.perPage || isLoading || !tokenStatus.remembered"
+                                :disabled="(filters.perPage !== 'all' && typeof filters.perPage === 'number' && categories.length < filters.perPage) || isLoading || !tokenStatus.remembered"
                                 @click="changePage(1)"
                             >
                                 Next
@@ -284,6 +250,40 @@
                         </form>
                     </div>
                 </section>
+
+                <section class="card bg-dark border-0 shadow-sm">
+                    <div class="card-body">
+                        <h2 class="h5 text-white mb-3">Options</h2>
+                        <div class="d-flex flex-column gap-3">
+                            <div class="form-check">
+                                <input
+                                    id="include-trashed-options"
+                                    v-model="includeTrashed"
+                                    type="checkbox"
+                                    class="form-check-input"
+                                    :disabled="!tokenStatus.remembered"
+                                    @change="handleIncludeTrashedChange"
+                                />
+                                <label for="include-trashed-options" class="form-check-label text-secondary small">
+                                    Include trashed categories
+                                </label>
+                            </div>
+                            <div>
+                                <label for="per-page-options" class="form-label text-secondary small mb-2">Per page</label>
+                                <select
+                                    id="per-page-options"
+                                    v-model="filters.perPage"
+                                    class="form-select bg-transparent border-secondary-subtle text-white"
+                                    :disabled="!tokenStatus.remembered"
+                                >
+                                    <option v-for="option in perPageOptions" :key="option" :value="option">
+                                        {{ option === 'all' ? 'Show all' : option }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
 
@@ -348,7 +348,6 @@ const tokenStatus = ref<TokenStatus>({ remembered: false, username: null });
 const includeTrashed = ref(false);
 const parentOptions = ref<ParentOption[]>([{ value: 0, label: 'None', depth: 0 }]);
 const alerts = ref<Array<{ id: string; variant: 'success' | 'danger'; message: string }>>([]);
-const perPageOptions = [10, 20, 40, 80];
 const sortState = reactive<{ column: SortColumn; direction: SortDirection }>({ column: 'hierarchy', direction: 'asc' });
 const parentRegistry = reactive(new Map<number, ParentNode>());
 const parentNameMap = computed(() => {
@@ -472,9 +471,11 @@ const fetchParentOptions = async (): Promise<void> => {
 
 const filters = reactive({
     search: '',
-    perPage: 10,
+    perPage: 10 as number | 'all',
     page: 1,
 });
+
+const perPageOptions = [10, 20, 50, 100, 'all'] as const;
 
 const form = reactive({
     name: '',
@@ -494,13 +495,19 @@ const fetchCategories = async (): Promise<void> => {
 
     isLoading.value = true;
     try {
+        const params: Record<string, string | number | boolean | undefined> = {
+            search: filters.search || undefined,
+            page: filters.page,
+            include_trashed: includeTrashed.value || undefined,
+        };
+
+        // Only include per_page if not "all"
+        if (filters.perPage !== 'all') {
+            params.per_page = filters.perPage;
+        }
+
         const response = await window.axios.get('/api/v1/wordpress/categories', {
-            params: {
-                search: filters.search || undefined,
-                per_page: filters.perPage,
-                page: filters.page,
-                include_trashed: includeTrashed.value || undefined,
-            },
+            params,
         });
 
         categories.value = response.data?.data?.items ?? [];
@@ -802,6 +809,7 @@ watch(
 const handleIncludeTrashedChange = (): void => {
     // When include_trashed changes, refresh both categories list and parent options
     if (tokenStatus.value.remembered) {
+        filters.page = 1; // Reset to first page when filter changes
         void Promise.all([fetchCategories(), fetchParentOptions()]);
     }
 };
