@@ -198,7 +198,7 @@
                 </section>
             </div>
 
-            <div class="col-12 col-xl-4">
+            <div v-if="tokenStatus.remembered" class="col-12 col-xl-4">
                 <section class="card bg-dark border-0 shadow-sm sticky-form">
                     <div class="card-body">
                         <h2 class="h5 text-white mb-3">

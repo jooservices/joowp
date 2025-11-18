@@ -72,9 +72,10 @@ When editing "Tech" (ID: 1) with children "Programming" (ID: 2) and "JavaScript"
 - [x] Fix authentication requirement enforcement (CRITICAL)
   - DoD: Block all features when WordPress token is not available ✅
   - DoD: Do NOT fetch categories from API when `tokenStatus.remembered === false` ✅
-  - DoD: Disable all form inputs, buttons, and interactive elements when no token ✅
-    - Form inputs (name, slug, description, parent dropdown) disabled
-    - Submit button (Create/Update) disabled
+  - DoD: Hide or disable all form inputs, buttons, and interactive elements when no token ✅
+    - **Create/Update category form completely hidden** when `tokenStatus.remembered === false` ✅
+    - Form inputs (name, slug, description, parent dropdown) disabled (if form visible)
+    - Submit button (Create/Update) disabled (if form visible)
     - Delete button disabled
     - Refresh button disabled
     - Pagination buttons (Previous/Next) disabled
@@ -84,6 +85,8 @@ When editing "Tech" (ID: 1) with children "Programming" (ID: 2) and "JavaScript"
     - Link to home page for token setup
   - DoD: Verify that cached data is not displayed when token is missing ✅
   - DoD: Only allow read-only view or completely hide features until authenticated ✅
+    - Create/Update category form is completely hidden (v-if="tokenStatus.remembered") ✅
+    - Categories list table remains visible but all interactions disabled ✅
   - DoD: Check token status before calling any WordPress API endpoints ✅
     - submitCategory() returns early if no token
     - confirmDelete() returns early if no token
