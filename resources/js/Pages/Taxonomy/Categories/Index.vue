@@ -43,6 +43,7 @@
                                     type="search"
                                     class="form-control bg-transparent border-secondary-subtle text-white"
                                     placeholder="Search categories"
+                                    :disabled="!tokenStatus.remembered"
                                     @input="debouncedSearch"
                                 />
                             </div>
@@ -51,6 +52,7 @@
                                 <select
                                     v-model.number="filters.perPage"
                                     class="form-select form-select-sm bg-transparent text-white border-secondary-subtle"
+                                    :disabled="!tokenStatus.remembered"
                                 >
                                     <option v-for="option in perPageOptions" :key="option" :value="option">
                                         {{ option }}
@@ -147,7 +149,7 @@
                                             <button
                                                 type="button"
                                                 class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center gap-2 px-3"
-                                                :disabled="isSubmitting"
+                                                :disabled="isSubmitting || !tokenStatus.remembered"
                                                 @click.stop="confirmDelete(category)"
                                             >
                                                 <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
@@ -162,7 +164,7 @@
                             <button
                                 type="button"
                                 class="btn btn-outline-light btn-sm"
-                                :disabled="filters.page === 1 || isLoading"
+                                :disabled="filters.page === 1 || isLoading || !tokenStatus.remembered"
                                 @click="changePage(-1)"
                             >
                                 Previous
@@ -173,7 +175,7 @@
                             <button
                                 type="button"
                                 class="btn btn-outline-light btn-sm"
-                                :disabled="categories.length < filters.perPage || isLoading"
+                                :disabled="categories.length < filters.perPage || isLoading || !tokenStatus.remembered"
                                 @click="changePage(1)"
                             >
                                 Next
@@ -513,8 +515,7 @@ const fetchCategories = async (): Promise<void> => {
 
 const submitCategory = async (): Promise<void> => {
     if (!tokenStatus.value.remembered) {
-        pushAlert('danger', 'WordPress authentication required. Please login first.');
-        return;
+        return; // Alert already shown at top of page
     }
 
     isSubmitting.value = true;
@@ -544,7 +545,11 @@ const submitCategory = async (): Promise<void> => {
 };
 
 const confirmDelete = async (category: Category): Promise<void> => {
-    if (! window.confirm(`Delete “${category.name}”? This bypasses the trash and is irreversible.`)) {
+    if (!tokenStatus.value.remembered) {
+        return; // Alert already shown at top of page
+    }
+
+    if (! window.confirm(`Delete "${category.name}"? This bypasses the trash and is irreversible.`)) {
         return;
     }
 

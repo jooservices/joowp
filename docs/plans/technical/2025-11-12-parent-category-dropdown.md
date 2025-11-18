@@ -69,15 +69,28 @@ When editing "Tech" (ID: 1) with children "Programming" (ID: 2) and "JavaScript"
   - DoD: Maintains performance with proper caching (reuse existing category cache)
   - Estimated: 6 hours
 
-- [ ] Fix authentication requirement enforcement (CRITICAL)
-  - DoD: Block all features when WordPress token is not available
-  - DoD: Do NOT fetch categories from API when `tokenStatus.remembered === false`
-  - DoD: Disable all form inputs, buttons, and interactive elements when no token
-  - DoD: Show clear error message requiring login before using features
-  - DoD: Verify that cached data is not displayed when token is missing
-  - DoD: Only allow read-only view or completely hide features until authenticated
-  - DoD: Check token status before calling any WordPress API endpoints
+- [x] Fix authentication requirement enforcement (CRITICAL)
+  - DoD: Block all features when WordPress token is not available ✅
+  - DoD: Do NOT fetch categories from API when `tokenStatus.remembered === false` ✅
+  - DoD: Disable all form inputs, buttons, and interactive elements when no token ✅
+    - Form inputs (name, slug, description, parent dropdown) disabled
+    - Submit button (Create/Update) disabled
+    - Delete button disabled
+    - Refresh button disabled
+    - Pagination buttons (Previous/Next) disabled
+  - DoD: Show clear error message requiring login before using features ✅
+    - Single alert message at top of page (no duplicate messages)
+    - Alert shows "WordPress authentication required. Please login on home page first."
+    - Link to home page for token setup
+  - DoD: Verify that cached data is not displayed when token is missing ✅
+  - DoD: Only allow read-only view or completely hide features until authenticated ✅
+  - DoD: Check token status before calling any WordPress API endpoints ✅
+    - submitCategory() returns early if no token
+    - confirmDelete() returns early if no token
+    - fetchCategories() returns early if no token
+    - fetchParentOptions() returns early if no token
   - Estimated: 3 hours
+  - Status: Completed (2025-01-17)
 
 - [ ] Update frontend to use new backend API endpoint
   - DoD: Replace `parentOptions` computed logic with API call to `/api/v1/wordpress/categories/parents`
