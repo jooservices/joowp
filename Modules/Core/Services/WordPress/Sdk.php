@@ -160,6 +160,72 @@ final class Sdk implements SdkContract
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $query
+     * @return array<int|string, mixed>
+     */
+    public function tag(int $id, array $query = []): array
+    {
+        $cacheKey = sprintf('wp.tag.%d.%s', $id, md5(json_encode($query, JSON_THROW_ON_ERROR)));
+
+        return $this->cache->remember($cacheKey, now()->addMinutes(30), function () use ($id, $query): array {
+            return $this->get(sprintf('tags/%d', $id), $query);
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<int|string, mixed>
+     */
+    public function createTag(array $payload): array
+    {
+        $result = $this->request(
+            method: 'POST',
+            uri: 'tags',
+            options: ['json' => $payload]
+        );
+
+        $this->invalidateTagListCache();
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array<int|string, mixed>
+     */
+    public function updateTag(int $id, array $payload): array
+    {
+        $result = $this->request(
+            method: 'POST',
+            uri: sprintf('tags/%d', $id),
+            options: ['json' => $payload]
+        );
+
+        $this->invalidateTagCache($id);
+        $this->invalidateTagListCache();
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $query
+     * @return array<int|string, mixed>
+     */
+    public function deleteTag(int $id, array $query = []): array
+    {
+        $result = $this->request(
+            method: 'DELETE',
+            uri: sprintf('tags/%d', $id),
+            options: ['query' => $query]
+        );
+
+        $this->invalidateTagCache($id);
+        $this->invalidateTagListCache();
+
+        return $result;
+    }
+
     public function users(array $query = []): array
     {
         $cacheKey = 'wp.users.' . md5(json_encode($query, JSON_THROW_ON_ERROR));
@@ -427,6 +493,40 @@ final class Sdk implements SdkContract
         // 3. Use Redis with tags in production
         // For now, we'll implement a simple version bump approach
         $versionKey = 'wp.categories.version';
+        $versionValue = $this->cache->get($versionKey, 0);
+        // @phpstan-ignore-next-line - Cache returns mixed, but we ensure int with max()
+        $version = max(0, (int) $versionValue);
+        $this->cache->put($versionKey, $version + 1, now()->addDays(1));
+    }
+
+    /**
+     * Invalidate cache for a specific tag
+     *
+     * Clears all cached variations of a tag including different query parameters.
+     * Cache key pattern: wp.tag.{id}.{queryHash}
+     *
+     * @param  int  $id  The tag ID to invalidate
+     */
+    public function invalidateTagCache(int $id): void
+    {
+        $prefix = sprintf('wp.tag.%d.', $id);
+        $this->clearCacheByPrefix($prefix);
+    }
+
+    /**
+     * Invalidate all tag list caches
+     * Note: Database cache doesn't support wildcards, so this is a best-effort approach
+     * For production with Redis, consider using cache tags
+     */
+    private function invalidateTagListCache(): void
+    {
+        // Since database cache doesn't support wildcards, we can't easily invalidate
+        // all "wp.tags.*" keys. Options:
+        // 1. Track keys in a separate cache entry
+        // 2. Use versioned cache keys (e.g., wp.tags.v1.*)
+        // 3. Use Redis with tags in production
+        // For now, we'll implement a simple version bump approach
+        $versionKey = 'wp.tags.version';
         $versionValue = $this->cache->get($versionKey, 0);
         // @phpstan-ignore-next-line - Cache returns mixed, but we ensure int with max()
         $version = max(0, (int) $versionValue);

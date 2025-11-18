@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Modules\WordPress\Http\Controllers\CategoryController;
+use Modules\WordPress\Http\Controllers\TagController;
 use Modules\WordPress\Http\Controllers\TokenController;
 
 Route::prefix('v1')->group(function () {
@@ -17,5 +18,10 @@ Route::prefix('v1')->group(function () {
         Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
         Route::post('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        Route::get('tags', [TagController::class, 'index'])->name('tags.index');
+        Route::post('tags', [TagController::class, 'store'])->name('tags.store');
+        Route::post('tags/{tag}', [TagController::class, 'update'])->name('tags.update');
+        Route::delete('tags/{tag}', [TagController::class, 'destroy'])->name('tags.destroy');
     });
 });
