@@ -6,7 +6,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
-use Illuminate\Support\Facades\DB;
+use Modules\Core\Services\Cache\CacheHelper;
 
 final class CacheClearWordPress extends Command
 {
@@ -27,7 +27,8 @@ final class CacheClearWordPress extends Command
     protected $description = 'Clear WordPress cache by prefix (default: wp.*)';
 
     public function __construct(
-        private readonly CacheRepository $cache
+        private readonly CacheRepository $cache,
+        private readonly CacheHelper $cacheHelper
     ) {
         parent::__construct();
     }
@@ -83,17 +84,12 @@ final class CacheClearWordPress extends Command
 
     /**
      * Clear database cache by prefix
+     * Delegates to CacheHelper to handle infrastructure concerns
      */
     private function clearDatabaseCacheByPrefix(string $prefix): int
     {
-        $table = config('cache.stores.database.table', 'cache');
-
         try {
-            $count = DB::table($table)
-                ->where('key', 'like', $prefix . '%')
-                ->delete();
-
-            return $count;
+            return $this->cacheHelper->clearByPrefix($prefix);
         } catch (\Exception $e) {
             $this->error("Failed to clear cache: {$e->getMessage()}");
 

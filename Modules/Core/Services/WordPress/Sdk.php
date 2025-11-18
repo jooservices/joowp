@@ -11,6 +11,7 @@ use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use JsonException;
+use Modules\Core\Services\Cache\CacheHelper;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
 use Psr\Http\Message\ResponseInterface;
@@ -24,6 +25,7 @@ final class Sdk implements SdkContract
     public function __construct(
         private readonly ClientInterface $client,
         private readonly CacheRepository $cache,
+        private readonly CacheHelper $cacheHelper,
         ?Closure $tokenResolver = null,
         string $namespace = 'wp/v2'
     ) {
@@ -33,7 +35,11 @@ final class Sdk implements SdkContract
 
     public function posts(array $query = []): array
     {
-        $cacheKey = 'wp.posts.' . md5(json_encode($query, JSON_THROW_ON_ERROR));
+        // Use version-based cache keys for list invalidation (similar to categories)
+        $versionValue = $this->cache->get('wp.posts.version', 0);
+        // @phpstan-ignore-next-line - Cache returns mixed, but we ensure int with max()
+        $version = max(0, (int) $versionValue);
+        $cacheKey = sprintf('wp.posts.v%d.%s', $version, md5(json_encode($query, JSON_THROW_ON_ERROR)));
 
         return $this->cache->remember($cacheKey, now()->addMinutes(5), function () use ($query): array {
             return $this->get('posts', $query);
@@ -395,13 +401,12 @@ final class Sdk implements SdkContract
 
     /**
      * Invalidate cache for a specific category
+     * Clears all cached variations: wp.category.{id}.{queryHash}
      */
     public function invalidateCategoryCache(int $id): void
     {
-        // Invalidate specific category cache (all query variations)
-        // Note: Database cache driver doesn't support wildcards, so we need to track keys
-        // For now, we'll use a pattern that can be extended later with key tracking
-        $this->cache->forget(sprintf('wp.category.%d', $id));
+        $prefix = sprintf('wp.category.%d.', $id);
+        $this->clearCacheByPrefix($prefix);
     }
 
     /**
@@ -426,9 +431,42 @@ final class Sdk implements SdkContract
 
     /**
      * Invalidate cache for a specific post
+     * Clears all cached variations: wp.post.{id}.{queryHash}
+     *
+     * Note: This method should be called after post mutations (create/update/delete)
+     * to ensure cache consistency.
      */
     public function invalidatePostCache(int $id): void
     {
-        $this->cache->forget(sprintf('wp.post.%d', $id));
+        $prefix = sprintf('wp.post.%d.', $id);
+        $this->clearCacheByPrefix($prefix);
+    }
+
+    /**
+     * Invalidate posts list cache
+     * Clears all cached variations: wp.posts.{queryHash}
+     *
+     * Note: This method should be called after post mutations (create/update/delete)
+     * to ensure posts list cache is invalidated. Uses version-based invalidation
+     * similar to categories for database cache compatibility.
+     */
+    public function invalidatePostsListCache(): void
+    {
+        // Similar to categories, we use version-based invalidation for database cache
+        // Since database cache doesn't support wildcards, version bump invalidates all list entries
+        $versionKey = 'wp.posts.version';
+        $versionValue = $this->cache->get($versionKey, 0);
+        // @phpstan-ignore-next-line - Cache returns mixed, but we ensure int with max()
+        $version = max(0, (int) $versionValue);
+        $this->cache->put($versionKey, $version + 1, now()->addDays(1));
+    }
+
+    /**
+     * Clear cache entries by prefix
+     * Delegates to CacheHelper to handle infrastructure concerns
+     */
+    private function clearCacheByPrefix(string $prefix): void
+    {
+        $this->cacheHelper->clearByPrefix($prefix);
     }
 }

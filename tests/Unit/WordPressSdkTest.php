@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Mockery;
 use Mockery\MockInterface;
+use Modules\Core\Services\Cache\CacheHelper;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
 use Modules\Core\Services\WordPress\Sdk;
@@ -461,8 +462,9 @@ class WordPressSdkTest extends TestCase
     private function makeSdk(ClientInterface $client, ?CacheRepository $cache = null): SdkContract
     {
         $cache = $cache ?? Cache::store('array');
+        $cacheHelper = new CacheHelper($cache);
 
-        return new Sdk($client, $cache);
+        return new Sdk($client, $cache, $cacheHelper);
     }
 
     private function expectExternalLogs(int $times): void

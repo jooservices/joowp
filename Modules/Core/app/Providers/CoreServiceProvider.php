@@ -204,9 +204,13 @@ final class CoreServiceProvider extends ServiceProvider
             /** @var \Illuminate\Contracts\Cache\Repository $cache */
             $cache = $app->make(\Illuminate\Contracts\Cache\Repository::class);
 
+            /** @var \Modules\Core\Services\Cache\CacheHelper $cacheHelper */
+            $cacheHelper = $app->make(\Modules\Core\Services\Cache\CacheHelper::class);
+
             return new Sdk(
                 client: $client,
                 cache: $cache,
+                cacheHelper: $cacheHelper,
                 tokenResolver: $tokenResolver,
                 namespace: $config['namespace'] ?? 'wp/v2'
             );
