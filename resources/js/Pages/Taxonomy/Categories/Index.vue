@@ -23,8 +23,8 @@
                     <div class="card-body">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
                             <h2 class="h5 text-white mb-0">Categories</h2>
-                            <div class="d-flex gap-2 align-items-center mt-2 mt-md-0">
-                                <label class="text-secondary small mb-0">Per page</label>
+                            <div class="d-flex gap-2 align-items-center mt-2 mt-md-0 flex-nowrap">
+                                <label class="text-secondary small mb-0 text-nowrap">Per page</label>
                                 <select
                                     v-model="filters.perPage"
                                     class="form-select form-select-sm bg-transparent text-white border-secondary-subtle"
