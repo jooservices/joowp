@@ -388,9 +388,13 @@ final class ExampleServiceTest extends TestCase
 
 ### WordPress Integration
 - **Use the SDK contract**: Inject `Modules\Core\Services\WordPress\Contracts\SdkContract` - never use Guzzle directly
+- **HTTP Client**: WordPress SDK uses `jooservices/jooclient` package via `JOOservices\Client\Contracts\JsonHttpClientContract`
+  - Benefits: Automatic retries, logging, circuit breaker, rate limiting
+  - JSON convenience methods: `getJson()`, `postJson()`, `patchJson()`, etc.
+  - See: `vendor/jooservices/jooclient/docs/guides/JOOWP_INTEGRATION.md` for integration guide
 - **Never call WordPress from frontend** - always through Laravel API routes (e.g., `/api/v1/wordpress/token`)
 - **JWT tokens**: Managed via `wp_tokens` table with "Remember token" functionality
-- **Configuration**: Set via `config('core.wordpress')` - see `Modules/Core/config/config.php`
+- **Configuration**: Set via `config('wordpress.api')` - see `Modules/WordPress/config/config.php`
   - `WP_URL` - WordPress base URL (default: `https://soulevil.com`)
   - `WORDPRESS_API_TIMEOUT` - Request timeout in seconds (default: 10)
   - `WORDPRESS_API_USER_AGENT` - Custom user agent (default: `CoreWordPressSdk/1.0`)

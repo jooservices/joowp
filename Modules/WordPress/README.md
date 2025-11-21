@@ -17,6 +17,8 @@ Routes are defined in `routes/api.php` and automatically mounted beneath Laravel
 ## Dependencies
 
 - Consumes `Modules\Core\Services\WordPress\Contracts\SdkContract` for all upstream calls.
+  - The SDK uses `jooservices/jooclient` package via `JOOservices\Client\Contracts\JsonHttpClientContract`
+  - Benefits from automatic retries, logging, circuit breaker, and rate limiting
 - Relies on `App\Logging\ActionLogger` to capture immutable audit trails each time categories mutate.
 - Shares the remembered-token resolver with Core: once the module stores a token, the SDK will automatically attach it to outbound requests.
 

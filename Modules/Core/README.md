@@ -10,9 +10,15 @@ The `Core` module owns cross-cutting services that power the rest of JOOwp. Toda
 
 ## WordPress integration
 
-- `Services/WordPress/Sdk.php` wraps the WordPress REST API using Guzzle and exposes helpers for posts, taxonomies, and JWT token exchange.
+- `Services/WordPress/Sdk.php` wraps the WordPress REST API using `jooservices/jooclient` package and exposes helpers for posts, taxonomies, and JWT token exchange.
+- The SDK uses `JOOservices\Client\Contracts\JsonHttpClientContract` from jooclient for optimized JSON operations (`getJson()`, `postJson()`, etc.).
 - The SDK is registered in `app/Providers/CoreServiceProvider.php` and bound to the `Modules\Core\Services\WordPress\Contracts\SdkContract` interface.
-- All outbound calls use the `external` log channel and mask sensitive payloads (passwords, JWTs).
+- All outbound calls benefit from jooclient's features:
+  - **Automatic retry logic** (3 retries with exponential backoff for 5xx errors)
+  - **Built-in logging** (configurable via jooclient config)
+  - **Data sanitization** (GDPR & PCI-DSS compliant)
+  - **Circuit breaker** and **rate limiting** support
+- Custom logging via `external` log channel masks sensitive payloads (passwords, JWTs).
 - The `TokenResolver` automatically attaches stored JWT tokens (now saved by the WordPress module) to outbound requests when available.
 - SDK configuration now lives under `config('wordpress.api')`, keeping Core free of feature-specific settings while still supporting the historical `core.wordpress` keys for backward compatibility.
 
@@ -38,6 +44,11 @@ All new services and form requests must include unit coverage; API workflows req
 
 ## Documentation
 
+- **HTTP Client (jooclient)**: 
+  - Integration guide: `vendor/jooservices/jooclient/docs/guides/JOOWP_INTEGRATION.md`
+  - Usage guide: `vendor/jooservices/jooclient/docs/guides/USAGE_GUIDE.md`
+  - Package: https://packagist.org/packages/jooservices/jooclient
+- **Core HTTP Client Adoption Plan**: `docs/plans/technical/2025-11-14-core-http-client-adoption.md`
 - Taxonomy plan: `docs/plans/technical/` (check for category-related plans)
 - WordPress SDK: See `ai-workflow/guides/restful-api-design.md` for REST API patterns
 - Master documentation: `ai-workflow/README.md`
