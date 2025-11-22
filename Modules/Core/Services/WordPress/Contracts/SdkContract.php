@@ -87,6 +87,38 @@ interface SdkContract
     public function tags(array $query = []): array;
 
     /**
+     * Retrieve a single tag.
+     *
+     * @param  array<string, mixed>  $query
+     * @return array<int|string, mixed>
+     */
+    public function tag(int $id, array $query = []): array;
+
+    /**
+     * Create a tag.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<int|string, mixed>
+     */
+    public function createTag(array $payload): array;
+
+    /**
+     * Update a tag.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<int|string, mixed>
+     */
+    public function updateTag(int $id, array $payload): array;
+
+    /**
+     * Delete a tag.
+     *
+     * @param  array<string, mixed>  $query
+     * @return array<int|string, mixed>
+     */
+    public function deleteTag(int $id, array $query = []): array;
+
+    /**
      * Retrieve users.
      *
      * @param  array<string, mixed>  $query
