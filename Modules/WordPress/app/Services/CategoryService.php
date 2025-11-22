@@ -252,14 +252,29 @@ final class CategoryService
      *
      * @param  int  $categoryId  The category ID
      * @param  array<int, array<string, mixed>>  $categoryMap  Map of category ID to category data
+     * @param  array<int>  $visited  Track visited nodes to prevent infinite recursion from circular references
      * @return array<int> Array of descendant category IDs
      */
     /**
      * @param  array<int, array<string, mixed>>  $categoryMap
+     * @param  array<int>  $visited
      * @return array<int>
      */
-    private function getDescendantIds(int $categoryId, array $categoryMap): array
+    private function getDescendantIds(int $categoryId, array $categoryMap, array $visited = []): array
     {
+        // Detect circular reference to prevent infinite recursion
+        if (in_array($categoryId, $visited, true)) {
+            \Illuminate\Support\Facades\Log::warning('Circular reference detected in category hierarchy', [
+                'category_id' => $categoryId,
+                'visited_path' => $visited,
+            ]);
+
+            return []; // Return empty array to break the cycle
+        }
+
+        // Add current category to visited set
+        $visited[] = $categoryId;
+
         $descendants = [];
         $children = array_filter($categoryMap, static function ($cat) use ($categoryId) {
             if (! is_array($cat)) {
@@ -281,7 +296,8 @@ final class CategoryService
             $childId = is_numeric($childIdValue) ? (int) $childIdValue : 0;
             if ($childId > 0) {
                 $descendants[] = $childId;
-                $descendants = array_merge($descendants, $this->getDescendantIds($childId, $categoryMap));
+                // Pass visited array to track circular references
+                $descendants = array_merge($descendants, $this->getDescendantIds($childId, $categoryMap, $visited));
             }
         }
 
@@ -293,13 +309,36 @@ final class CategoryService
      *
      * @param  int  $categoryId  The category ID
      * @param  array<int, array<string, mixed>>  $categoryMap  Map of category ID to category data
+     * @param  array<int>  $visited  Track visited nodes to prevent infinite recursion from circular references
+     * @param  int  $maxDepth  Maximum depth limit to prevent stack overflow (default: 100)
      * @return int The depth (0 for root categories)
      */
     /**
      * @param  array<int, array<string, mixed>>  $categoryMap
+     * @param  array<int>  $visited
      */
-    private function calculateDepth(int $categoryId, array $categoryMap): int
+    private function calculateDepth(int $categoryId, array $categoryMap, array $visited = [], int $maxDepth = 100): int
     {
+        // Detect circular reference to prevent infinite recursion
+        if (in_array($categoryId, $visited, true)) {
+            \Illuminate\Support\Facades\Log::warning('Circular reference detected while calculating category depth', [
+                'category_id' => $categoryId,
+                'visited_path' => $visited,
+            ]);
+
+            return count($visited); // Return current depth as safe fallback
+        }
+
+        // Safety check: prevent stack overflow from extremely deep hierarchies
+        if (count($visited) >= $maxDepth) {
+            \Illuminate\Support\Facades\Log::warning('Maximum depth reached while calculating category depth', [
+                'category_id' => $categoryId,
+                'max_depth' => $maxDepth,
+            ]);
+
+            return $maxDepth; // Return max depth as safe fallback
+        }
+
         $category = $categoryMap[$categoryId] ?? null;
         if (! is_array($category)) {
             return 0;
@@ -311,7 +350,10 @@ final class CategoryService
             return 0;
         }
 
-        return 1 + $this->calculateDepth($parentId, $categoryMap);
+        // Add current category to visited set before recursing
+        $visited[] = $categoryId;
+
+        return 1 + $this->calculateDepth($parentId, $categoryMap, $visited, $maxDepth);
     }
 
     /**
