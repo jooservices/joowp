@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Core\Providers;
 
-use GuzzleHttp\Client;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use JOOservices\Client\Contracts\HttpClientContract;
+use JOOservices\Client\Factory\Factory;
 use Modules\Core\Console\Commands\LmStudioPingCommand;
 use Modules\Core\Console\Commands\LmStudioSyncModelsCommand;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
@@ -188,14 +189,22 @@ final class CoreServiceProvider extends ServiceProvider
             $baseUri = (string) ($config['base_uri'] ?? '');
             $normalizedBaseUri = $baseUri === '' ? '' : rtrim($baseUri, '/') . '/';
 
-            $client = new Client([
-                'base_uri' => $normalizedBaseUri,
-                'timeout' => $config['timeout'] ?? 10.0,
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'User-Agent' => $config['user_agent'] ?? 'CoreWordPressSdk/1.0',
-                ],
-            ]);
+            // Create jooclient Factory with WordPress-specific configuration
+            $factory = (new Factory())
+                ->addOptions([
+                    'base_uri' => $normalizedBaseUri,
+                    'timeout' => $config['timeout'] ?? 10.0,
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'User-Agent' => $config['user_agent'] ?? 'CoreWordPressSdk/1.0',
+                    ],
+                ]);
+
+            // Enable retries for external WordPress API calls (3 retries, exponential backoff)
+            $factory = $factory->enableRetries(3, 2, 500);
+
+            /** @var HttpClientContract $client */
+            $client = $factory->make();
 
             $tokenResolver = static fn (): ?string => WpToken::query()
                 ->latest('updated_at')

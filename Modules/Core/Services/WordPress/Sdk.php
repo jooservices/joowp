@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Modules\Core\Services\WordPress;
 
 use Closure;
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use JOOservices\Client\Contracts\HttpClientContract;
+use JOOservices\Client\Http\ResponseWrapper;
 use JsonException;
 use Modules\Core\Services\Cache\CacheHelper;
 use Modules\Core\Services\WordPress\Contracts\SdkContract;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
-use Psr\Http\Message\ResponseInterface;
 
 final class Sdk implements SdkContract
 {
@@ -23,7 +23,7 @@ final class Sdk implements SdkContract
     private readonly ?Closure $tokenResolver;
 
     public function __construct(
-        private readonly ClientInterface $client,
+        private readonly HttpClientContract $client,
         private readonly CacheRepository $cache,
         private readonly CacheHelper $cacheHelper,
         ?Closure $tokenResolver = null,
@@ -153,7 +153,11 @@ final class Sdk implements SdkContract
 
     public function tags(array $query = []): array
     {
-        $cacheKey = 'wp.tags.' . md5(json_encode($query, JSON_THROW_ON_ERROR));
+        // Use version-based cache keys for list invalidation (similar to categories)
+        $versionValue = $this->cache->get('wp.tags.version', 0);
+        // @phpstan-ignore-next-line - Cache returns mixed, but we ensure int with max()
+        $version = max(0, (int) $versionValue);
+        $cacheKey = sprintf('wp.tags.v%d.%s', $version, md5(json_encode($query, JSON_THROW_ON_ERROR)));
 
         return $this->cache->remember($cacheKey, now()->addMinutes(30), function () use ($query): array {
             return $this->get('tags', $query);
@@ -269,11 +273,61 @@ final class Sdk implements SdkContract
      */
     private function getFromNamespace(string $resource, array $query = []): array
     {
-        return $this->request(
-            method: 'GET',
-            uri: $resource,
-            options: ['query' => $query]
-        );
+        $endpoint = $this->qualifyResource($resource);
+        $options = $this->mergeAuthorization(['query' => $query]);
+
+        $this->logExternalDispatch('GET', $endpoint, $options);
+
+        try {
+            // Optimized: Use getJson() for JSON GET requests
+            // getJson() internally uses get() + getContent(), and returns array|null
+            // Returns null if response is not an array (including error responses)
+            // Note: Client implements both HttpClientContract and JsonHttpClientContract
+            /** @var array<int|string, mixed>|null $result */
+            // @phpstan-ignore-next-line - Client implements JsonHttpClientContract which has getJson()
+            $result = $this->client->getJson($endpoint, $options);
+
+            if ($result === null) {
+                // getJson() returns null for non-array responses (including errors)
+                // Use get() to get ResponseWrapper for error details (only in error case)
+                $responseWrapper = $this->client->get($endpoint, $options);
+
+                if (! $responseWrapper->isSuccess()) {
+                    $statusCode = $responseWrapper->getStatusCode();
+                    $message = $responseWrapper->getErrorMessage() ?? sprintf('HTTP %d error', $statusCode);
+
+                    $this->logExternalFailure('GET', $endpoint, $options, $message);
+
+                    throw WordPressRequestException::httpError('GET', $endpoint, $statusCode, $message);
+                }
+
+                // Response is successful (2xx) but not an array - invalid JSON structure
+                $this->logExternalFailure('GET', $endpoint, $options, 'Response is not a valid JSON array');
+
+                throw WordPressRequestException::invalidJson(
+                    'GET',
+                    $endpoint,
+                    new JsonException('Response is not a valid JSON array'),
+                    $responseWrapper->getStatusCode()
+                );
+            }
+
+            /** @var array<int|string, mixed> $result */
+            $this->logExternalResponse('GET', $endpoint, $options, $result);
+
+            return $result;
+        } catch (WordPressRequestException $exception) {
+            // Re-throw WordPressRequestException as-is
+            throw $exception;
+        } catch (GuzzleException $exception) {
+            $this->logExternalFailure('GET', $endpoint, $options, $exception->getMessage());
+
+            throw WordPressRequestException::fromThrowable('GET', $endpoint, $exception);
+        } catch (\Exception $exception) {
+            $this->logExternalFailure('GET', $endpoint, $options, $exception->getMessage());
+
+            throw WordPressRequestException::fromThrowable('GET', $endpoint, $exception);
+        }
     }
 
     /**
@@ -289,38 +343,50 @@ final class Sdk implements SdkContract
         $this->logExternalDispatch($method, $endpoint, $options);
 
         try {
-            $response = $this->client->request($method, $endpoint, $options);
+            // Use jooclient's request() method which returns ResponseWrapper
+            $responseWrapper = $this->client->request($method, $endpoint, $options);
+
+            // Check if request was successful
+            if (! $responseWrapper->isSuccess()) {
+                $statusCode = $responseWrapper->getStatusCode();
+                $message = $responseWrapper->getErrorMessage() ?? sprintf('HTTP %d error', $statusCode);
+
+                $this->logExternalFailure($method, $endpoint, $options, $message);
+
+                throw WordPressRequestException::httpError($method, $endpoint, $statusCode, $message);
+            }
+
+            // Get decoded JSON content from ResponseWrapper
+            $decoded = $responseWrapper->getContent();
+
+            // ResponseWrapper::getContent() returns mixed, ensure it's an array
+            if (! is_array($decoded)) {
+                $this->logExternalFailure($method, $endpoint, $options, 'Response is not valid JSON array');
+
+                throw WordPressRequestException::invalidJson(
+                    $method,
+                    $endpoint,
+                    new JsonException('Response is not a valid JSON array'),
+                    $responseWrapper->getStatusCode()
+                );
+            }
+
+            /** @var array<int|string, mixed> $decoded */
+            $this->logExternalResponse($method, $endpoint, $options, $decoded);
+
+            return $decoded;
         } catch (GuzzleException $exception) {
             $this->logExternalFailure($method, $endpoint, $options, $exception->getMessage());
 
             throw WordPressRequestException::fromThrowable($method, $endpoint, $exception);
+        } catch (WordPressRequestException $exception) {
+            // Re-throw WordPressRequestException as-is
+            throw $exception;
+        } catch (\Exception $exception) {
+            $this->logExternalFailure($method, $endpoint, $options, $exception->getMessage());
+
+            throw WordPressRequestException::fromThrowable($method, $endpoint, $exception);
         }
-
-        $decoded = $this->decodeResponse($method, $endpoint, $response);
-
-        $this->logExternalResponse($method, $endpoint, $options, $decoded);
-
-        return $decoded;
-    }
-
-    /**
-     * @return array<int|string, mixed>
-     */
-    private function decodeResponse(string $method, string $uri, ResponseInterface $response): array
-    {
-        try {
-            /** @var array<int|string, mixed> $decoded */
-            $decoded = json_decode(
-                $response->getBody()->getContents(),
-                true,
-                512,
-                JSON_THROW_ON_ERROR
-            );
-        } catch (JsonException $exception) {
-            throw WordPressRequestException::invalidJson($method, $uri, $exception, $response->getStatusCode());
-        }
-
-        return $decoded;
     }
 
     private function qualifyResource(string $resource): string

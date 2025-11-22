@@ -18,7 +18,7 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
 - Local network discovery/Firewall allowances for loopback or LAN access
 - Existing Core logging, configuration, and action auditing infrastructure
 - PHP 8.4 + TypeScript toolchain already enforced in repository
-- Core HTTP client abstraction (`2025-11-14-core-http-client.md`) for outbound requests
+- ✅ `jooservices/jooclient` package for HTTP client abstraction (migrated from Laravel Http facade)
 
 ## LM Studio API Surface
 | Endpoint | Purpose | Contract Method (planned) | Notes |
@@ -78,7 +78,7 @@ Deliver a Core-level SDK that allows Laravel services and the Vue SPA to communi
 
 - [x] Phase 1 – Scaffold Core SDK (PHP)
   - DoD: `Modules/Core/Services/LmStudio/Contracts/SdkContract.php` defined with typed methods. ✅
-  - DoD: HTTP client wrapper implemented using Laravel HTTP client with retry/backoff policies. ✅
+  - DoD: HTTP client wrapper implemented using `jooservices/jooclient` package via `HttpClientContract` with retry/backoff policies. ✅ (Migrated 2025-01-22)
   - DoD: SSE streaming abstraction stubbed with interface + placeholder implementation. ✅
   - DoD: `config/lmstudio.php` published with env bindings (`LM_STUDIO_HOST`, `LM_STUDIO_PORT`, etc.). ✅
   - DoD: Service provider binds contract, publishes config, and registers health check. ✅
@@ -319,7 +319,7 @@ interface SdkContract
 - `Modules/Core/Services/LmStudio/DTO/CompletionRequest.php`, `EmbeddingRequest.php`, `Audio/TranscriptionRequest.php`, etc. – strongly typed payloads per endpoint.
 - `Modules/Core/Services/LmStudio/Exceptions/LmStudioException.php` + specialised subclasses (`ConnectionException`, `ValidationException`, `StreamingException`).
 - `Modules/Core/Services/LmStudio/Contracts/SdkContract.php` – typed contract defining inference, model listing, health checks.
-- `Modules/Core/Services/LmStudio/Http/LmStudioClient.php` – Laravel HTTP client wrapper with retries + logging.
+- `Modules/Core/Services/LmStudio/Sdk.php` – Uses `jooservices/jooclient` package via `HttpClientContract` with retries, logging, circuit breaker, and rate limiting.
 - `Modules/Core/Services/LmStudio/Streaming/StreamerInterface.php` + `NullStreamer.php` placeholder – encapsulate streaming transport.
 - `Modules/Core/Services/LmStudio/Streaming/Observers/StreamObserver.php` – callback interface consumed by services for incremental updates.
 - `Modules/Core/Services/LmStudio/LmStudioService.php` – facade over contract with business-friendly helpers for Core consumers.

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Modules\Core\Services\LmStudio;
 
 use App\Logging\ActionLogger;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use JOOservices\Client\Contracts\HttpClientContract;
 use Modules\Core\Services\LmStudio\Contracts\SdkContract;
 use Modules\Core\Services\LmStudio\DTO\Audio\SpeechRequest;
 use Modules\Core\Services\LmStudio\DTO\Audio\SpeechResponse;
@@ -32,6 +32,7 @@ final class Sdk implements SdkContract
 {
     public function __construct(
         private readonly ActionLogger $actionLogger,
+        private readonly HttpClientContract $httpClient,
         private readonly string $baseUrl,
         private readonly ?string $apiKey = null,
         private readonly int $timeout = 30,
@@ -128,37 +129,64 @@ final class Sdk implements SdkContract
     private function makeRequest(string $method, string $endpoint, array $params = []): array
     {
         $startedAt = microtime(true);
-        $request = Http::baseUrl($this->baseUrl)
-            ->timeout($this->timeout)
-            ->connectTimeout($this->connectTimeout)
-            ->retry($this->maxRetries, 100);
-        $response = null;
+        $uri = rtrim($this->baseUrl, '/') . '/' . ltrim($endpoint, '/');
+
+        $options = [
+            'timeout' => $this->timeout,
+            'connect_timeout' => $this->connectTimeout,
+        ];
 
         if (! $this->verifyTls) {
-            $request = $request->withOptions(['verify' => false]);
+            $options['verify'] = false;
         }
 
         if ($this->apiKey) {
-            $request = $request->withHeaders([
+            $options['headers'] = [
                 'Authorization' => 'Bearer ' . $this->apiKey,
-            ]);
+            ];
         }
 
         try {
-            $response = match ($method) {
-                'GET' => $request->get($endpoint, $params),
-                'POST' => $request->post($endpoint, $params),
+            // Use get()/post() to get ResponseWrapper, then extract JSON content
+            $responseWrapper = match ($method) {
+                'GET' => $this->httpClient->get($uri, array_merge($options, ['query' => $params])),
+                'POST' => $this->httpClient->post($uri, array_merge($options, ['json' => $params])),
                 default => throw new \InvalidArgumentException("Unsupported HTTP method: {$method}"),
             };
 
-            if ($response->failed()) {
-                throw new ConnectionException("HTTP {$response->status()}: {$response->body()}", context: [
-                    'endpoint' => $endpoint,
-                    'status' => $response->status(),
-                ]);
+            if (! $responseWrapper->isSuccess()) {
+                $errorMessage = $responseWrapper->getErrorMessage();
+                $statusCode = $responseWrapper->getStatusCode();
+
+                throw new ConnectionException(
+                    "HTTP {$statusCode}: " . ($errorMessage ?? 'Request failed'),
+                    0,
+                    null,
+                    [
+                        'endpoint' => $endpoint,
+                        'status' => $statusCode,
+                    ]
+                );
             }
 
-            $decoded = $response->json() ?? [];
+            // Get JSON content from ResponseWrapper
+            $content = $responseWrapper->getContent();
+
+            if (! is_array($content)) {
+                // Response is successful but not JSON array
+                throw new ConnectionException(
+                    'Response is not a valid JSON array',
+                    0,
+                    null,
+                    [
+                        'endpoint' => $endpoint,
+                        'status' => $responseWrapper->getStatusCode(),
+                    ]
+                );
+            }
+
+            /** @var array<string, mixed> $content */
+            $result = $content;
 
             $this->recordTelemetry(
                 method: $method,
@@ -166,10 +194,23 @@ final class Sdk implements SdkContract
                 params: $params,
                 startedAt: $startedAt,
                 success: true,
-                status: $response->status(),
+                status: 200, // getJson/postJson only returns array on success (2xx)
             );
 
-            return $decoded;
+            return $result;
+        } catch (ConnectionException $exception) {
+            // Re-throw ConnectionException as-is
+            $this->recordTelemetry(
+                method: $method,
+                endpoint: $endpoint,
+                params: $params,
+                startedAt: $startedAt,
+                success: false,
+                status: $exception->getContext()['status'] ?? null,
+                exception: $exception,
+            );
+
+            throw $exception;
         } catch (\Throwable $exception) {
             $this->recordTelemetry(
                 method: $method,
@@ -177,11 +218,18 @@ final class Sdk implements SdkContract
                 params: $params,
                 startedAt: $startedAt,
                 success: false,
-                status: $response?->status(),
+                status: null,
                 exception: $exception,
             );
 
-            throw $exception;
+            throw new ConnectionException(
+                'Request failed: ' . $exception->getMessage(),
+                0,
+                $exception,
+                [
+                    'endpoint' => $endpoint,
+                ]
+            );
         }
     }
 

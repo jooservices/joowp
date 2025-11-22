@@ -37,6 +37,14 @@ final class WordPressRequestException extends RuntimeException
         );
     }
 
+    public static function httpError(string $method, string $path, int $statusCode, string $message): self
+    {
+        return new self(
+            sprintf('WordPress API request [%s %s] failed: HTTP %d: %s', strtoupper($method), $path, $statusCode, $message),
+            $statusCode
+        );
+    }
+
     public function sourceStatus(): ?int
     {
         return $this->sourceStatus;

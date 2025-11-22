@@ -13,7 +13,10 @@
                     <strong class="me-2">WordPress authentication required.</strong>
                     Please login on home page first before using this feature.
                 </div>
-                <a href="/" class="btn btn-sm btn-outline-light">Go to Home</a>
+                <a href="/" class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-2">
+                    <i class="fa-solid fa-house" aria-hidden="true"></i>
+                    <span>Go to Home</span>
+                </a>
             </div>
         </div>
 
@@ -53,13 +56,13 @@
                             <div class="d-flex gap-2 align-items-center ms-md-auto">
                                 <button
                                     type="button"
-                                    class="btn btn-tertiary btn-sm"
+                                    class="btn btn-tertiary btn-sm d-inline-flex align-items-center gap-2"
                                     :disabled="isLoading || !tokenStatus.remembered"
                                     @click="fetchCategories"
                                 >
-                                    <span v-if="!isLoading" class="fa-solid fa-arrows-rotate"></span>
-                                    <span v-else class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                    <span class="ms-1">Refresh</span>
+                                    <span v-if="!isLoading" class="fa-solid fa-arrows-rotate" aria-hidden="true"></span>
+                                    <span v-else class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span>Refresh</span>
                                 </button>
                             </div>
                         </div>
@@ -155,22 +158,24 @@
                         <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-3">
                             <button
                                 type="button"
-                                class="btn btn-outline-light btn-sm"
+                                class="btn btn-outline-light btn-sm d-inline-flex align-items-center gap-2"
                                 :disabled="filters.page === 1 || isLoading || !tokenStatus.remembered"
                                 @click="changePage(-1)"
                             >
-                                Previous
+                                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                                <span>Previous</span>
                             </button>
                             <span class="text-secondary small">
                                 Page {{ filters.page }} · showing {{ categories.length }} results
                             </span>
                             <button
                                 type="button"
-                                class="btn btn-outline-light btn-sm"
+                                class="btn btn-outline-light btn-sm d-inline-flex align-items-center gap-2"
                                 :disabled="(filters.perPage !== 'all' && typeof filters.perPage === 'number' && categories.length < filters.perPage) || isLoading || !tokenStatus.remembered"
                                 @click="changePage(1)"
                             >
-                                Next
+                                <span>Next</span>
+                                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -256,11 +261,12 @@
                                 <button
                                     v-if="editingCategory"
                                     type="button"
-                                    class="btn btn-outline-light"
+                                    class="btn btn-outline-light d-inline-flex align-items-center gap-2"
                                     :disabled="isSubmitting || !tokenStatus.remembered"
                                     @click="resetForm"
                                 >
-                                    Cancel
+                                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                    <span>Cancel</span>
                                 </button>
                             </div>
                         </form>

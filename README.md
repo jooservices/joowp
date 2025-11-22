@@ -130,10 +130,13 @@ Coverage: XX% or N/A or Documentation
 - **Build:** Vite with module auto-discovery
 
 ### WordPress Integration
-- **SDK:** Guzzle-based contract implementation (`Modules\Core\Services\WordPress\Sdk`)
+- **SDK:** jooclient-based contract implementation (`Modules\Core\Services\WordPress\Sdk`)
+  - Uses `jooservices/jooclient` package for HTTP requests
+  - Features: Automatic retries, logging, circuit breaker, rate limiting
+  - JSON convenience methods: `getJson()`, `postJson()`, `patchJson()`, etc.
 - **Authentication:** JWT tokens via `wp_tokens` table
 - **Always proxy through Laravel** - never call WordPress from frontend
-- **Configuration:** Set via `config('core.wordpress')` or `.env` variables
+- **Configuration:** Set via `config('wordpress.api')` or `.env` variables
 
 ## Documentation
 
@@ -157,7 +160,7 @@ For architecture principles, development guidelines, and implementation guides, 
 ## Key Features
 
 - **Modular architecture** via `nwidart/laravel-modules`
-- **Core WordPress SDK** powered by Guzzle for interacting with WordPress REST APIs
+- **Core WordPress SDK** powered by `jooservices/jooclient` for interacting with WordPress REST APIs
 - **TypeScript-first Vue application** scaffold with Inertia and Pinia
 - **Strict type safety** - PHP 8.4 strict types + TypeScript strict mode
 - **Comprehensive quality gates** - Pint, PHPCS, PHPMD, PHPStan (max level)

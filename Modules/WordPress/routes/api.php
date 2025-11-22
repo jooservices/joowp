@@ -21,6 +21,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('tags', [TagController::class, 'index'])->name('tags.index');
         Route::post('tags', [TagController::class, 'store'])->name('tags.store');
+        Route::delete('tags/bulk', [TagController::class, 'bulkDestroy'])->name('tags.bulk_destroy');
         Route::post('tags/{tag}', [TagController::class, 'update'])->name('tags.update');
         Route::delete('tags/{tag}', [TagController::class, 'destroy'])->name('tags.destroy');
     });

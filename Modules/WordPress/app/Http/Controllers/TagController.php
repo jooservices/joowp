@@ -9,10 +9,12 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Modules\Core\Services\WordPress\Exceptions\WordPressRequestException;
+use Modules\WordPress\Http\Requests\BulkDeleteTagsRequest;
 use Modules\WordPress\Http\Requests\DeleteTagRequest;
 use Modules\WordPress\Http\Requests\IndexTagsRequest;
 use Modules\WordPress\Http\Requests\StoreTagRequest;
 use Modules\WordPress\Http\Requests\UpdateTagRequest;
+use Modules\WordPress\Jobs\DeleteTagJob;
 use Modules\WordPress\Services\TagService;
 
 final class TagController extends Controller
@@ -140,6 +142,44 @@ final class TagController extends Controller
                 ], static fn ($value) => $value !== null),
                 data: null,
                 status: $sourceStatus ?? 502
+            );
+        }
+    }
+
+    public function bulkDestroy(BulkDeleteTagsRequest $request): JsonResponse
+    {
+        try {
+            /** @var Authenticatable|null $actor */
+            $actor = $request->user();
+            $validated = $request->validated();
+            $tagIds = $validated['tag_ids'];
+            $force = (bool) ($validated['force'] ?? true);
+            $userId = $actor?->getAuthIdentifier();
+
+            // Queue delete jobs for each tag
+            $jobCount = 0;
+            foreach ($tagIds as $tagId) {
+                DeleteTagJob::dispatch($tagId, $force, $userId);
+                $jobCount++;
+            }
+
+            return ApiResponse::success(
+                code: 'wordpress.tags.bulk_delete_queued',
+                message: sprintf('Queued %d tag(s) for deletion.', $jobCount),
+                data: [
+                    'queued_count' => $jobCount,
+                    'tag_ids' => $tagIds,
+                ]
+            );
+        } catch (\Exception $exception) {
+            return ApiResponse::error(
+                code: 'wordpress.tags.bulk_delete_queue_failed',
+                message: 'Unable to queue tags for deletion.',
+                meta: [
+                    'error_message' => $exception->getMessage(),
+                ],
+                data: null,
+                status: 500
             );
         }
     }

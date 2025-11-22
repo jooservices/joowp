@@ -1,14 +1,35 @@
 # Plan – Core HTTP Client Abstraction
 
-Status: Active  
+Status: **Obsolete** - Replaced by `jooservices/jooclient` package  
 Priority: P1  
 Owner: Platform Engineering  
 Created: 2025-11-14  
-Updated: 2025-11-14  
-Target: 2025-11-21  
+Updated: 2025-01-22  
+Target: ~~2025-11-21~~  
 Epic: Core Infrastructure
 
-## Summary
+## ⚠️ This Plan is Obsolete
+
+**This plan has been replaced by `jooservices/jooclient` package.**
+
+The `jooclient` package provides all features planned here and more:
+- ✅ Production-ready HTTP client wrapper for Guzzle
+- ✅ Built-in retry logic with exponential backoff
+- ✅ Multi-driver logging (MySQL, MongoDB, Monolog)
+- ✅ Data sanitization (GDPR & PCI-DSS compliant)
+- ✅ Circuit breaker pattern
+- ✅ Rate limiting (Token Bucket, Sliding Window, Fixed Window)
+- ✅ JSON convenience methods (`getJson()`, `postJson()`, etc.)
+- ✅ Streaming & SSE support
+- ✅ Response wrapper with `isSuccess()` and `getContent()`
+- ✅ Laravel integration with `HttpClientContract` interface
+- ✅ Already released on Packagist: https://packagist.org/packages/jooservices/jooclient
+
+**See:** `docs/plans/technical/2025-11-14-core-http-client-adoption.md` for adoption plan using jooclient.
+
+---
+
+## Summary (Original Plan)
 Introduce a reusable HTTP client in `Modules/Core` that wraps Guzzle with platform-standard configuration, logging, retries, and security guards so any module can consume external APIs through a consistent abstraction.
 
 **Scope:** Core module infrastructure only (contracts, implementation, config, tests, docs). Does not include specific service integrations (e.g. LM Studio, WordPress) beyond updating them to use the new client once available.
