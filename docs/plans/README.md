@@ -7,6 +7,8 @@ This directory contains all project planning documents organized by type and chr
 ```
 docs/plans/
 ├── technical/          # Technical implementation plans
+│   ├── 2025-01-22-tags-management.md
+│   ├── 2025-01-22-wordpress-api-error-handling.md
 │   ├── 2025-11-12-parent-category-dropdown.md
 │   ├── 2025-11-12-realtime-socket-integration.md  
 │   ├── 2025-11-12-strict-types-enforcement.md
