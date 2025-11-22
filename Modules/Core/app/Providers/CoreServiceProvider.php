@@ -203,6 +203,13 @@ final class CoreServiceProvider extends ServiceProvider
             // Enable retries for external WordPress API calls (3 retries, exponential backoff)
             $factory = $factory->enableRetries(3, 2, 500);
 
+            // Enable circuit breaker for WordPress API (configurable via env)
+            // Circuit breaker configuration is read from config/jooclient.php
+            // Enable via: JOOCLIENT_CIRCUIT_BREAKER_ENABLED=true
+            if (config('jooclient.circuit_breaker.enabled', false)) {
+                $factory = $factory->enableCircuitBreaker();
+            }
+
             /** @var HttpClientContract $client */
             $client = $factory->make();
 

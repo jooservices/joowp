@@ -312,6 +312,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { QuillEditor } from '@vueup/vue-quill';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import { handleApiError } from '@/utils/errorHandler';
 
 defineOptions({ layout: AppLayout });
 
@@ -480,7 +481,12 @@ const fetchParentOptions = async (): Promise<void> => {
 
         parentOptions.value = options;
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to load parent categories.');
+        }
         parentOptions.value = [{ value: 0, label: 'None', depth: 0 }];
     } finally {
         isLoadingParents.value = false;
@@ -555,7 +561,12 @@ const fetchCategories = async (): Promise<void> => {
         categories.value = response.data?.data?.items ?? [];
         syncParentRegistry(categories.value);
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to retrieve categories from WordPress.');
+        }
         categories.value = [];
         parentRegistry.clear();
     } finally {
@@ -588,7 +599,12 @@ const submitCategory = async (): Promise<void> => {
         await Promise.all([fetchCategories(), fetchParentOptions()]);
         resetForm();
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to save category in WordPress.');
+        }
     } finally {
         isSubmitting.value = false;
     }
@@ -616,7 +632,12 @@ const confirmDelete = async (category: Category): Promise<void> => {
         }
         await fetchCategories();
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to delete category from WordPress.');
+        }
     } finally {
         isSubmitting.value = false;
     }
@@ -789,24 +810,13 @@ const refreshTokenStatus = async (): Promise<void> => {
         const response = await window.axios.get('/api/v1/wordpress/token');
         tokenStatus.value = response.data?.data ?? { remembered: false };
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
-    }
-};
-
-const extractErrorMessage = (error: unknown): string => {
-    if (
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        typeof (error as Record<string, unknown>).response === 'object'
-    ) {
-        const response = (error as { response?: { data?: { message?: string } } }).response;
-        if (response?.data?.message) {
-            return response.data.message;
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to refresh token status.');
         }
     }
-
-    return 'Unexpected error communicating with WordPress.';
 };
 
 const syncParentRegistry = (items: Category[]): void => {

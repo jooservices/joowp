@@ -37,6 +37,14 @@ final class LmStudioServiceProvider extends ServiceProvider
                 500
             );
 
+            // Enable circuit breaker for LM Studio API (configurable via env)
+            // Circuit breaker configuration is read from config/jooclient.php
+            // Enable via: JOOCLIENT_CIRCUIT_BREAKER_ENABLED=true
+            // Note: LM Studio-specific thresholds can be configured via env variables
+            if (config('jooclient.circuit_breaker.enabled', false)) {
+                $factory = $factory->enableCircuitBreaker();
+            }
+
             /** @var HttpClientContract $httpClient */
             $httpClient = $factory->make();
 

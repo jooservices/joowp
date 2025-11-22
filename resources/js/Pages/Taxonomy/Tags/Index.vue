@@ -484,6 +484,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import Modal from 'bootstrap/js/dist/modal';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { QuillEditor } from '@vueup/vue-quill';
+import { handleApiError, isTransientError, type ApiErrorResponse } from '@/utils/errorHandler';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 
 defineOptions({ layout: AppLayout });
@@ -604,14 +605,24 @@ const fetchTags = async (): Promise<void> => {
 
         // Handle structured error responses from API
         if (response.data?.ok === false) {
-            pushAlert('danger', response.data.message || 'Unable to retrieve tags from WordPress.');
+            const errorResponse = handleApiError(response.data, {
+                showMessage: false, // We'll handle alert display manually
+            });
+            if (errorResponse) {
+                pushAlert('danger', errorResponse.message || 'Unable to retrieve tags from WordPress.');
+            }
             tags.value = [];
             return;
         }
 
         tags.value = response.data?.data?.items ?? [];
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to retrieve tags from WordPress.');
+        }
         tags.value = [];
     } finally {
         isLoading.value = false;
@@ -640,7 +651,12 @@ const submitTag = async (): Promise<void> => {
 
         // Handle structured error responses from API
         if (response.data?.ok === false) {
-            pushAlert('danger', response.data.message || 'Unable to save tag in WordPress.');
+            const errorResponse = handleApiError(response.data, {
+                showMessage: false, // We'll handle alert display manually
+            });
+            if (errorResponse) {
+                pushAlert('danger', errorResponse.message || 'Unable to save tag in WordPress.');
+            }
             return;
         }
 
@@ -648,7 +664,12 @@ const submitTag = async (): Promise<void> => {
         await fetchTags();
         resetForm();
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to save tag in WordPress.');
+        }
     } finally {
         isSubmitting.value = false;
     }
@@ -781,7 +802,12 @@ const executeDelete = async (): Promise<void> => {
 
         // Handle structured error responses from API
         if (response.data?.ok === false) {
-            pushAlert('danger', response.data.message || 'Unable to delete tag from WordPress.');
+            const errorResponse = handleApiError(response.data, {
+                showMessage: false, // We'll handle alert display manually
+            });
+            if (errorResponse) {
+                pushAlert('danger', errorResponse.message || 'Unable to delete tag from WordPress.');
+            }
             return;
         }
 
@@ -792,7 +818,12 @@ const executeDelete = async (): Promise<void> => {
         }
         await fetchTags();
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to delete tag from WordPress.');
+        }
     } finally {
         isSubmitting.value = false;
     }
@@ -841,7 +872,12 @@ const deleteBulkTags = async (tagsToDeleteList: Tag[]): Promise<void> => {
 
         // Handle structured error responses from API
         if (response.data?.ok === false) {
-            pushAlert('danger', response.data.message || 'Unable to queue tags for deletion.');
+            const errorResponse = handleApiError(response.data, {
+                showMessage: false, // We'll handle alert display manually
+            });
+            if (errorResponse) {
+                pushAlert('danger', errorResponse.message || 'Unable to queue tags for deletion.');
+            }
             return;
         }
 
@@ -861,7 +897,12 @@ const deleteBulkTags = async (tagsToDeleteList: Tag[]): Promise<void> => {
         bulkDeleteOptions.deleteZeroPosts = false;
         bulkDeleteOptions.deleteWeirdTags = false;
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to queue tags for deletion.');
+        }
     } finally {
         isBulkDeleting.value = false;
     }
@@ -1007,24 +1048,13 @@ const refreshTokenStatus = async (): Promise<void> => {
         const response = await window.axios.get('/api/v1/wordpress/token');
         tokenStatus.value = response.data?.data ?? { remembered: false };
     } catch (error: unknown) {
-        pushAlert('danger', extractErrorMessage(error));
-    }
-};
-
-const extractErrorMessage = (error: unknown): string => {
-    if (
-        typeof error === 'object' &&
-        error !== null &&
-        'response' in error &&
-        typeof (error as Record<string, unknown>).response === 'object'
-    ) {
-        const response = (error as { response?: { data?: { message?: string } } }).response;
-        if (response?.data?.message) {
-            return response.data.message;
+        const errorResponse = handleApiError(error, {
+            showMessage: false, // We'll handle alert display manually
+        });
+        if (errorResponse) {
+            pushAlert('danger', errorResponse.message || 'Unable to refresh token status.');
         }
     }
-
-    return 'Unexpected error communicating with WordPress.';
 };
 
 watch(
